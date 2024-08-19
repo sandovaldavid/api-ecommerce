@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const { DataTypes } = require('sequelize');
+=======
+const {DataTypes} = require('sequelize');
+>>>>>>> 0a617c9ecd3d71cd615d64436f6b633f50d9ff79
 const bcrypt = require('bcryptjs');
 const sequelize = require('./index');
 
@@ -43,7 +47,11 @@ const User = sequelize.define('User', {
   timestamps: false,
 });
 
+<<<<<<< HEAD
 User.prototype.checkPassword = function(password) {
+=======
+User.prototype.checkPassword = function (password) {
+>>>>>>> 0a617c9ecd3d71cd615d64436f6b633f50d9ff79
   return bcrypt.compare(password, this.hashed_password);
 };
 

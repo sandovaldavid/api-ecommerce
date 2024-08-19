@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+const {DataTypes} = require('sequelize');
 const sequelize = require('./index');
 const User = require('./user');
 const Product = require('./product');
@@ -21,7 +21,7 @@ const Cart = sequelize.define('Cart', {
   timestamps: false,
 });
 
-Cart.belongsTo(User, { foreignKey: 'usuario_id' });
-Cart.belongsToMany(Product, { through: 'CartItems' });
+Cart.belongsTo(User, {foreignKey: 'usuario_id'});
+Cart.belongsToMany(Product, {through: 'CartItems'});
 
 module.exports = Cart;
