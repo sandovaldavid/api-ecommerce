@@ -41,7 +41,7 @@ app.use('/api/cart-items', cartItemRoutes);
 app.use('/api/carts', cartRoutes);
 
 const PORT = process.env.PORT || 3000;
-await sequelize.sync({force: true});
+await sequelize.sync({force: false});
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
