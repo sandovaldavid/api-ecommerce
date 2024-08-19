@@ -1,17 +1,20 @@
-const Order = require('../models/order');
-const Product = require('../models/product');
+import Product from '../models/product.js';
 
-exports.createOrder = async (req, res) => {
+export const getAllProducts = async (req, res) => {
   try {
-    const {usuario_id, productos, total} = req.body;
-    const order = await Order.create({usuario_id, total});
-    
-    for (const producto of productos) {
-      await order.addProduct(producto.id, {through: {cantidad: producto.cantidad, precio_unitario: producto.precio}});
-    }
-    
-    res.status(201).json(order);
+    const products = await Product.findAll();
+    res.status(200).json(products);
   } catch (error) {
-    res.status(400).json({error: error.message});
+    res.status(500).json({error: error.message});
+  }
+};
+
+export const createProduct = async (req, res) => {
+  try {
+    const {nombre, descripcion, precio, stock, categoria_id} = req.body;
+    const product = await Product.create({nombre, descripcion, precio, stock, categoria_id});
+    res.status(201).json(product);
+  } catch (error) {
+    res.status(500).json({error: error.message});
   }
 };

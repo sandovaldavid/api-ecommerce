@@ -1,6 +1,6 @@
-const User = require('../models/user');
+import User from '../models/user.js';
 
-exports.getUserProfile = async (req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id);
     if (!user) {
@@ -8,6 +8,6 @@ exports.getUserProfile = async (req, res) => {
     }
     res.status(200).json(user);
   } catch (error) {
-    res.status(400).json({error: error.message});
+    res.status(500).json({error: error.message});
   }
 };

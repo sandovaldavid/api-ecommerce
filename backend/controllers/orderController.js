@@ -1,7 +1,6 @@
-const Order = require('../models/order');
-const Product = require('../models/product');
+import Order from '../models/order.js';
 
-exports.createOrder = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const {usuario_id, productos, total} = req.body;
     const order = await Order.create({usuario_id, total});
@@ -12,6 +11,7 @@ exports.createOrder = async (req, res) => {
     
     res.status(201).json(order);
   } catch (error) {
-    res.status(400).json({error: error.message});
+    res.status(500).json({error: error.message});
   }
 };
+

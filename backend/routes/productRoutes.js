@@ -1,23 +1,9 @@
-const express = require('express');
+import express from 'express';
+import {getAllProducts, createProduct} from '../controllers/productController.js';
+
 const router = express.Router();
-const { getAllProducts, createProduct } = require('../controllers/productController');
 
-// Definir las rutas para productos
-router.get('/', async (req, res, next) => {
-  try {
-    await getAllProducts(req, res);
-  } catch (error) {
-    next(error);  // Pasar el error al manejador de errores de Express
-  }
-});
+router.get('/', getAllProducts);
+router.post('/', createProduct);
 
-router.post('/', async (req, res, next) => {
-  try {
-    await createProduct(req, res);
-  } catch (error) {
-    next(error);  // Pasar el error al manejador de errores de Express
-  }
-});
-
-module.exports = router;
-
+export default router;
