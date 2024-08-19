@@ -1,5 +1,12 @@
 const {Sequelize} = require('sequelize');
 const config = require('../config/config');
+const User = require('./user');
+const Product = require('./product');
+const Category = require('./category');
+const Order = require('./order');
+const Cart = require('./cart');
+const Payment = require('./payment');
+const Review = require('./review');
 
 const sequelize = new Sequelize(
   config.development.database,
@@ -11,6 +18,23 @@ const sequelize = new Sequelize(
   }
 );
 
-sequelize.sync().then(() => console.log('Database connected')).catch(e => console.log(e));
+// Definir relaciones
+Product.belongsTo(Category, {foreignKey: 'categoria_id'});
+Category.hasMany(Product, {foreignKey: 'categoria_id'});
+
+Order.belongsTo(User, {foreignKey: 'usuario_id'});
+Order.belongsToMany(Product, {through: 'OrderProducts'});
+
+Cart.belongsTo(User, {foreignKey: 'usuario_id'});
+Cart.belongsToMany(Product, {through: 'CartItems'});
+
+Review.belongsTo(User, {foreignKey: 'usuario_id'});
+Review.belongsTo(Product, {foreignKey: 'producto_id'});
+
+Payment.belongsTo(Order, {foreignKey: 'orden_id'});
+
+// Sincronizar los modelos con la base de datos
+sequelize.sync();
 
 module.exports = sequelize;
+

@@ -25,6 +25,14 @@ const User = sequelize.define('User', {
     type: DataTypes.ENUM('cliente', 'administrador'),
     defaultValue: 'cliente',
   },
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  },
+  updated_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+  },
 }, {
   hooks: {
     beforeCreate: async (user) => {
@@ -32,6 +40,7 @@ const User = sequelize.define('User', {
       user.hashed_password = await bcrypt.hash(user.hashed_password, salt);
     },
   },
+  timestamps: false,
 });
 
 User.prototype.checkPassword = function (password) {
