@@ -1,11 +1,11 @@
 import {DataTypes} from 'sequelize';
-import bcrypt from 'bcryptjs';
 import {sequelize} from './index.js';
+import bcrypt from 'bcryptjs';
+import uid2 from 'uid2';
 
 const User = sequelize.define('User', {
   id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.STRING,
     primaryKey: true,
   },
   nombre: {
@@ -34,17 +34,19 @@ const User = sequelize.define('User', {
     defaultValue: DataTypes.NOW,
   },
 }, {
-  hooks: {
-    beforeCreate: async (user) => {
-      const salt = await bcrypt.genSalt(10);
-      user.hashed_password = await bcrypt.hash(user.hashed_password, salt);
-    },
-  },
   timestamps: false,
+  hooks: {
+    // Hook para encriptar la contraseña antes de crear un usuario
+    beforeCreate: async (user) => {
+      // Generar un UID único para el campo ID
+      user.id = uid2(32);  // Genera un UID de 32 caracteres
+    }
+  }
 });
 
+// Método para verificar la contraseña
 User.prototype.checkPassword = function (password) {
-  return bcrypt.compare(password, this.hashed_password);
+  return bcrypt.compare(password, this.hashed_password);  // Comparar la contraseña proporcionada con la encriptada
 };
 
 export default User;
