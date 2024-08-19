@@ -1,8 +1,23 @@
 const express = require('express');
-const {getAllProducts, createProduct} = require('../controllers/productController');
 const router = express.Router();
+const { getAllProducts, createProduct } = require('../controllers/productController');
 
-router.get('/', getAllProducts);
-router.post('/', createProduct);
+// Definir las rutas para productos
+router.get('/', async (req, res, next) => {
+  try {
+    await getAllProducts(req, res);
+  } catch (error) {
+    next(error);  // Pasar el error al manejador de errores de Express
+  }
+});
+
+router.post('/', async (req, res, next) => {
+  try {
+    await createProduct(req, res);
+  } catch (error) {
+    next(error);  // Pasar el error al manejador de errores de Express
+  }
+});
 
 module.exports = router;
+

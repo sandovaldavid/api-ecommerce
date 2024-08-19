@@ -1,35 +1,36 @@
-const {DataTypes} = require('sequelize');
-const sequelize = require('./index');
-const User = require('./user');
-const Product = require('./product');
+module.exports = (sequelize, DataTypes) => {
+  const Order = sequelize.define('Order', {
+    id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    total: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    estado: {
+      type: DataTypes.ENUM('pendiente', 'enviado', 'entregado'),
+      defaultValue: 'pendiente',
+    },
+    created_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    updated_at: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+  }, {
+    timestamps: false,
+  });
 
-const Order = sequelize.define('Order', {
-  id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
-    primaryKey: true,
-  },
-  total: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-  },
-  estado: {
-    type: DataTypes.ENUM('pendiente', 'enviado', 'entregado'),
-    defaultValue: 'pendiente',
-  },
-  created_at: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-  },
-}, {
-  timestamps: false,
-});
+  // Definir relaciones
+  Order.associate = (models) => {
+    Order.belongsTo(models.User, { foreignKey: 'usuario_id' });
+    Order.belongsToMany(models.Product, { through: 'OrderProducts' });
+  };
 
-Order.belongsTo(User, {foreignKey: 'usuario_id'});
-Order.belongsToMany(Product, {through: 'OrderProducts'});
+  return Order;
+};
 
-module.exports = Order;

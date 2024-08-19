@@ -1,13 +1,7 @@
-const {Sequelize} = require('sequelize');
+const { Sequelize } = require('sequelize');
 const config = require('../config/config');
-const User = require('./user');
-const Product = require('./product');
-const Category = require('./category');
-const Order = require('./order');
-const Cart = require('./cart');
-const Payment = require('./payment');
-const Review = require('./review');
 
+// Crear una instancia de Sequelize utilizando la configuración de desarrollo
 const sequelize = new Sequelize(
   config.development.database,
   config.development.username,
@@ -18,25 +12,38 @@ const sequelize = new Sequelize(
   }
 );
 
-// Definir relaciones
-Product.belongsTo(Category, {foreignKey: 'categoria_id'});
-Category.hasMany(Product, {foreignKey: 'categoria_id'});
+// Importar los modelos
+const User = require('./user')(sequelize, Sequelize.DataTypes);
+const Product = require('./product')(sequelize, Sequelize.DataTypes);
+const Category = require('./category')(sequelize, Sequelize.DataTypes);
+const Order = require('./order')(sequelize, Sequelize.DataTypes);
+const Cart = require('./cart')(sequelize, Sequelize.DataTypes);
+const Payment = require('./payment')(sequelize, Sequelize.DataTypes);
+const Review = require('./review')(sequelize, Sequelize.DataTypes);
 
-Order.belongsTo(User, {foreignKey: 'usuario_id'});
-Order.belongsToMany(Product, {through: 'OrderProducts'});
+// Definir relaciones entre los modelos
+Product.belongsTo(Category, { foreignKey: 'categoria_id' });
+Category.hasMany(Product, { foreignKey: 'categoria_id' });
 
-Cart.belongsTo(User, {foreignKey: 'usuario_id'});
-Cart.belongsToMany(Product, {through: 'CartItems'});
+Order.belongsTo(User, { foreignKey: 'usuario_id' });
+Order.belongsToMany(Product, { through: 'OrderProducts' });
 
-Review.belongsTo(User, {foreignKey: 'usuario_id'});
-Review.belongsTo(Product, {foreignKey: 'producto_id'});
+Cart.belongsTo(User, { foreignKey: 'usuario_id' });
+Cart.belongsToMany(Product, { through: 'CartItems' });
 
-Payment.belongsTo(Order, {foreignKey: 'orden_id'});
+Review.belongsTo(User, { foreignKey: 'usuario_id' });
+Review.belongsTo(Product, { foreignKey: 'producto_id' });
+
+Payment.belongsTo(Order, { foreignKey: 'orden_id' });
 
 // Sincronizar los modelos con la base de datos
-sequelize.sync().then(r => {
+sequelize.sync().then(() => {
   console.log('Tablas sincronizadas');
+}).catch((error) => {
+  console.error('Error al sincronizar las tablas:', error);
 });
 
-module.exports = sequelize;
+// Exportar la instancia de sequelize y los modelos
+module.exports = { sequelize, User, Product, Category, Order, Cart, Payment, Review };
+
 
