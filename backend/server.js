@@ -12,7 +12,8 @@ import orderDetailsRoutes from './routes/orderDetailsRoutes.js';
 import shippingAddressRoutes from './routes/shippingAddressRoutes.js';
 import cartItemRoutes from './routes/cartItemRoutes.js';
 import cartRoutes from './routes/cartRoutes.js';
-import "./models/user.js";
+import authRoutes from "./routes/authRoutes.js";
+/*import "./models/user.js";
 import "./models/product.js";
 import "./models/category.js";
 import "./models/order.js";
@@ -21,7 +22,7 @@ import "./models/review.js";
 import "./models/carts.js";
 import "./models/orderDetails.js";
 import "./models/shippingAddress.js";
-import "./models/cartItems.js";
+import "./models/cartItems.js";*/
 
 
 dotenv.config();
@@ -39,6 +40,7 @@ app.use('/api/order-details', orderDetailsRoutes);
 app.use('/api/shipping-addresses', shippingAddressRoutes);
 app.use('/api/cart-items', cartItemRoutes);
 app.use('/api/carts', cartRoutes);
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 3000;
 await sequelize.sync({force: false});
