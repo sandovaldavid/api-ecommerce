@@ -1,32 +1,21 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('./index');
+const User = require('./user');
+const Product = require('./product');
 
-const Product = sequelize.define('Product', {
+const Review = sequelize.define('Review', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  nombre: {
-    type: DataTypes.STRING,
+  rating: {
+    type: DataTypes.INTEGER,
     allowNull: false,
   },
-  descripcion: {
+  review_text: {
     type: DataTypes.TEXT,
     allowNull: true,
-  },
-  precio: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-  },
-  stock: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    defaultValue: 0,
-  },
-  categoria_id: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
   },
   created_at: {
     type: DataTypes.DATE,
@@ -40,4 +29,7 @@ const Product = sequelize.define('Product', {
   timestamps: false,
 });
 
-module.exports = Product;
+Review.belongsTo(User, { foreignKey: 'usuario_id' });
+Review.belongsTo(Product, { foreignKey: 'producto_id' });
+
+module.exports = Review;
