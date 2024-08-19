@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-const { DataTypes } = require('sequelize');
-=======
 const {DataTypes} = require('sequelize');
->>>>>>> 0a617c9ecd3d71cd615d64436f6b633f50d9ff79
 const sequelize = require('./index');
 
 const Product = sequelize.define('Product', {
@@ -44,8 +40,4 @@ const Product = sequelize.define('Product', {
   timestamps: false,
 });
 
-<<<<<<< HEAD
 module.exports = Product;
-=======
-module.exports = Product;
->>>>>>> 0a617c9ecd3d71cd615d64436f6b633f50d9ff79
