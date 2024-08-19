@@ -34,7 +34,9 @@ Review.belongsTo(Product, {foreignKey: 'producto_id'});
 Payment.belongsTo(Order, {foreignKey: 'orden_id'});
 
 // Sincronizar los modelos con la base de datos
-sequelize.sync();
+sequelize.sync().then(r => {
+  console.log('Tablas sincronizadas');
+});
 
 module.exports = sequelize;
 
