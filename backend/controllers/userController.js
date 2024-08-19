@@ -81,7 +81,6 @@ export const deleteUser = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
   try {
-    const {id} = req.params;
     const user = await User.findAll();
     if (!user) {
       return res.status(404).json({error: 'User not found'});
