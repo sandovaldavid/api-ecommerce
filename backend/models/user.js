@@ -1,6 +1,5 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './index.js';
-import bcrypt from 'bcryptjs';
 import uid2 from 'uid2';
 
 const User = sequelize.define('User', {
@@ -36,7 +35,7 @@ const User = sequelize.define('User', {
 }, {
   timestamps: false,
   hooks: {
-    // Hook para encriptar la contraseña antes de crear un usuario
+    // Hook para añadir un UID único antes de crear un usuario
     beforeCreate: async (user) => {
       // Generar un UID único para el campo ID
       user.id = uid2(32);  // Genera un UID de 32 caracteres
