@@ -36,7 +36,8 @@ export const register = async (req, res) => {
       });
       
       // Asociar los roles encontrados al usuario usando la tabla intermedia
-      await newUser.addRoles(foundRoles); // `addRoles` es un método generado por Sequelize para relaciones "muchos a muchos"
+      await newUser.addRoles(foundRoles);
+      /*addRoles es un metodo generado por Sequelize para la tabla intermedia muchos a muchos*/
     } else {
       // Si no se especifican roles, asignar el rol predeterminado "user"
       const defaultRole = await Role.findOne({
@@ -46,7 +47,7 @@ export const register = async (req, res) => {
       });
       
       // Asociar el rol predeterminado al usuario usando la tabla intermedia
-      await newUser.addRole(defaultRole); // `addRole` es un método generado por Sequelize
+      await newUser.addRole(defaultRole); /*addRoles es un metodo generado por Sequelize */
     }
     
     // Generar el token JWT
