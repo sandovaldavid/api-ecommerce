@@ -44,10 +44,5 @@ const User = sequelize.define('User', {
   }
 });
 
-// Método para verificar la contraseña
-User.prototype.checkPassword = function (password) {
-  return bcrypt.compare(password, this.hashed_password);  // Comparar la contraseña proporcionada con la encriptada
-};
-
 export default User;
 
