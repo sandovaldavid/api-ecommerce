@@ -1,11 +1,12 @@
 import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import Role from "../models/roles.js";
 
 // Método para el registro de usuarios
 export const register = async (req, res) => {
   try {
-    const {nombre, email, password} = req.body;
+    const {nombre, email, password, roles} = req.body;
     
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({where: {email}});
@@ -24,6 +25,29 @@ export const register = async (req, res) => {
       email,
       hashed_password: hashedPassword
     });
+    
+    // Verificación de roles
+    if (roles) {
+      // Buscar los roles que coinciden con los nombres proporcionados en el array `roles`
+      const foundRoles = await Role.findAll({
+        where: {
+          name: roles // Esto equivale a `$in` en MongoDB
+        }
+      });
+      
+      // Asociar los roles encontrados al usuario usando la tabla intermedia
+      await newUser.addRoles(foundRoles); // `addRoles` es un método generado por Sequelize para relaciones "muchos a muchos"
+    } else {
+      // Si no se especifican roles, asignar el rol predeterminado "user"
+      const defaultRole = await Role.findOne({
+        where: {
+          name: "user"
+        }
+      });
+      
+      // Asociar el rol predeterminado al usuario usando la tabla intermedia
+      await newUser.addRole(defaultRole); // `addRole` es un método generado por Sequelize
+    }
     
     // Generar el token JWT
     const token = jwt.sign({id: newUser.id}, process.env.JWT_SECRET, {expiresIn: '1h'});
