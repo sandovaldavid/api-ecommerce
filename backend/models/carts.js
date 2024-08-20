@@ -3,19 +3,11 @@ import {sequelize} from './index.js';
 import User from './user.js';
 import Product from './product.js';
 
-const Review = sequelize.define('Review', {
+const Carts = sequelize.define('Carts', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
-  },
-  rating: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-  },
-  review_text: {
-    type: DataTypes.TEXT,
-    allowNull: true,
   },
   created_at: {
     type: DataTypes.DATE,
@@ -29,9 +21,7 @@ const Review = sequelize.define('Review', {
   timestamps: false,
 });
 
-Review.belongsTo(User, {foreignKey: 'usuario_id'});
-Review.belongsTo(Product, {foreignKey: 'producto_id'});
+Carts.belongsTo(User, {foreignKey: 'usuario_id'});
+Carts.belongsToMany(Product, {through: 'CartItems'});
 
-export default Review;
-
-
+export default Carts;

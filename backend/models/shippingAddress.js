@@ -1,31 +1,31 @@
 import {DataTypes} from 'sequelize';
-import {sequelize} from './index.js';  // Importa sequelize desde index.js
+import {sequelize} from './index.js';
+import User from './user.js';
 
-const Product = sequelize.define('Product', {
+const ShippingAddress = sequelize.define('ShippingAddress', {
   id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true,
   },
-  nombre: {
+  direccion: {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  descripcion: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  precio: {
-    type: DataTypes.DECIMAL(10, 2),
+  ciudad: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
-  stock: {
-    type: DataTypes.INTEGER,
+  estado_provincia: {
+    type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: 0,
   },
-  categoria_id: {
-    type: DataTypes.INTEGER,
+  codigo_postal: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  pais: {
+    type: DataTypes.STRING,
     allowNull: false,
   },
   created_at: {
@@ -40,4 +40,6 @@ const Product = sequelize.define('Product', {
   timestamps: false,
 });
 
-export default Product;
+ShippingAddress.belongsTo(User, {foreignKey: 'usuario_id'});
+
+export default ShippingAddress;
