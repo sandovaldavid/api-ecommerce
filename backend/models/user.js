@@ -20,6 +20,7 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  //TODO: crear tabla roles y relacionarla con la tabla usuarios
   role: {
     type: DataTypes.ENUM('cliente', 'administrador'),
     defaultValue: 'cliente',

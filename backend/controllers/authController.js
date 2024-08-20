@@ -12,10 +12,12 @@ export const register = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({error: 'User already exists'});
     }
-    
+    //TODO: Mover la encriptacion de la contraseña al modelo User.js
+    //*************************************************************
     // Encriptar la contraseña usando bcrypt
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
+    //*************************************************************
     // Crear el usuario con la contraseña encriptada
     const newUser = await User.create({
       nombre,
