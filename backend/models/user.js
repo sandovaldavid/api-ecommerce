@@ -1,6 +1,7 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './index.js';
 import uid2 from 'uid2';
+import Roles from "./roles.js";
 
 const User = sequelize.define('User', {
   id: {
@@ -20,11 +21,6 @@ const User = sequelize.define('User', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  //TODO: crear tabla roles y relacionarla con la tabla usuarios
-  role: {
-    type: DataTypes.ENUM('cliente', 'administrador'),
-    defaultValue: 'cliente',
-  },
   created_at: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
@@ -43,6 +39,8 @@ const User = sequelize.define('User', {
     }
   }
 });
-
+// Relación muchos a muchos entre User y Roles
+User.belongsToMany(Roles, {through: 'UserRoles'});
+Roles.belongsToMany(User, {through: 'UserRoles'});
 export default User;
 
