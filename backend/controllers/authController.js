@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import Role from "../models/roles.js";
 
-// Método para el registro de usuarios
+// Metodo de registro de Comentarios
 export const register = async (req, res) => {
   try {
     const {nombre, email, password, roles} = req.body;
@@ -60,7 +60,7 @@ export const register = async (req, res) => {
   }
 };
 
-// Método para el inicio de sesión
+// Metodo de inicio de sesión
 export const login = async (req, res) => {
   try {
     const {email, password} = req.body;
