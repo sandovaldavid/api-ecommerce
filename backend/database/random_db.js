@@ -23,25 +23,6 @@ async function generateRandomData() {
     {id: faker.string.uuid(), name: 'admin'},
     {id: faker.string.uuid(), name: 'user'},
     {id: faker.string.uuid(), name: 'moderator'},
-    {id: faker.string.uuid(), name: 'guest'},
-    {id: faker.string.uuid(), name: 'banned'},
-    {id: faker.string.uuid(), name: 'suspended'},
-    {id: faker.string.uuid(), name: 'premium'},
-    {id: faker.string.uuid(), name: 'free'},
-    {id: faker.string.uuid(), name: 'trial'},
-    {id: faker.string.uuid(), name: 'developer'},
-    {id: faker.string.uuid(), name: 'tester'},
-    {id: faker.string.uuid(), name: 'editor'},
-    {id: faker.string.uuid(), name: 'author'},
-    {id: faker.string.uuid(), name: 'contributor'},
-    {id: faker.string.uuid(), name: 'subscriber'},
-    {id: faker.string.uuid(), name: 'anonymous'},
-    {id: faker.string.uuid(), name: 'bot'},
-    {id: faker.string.uuid(), name: 'spammer'},
-    {id: faker.string.uuid(), name: 'scammer'},
-    {id: faker.string.uuid(), name: 'hacker'},
-    {id: faker.string.uuid(), name: 'pirate'},
-    {id: faker.string.uuid(), name: 'root'},
   ];
   
   // Crear roles predeterminados si no existen
@@ -79,7 +60,7 @@ async function generateRandomData() {
 
 // Generar Usuarios y asignarles roles
   const usersCreated = []
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 10; i) {
     const password = faker.internet.password();
     const newUser = await User.create({
       id: faker.string.uuid(),
@@ -94,19 +75,22 @@ async function generateRandomData() {
     // Asignar roles al usuario
     const roles = await Roles.findAll()
     const randomRole_1 = roles[faker.number.int({min: 0, max: defaultRoles.length - 1})];
-    await newUser.addRole(randomRole_1.id);  // Asegúrate de usar solo el id del rol
     const addSecondRole = faker.datatype.boolean();
-    let randomRole_2;
-    if (addSecondRole) {
-      randomRole_2 = roles[faker.number.int({min: 0, max: defaultRoles.length - 1})];
-      await newUser.addRole(randomRole_2.id);
+    if (randomRole_1.name === 'user') {
+    } else if (addSecondRole) {
+      const randomRole_2 = roles[faker.number.int({min: 0, max: defaultRoles.length - 1})];
+      if (randomRole_2.name === 'user') {
+        continue;
+      } else {
+        await newUser.addRole(randomRole_2.id); // Asegúrate de usar solo el id del rol
+        usersCreated.push({email: newUser.email, password: password, roles: [randomRole_1.name, randomRole_2.name]});
+        i++;
+        continue;
+      }
     }
-    // Guardar los datos de los usuarios creados con sus roles
-    if (addSecondRole) {
-      usersCreated.push({email: newUser.email, password: password, roles: [randomRole_1.name, randomRole_2.name]});
-    } else {
-      usersCreated.push({email: newUser.email, password: password, roles: [randomRole_1.name]});
-    }
+    await newUser.addRole(randomRole_1.id); // Asegúrate de usar solo el id del rol
+    usersCreated.push({email: newUser.email, password: password, roles: randomRole_1.name});
+    i++;
   }
   const allUsers = await User.findAll();
   
