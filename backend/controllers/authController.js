@@ -6,24 +6,21 @@ import Role from "../models/roles.js";
 // Metodo de registro de Comentarios
 export const register = async (req, res) => {
   try {
-    const {nombre, email, password, roles} = req.body;
+    const {firstName, secondName, lastName_father, lastName_mother, email, password, roles} = req.body;
     
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({where: {email}});
     if (existingUser) {
       return res.status(400).json({error: 'User already exists'});
     }
-    //TODO: Mover la encriptacion de la contraseña al modelo User.js
-    //*************************************************************
-    // Encriptar la contraseña usando bcrypt
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    //*************************************************************
     // Crear el usuario con la contraseña encriptada
     const newUser = await User.create({
-      nombre,
+      firstName,
+      secondName,
+      lastName_father,
+      lastName_mother,
       email,
-      hashed_password: hashedPassword
+      hashed_password: password
     });
     
     // Verificación de roles
