@@ -1,10 +1,10 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './index.js';
+import uid2 from "uid2";
 
 const Category = sequelize.define('Category', {
   id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.STRING,
     primaryKey: true,
   },
   nombre: {
@@ -25,6 +25,13 @@ const Category = sequelize.define('Category', {
   },
 }, {
   timestamps: false,
+  hooks: {
+    // Hook para añadir un UID único antes de crear un usuario
+    beforeCreate: async (user) => {
+      // Generar un UID único para el campo ID
+      user.id = uid2(32);  // Genera un UID de 32 caracteres
+    }
+  }
 });
 
 export default Category;

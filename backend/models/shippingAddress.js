@@ -1,11 +1,11 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './index.js';
 import User from './user.js';
+import uid2 from "uid2";
 
 const ShippingAddress = sequelize.define('ShippingAddress', {
   id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.STRING,
     primaryKey: true,
   },
   direccion: {
@@ -38,6 +38,13 @@ const ShippingAddress = sequelize.define('ShippingAddress', {
   },
 }, {
   timestamps: false,
+  hooks: {
+    // Hook para añadir un UID único antes de crear un usuario
+    beforeCreate: async (user) => {
+      // Generar un UID único para el campo ID
+      user.id = uid2(32);  // Genera un UID de 32 caracteres
+    }
+  }
 });
 
 ShippingAddress.belongsTo(User, {foreignKey: 'usuario_id'});
