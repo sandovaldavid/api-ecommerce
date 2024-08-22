@@ -3,7 +3,6 @@ import {sequelize} from './index.js';
 import Cart from './cart.js';
 import Product from './product.js';
 import uid2 from "uid2";
-import bcrypt from "bcryptjs";
 
 const CartItem = sequelize.define('CartItems', {
   id: {
