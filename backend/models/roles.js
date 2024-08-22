@@ -10,16 +10,51 @@ const Roles = sequelize.define('Roles', {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,  // Asegúrate de que los nombres de los roles sean únicos
   },
-  
 }, {
-  hooks: {
-    // Hook para añadir un UID único antes de crear un usuario
-    beforeCreate: async (role) => {
-      // Generar un UID único para el campo ID
-      role.id = uid2(32);  // Genera un UID de 32 caracteres
-    }
-  }
+  timestamps: false,
 });
 
+const defaultRoles = [
+  {id: uid2(32), name: 'admin'},
+  {id: uid2(32), name: 'user'},
+  {id: uid2(32), name: 'moderator'},
+  {id: uid2(32), name: 'guest'},
+  {id: uid2(32), name: 'banned'},
+  {id: uid2(32), name: 'suspended'},
+  {id: uid2(32), name: 'premium'},
+  {id: uid2(32), name: 'free'},
+  {id: uid2(32), name: 'trial'},
+  {id: uid2(32), name: 'developer'},
+  {id: uid2(32), name: 'tester'},
+  {id: uid2(32), name: 'editor'},
+  {id: uid2(32), name: 'author'},
+  {id: uid2(32), name: 'contributor'},
+  {id: uid2(32), name: 'subscriber'},
+  {id: uid2(32), name: 'anonymous'},
+  {id: uid2(32), name: 'bot'},
+  {id: uid2(32), name: 'spammer'},
+  {id: uid2(32), name: 'scammer'},
+  {id: uid2(32), name: 'hacker'},
+  {id: uid2(32), name: 'pirate'},
+  {id: uid2(32), name: 'root'},
+];
+
+// Hook para crear roles predeterminados si no existen
+Roles.afterSync(async () => {
+  try {
+    for (const role of defaultRoles) {
+      // Verifica si el rol ya existe en la base de datos
+      const existingRole = await Roles.findOne({where: {name: role.name}});
+      if (!existingRole) {
+        // Si el rol no existe, lo creamos
+        await Roles.create(role);
+      }
+    }
+    console.log('Roles predeterminados verificados y creados.');
+  } catch (error) {
+    console.error('Error al verificar o crear roles predeterminados:', error);
+  }
+});
 export default Roles;
