@@ -25,7 +25,8 @@ import "./models/carts.js";
 import "./models/orderDetails.js";
 import "./models/shippingAddress.js";
 import "./models/cartItems.js";
-import "./models/roles.js"*/
+import "./models/roles.js";
+import "./models/userRoles.js";*/
 
 dotenv.config();
 
