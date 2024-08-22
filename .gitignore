@@ -41,3 +41,5 @@ next-env.d.ts
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
+#backend
+backend/database/users_db.json
