@@ -1,25 +1,21 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './index.js';
-import Order from './order.js';
+import User from './user.js';
 import Product from './product.js';
 import uid2 from "uid2";
 
-const OrderDetails = sequelize.define('OrderDetails', {
+const Cart = sequelize.define('Carts', {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
   },
-  cantidad: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
+  created_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
   },
-  precio_unitario: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
-  },
-  subtotal: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false,
+  updated_at: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
   },
 }, {
   timestamps: false,
@@ -32,7 +28,7 @@ const OrderDetails = sequelize.define('OrderDetails', {
   }
 });
 
-OrderDetails.belongsTo(Order, {foreignKey: 'orden_id'});
-OrderDetails.belongsTo(Product, {foreignKey: 'producto_id'});
+Cart.belongsTo(User, {foreignKey: 'usuario_id'});
+Cart.belongsToMany(Product, {through: 'CartItems'});
 
-export default OrderDetails;
+export default Cart;

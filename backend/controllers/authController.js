@@ -1,27 +1,50 @@
-import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import {Roles, User} from "../models/userRoles.js";
 
-// Método para el registro de usuarios
+// Metodo de registro de Comentarios
 export const register = async (req, res) => {
   try {
-    const {nombre, email, password} = req.body;
+    const {firstName, secondName, lastName_father, lastName_mother, email, password, roles} = req.body;
     
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({where: {email}});
     if (existingUser) {
       return res.status(400).json({error: 'User already exists'});
     }
-    
-    // Encriptar la contraseña usando bcrypt
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
     // Crear el usuario con la contraseña encriptada
     const newUser = await User.create({
-      nombre,
+      firstName,
+      secondName,
+      lastName_father,
+      lastName_mother,
       email,
-      hashed_password: hashedPassword
+      hashed_password: password
     });
+    
+    // Verificación de roles
+    if (roles) {
+      // Buscar los roles que coinciden con los nombres proporcionados en el array `roles`
+      const foundRoles = await Roles.findAll({
+        where: {
+          name: roles // Esto equivale a `$in` en MongoDB
+        }
+      });
+      
+      // Asociar los roles encontrados al usuario usando la tabla intermedia
+      await newUser.addRole(foundRoles);
+      /*addRoles es un metodo generado por Sequelize para la tabla intermedia muchos a muchos*/
+    } else {
+      // Si no se especifican roles, asignar el rol predeterminado "user"
+      const defaultRole = await Roles.findOne({
+        where: {
+          name: "user"
+        }
+      });
+      
+      // Asociar el rol predeterminado al usuario usando la tabla intermedia
+      await newUser.addRole(defaultRole); /*addRoles es un metodo generado por Sequelize */
+    }
     
     // Generar el token JWT
     const token = jwt.sign({id: newUser.id}, process.env.JWT_SECRET, {expiresIn: '1h'});
@@ -33,7 +56,7 @@ export const register = async (req, res) => {
   }
 };
 
-// Método para el inicio de sesión
+// Metodo de inicio de sesión
 export const login = async (req, res) => {
   try {
     const {email, password} = req.body;

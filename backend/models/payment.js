@@ -1,11 +1,11 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './index.js';
 import Order from './order.js';
+import uid2 from "uid2";
 
 const Payment = sequelize.define('Payment', {
   id: {
-    type: DataTypes.INTEGER,
-    autoIncrement: true,
+    type: DataTypes.STRING,
     primaryKey: true,
   },
   payment_date: {
@@ -35,6 +35,13 @@ const Payment = sequelize.define('Payment', {
   },
 }, {
   timestamps: false,
+  hooks: {
+    // Hook para añadir un UID único antes de crear un usuario
+    beforeCreate: async (user) => {
+      // Generar un UID único para el campo ID
+      user.id = uid2(32);  // Genera un UID de 32 caracteres
+    }
+  }
 });
 
 Payment.belongsTo(Order, {foreignKey: 'orden_id'});

@@ -2,7 +2,7 @@
 
 # dependencies
 backend/node_modules
-frontend/node_modules
+client/node_modules
 /.pnp
 .pnp.js
 .yarn/install-state.gz
@@ -41,4 +41,5 @@ next-env.d.ts
 /workspace.xml
 # Editor-based HTTP Client requests
 /httpRequests/
-.vercel
+#backend
+backend/database/users_db.json
