@@ -1,7 +1,6 @@
-import User from '../models/user.js';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import Role from "../models/roles.js";
+import {Roles, User} from "../models/userRoles.js";
 
 // Metodo de registro de Comentarios
 export const register = async (req, res) => {
@@ -26,18 +25,18 @@ export const register = async (req, res) => {
     // Verificación de roles
     if (roles) {
       // Buscar los roles que coinciden con los nombres proporcionados en el array `roles`
-      const foundRoles = await Role.findAll({
+      const foundRoles = await Roles.findAll({
         where: {
           name: roles // Esto equivale a `$in` en MongoDB
         }
       });
       
       // Asociar los roles encontrados al usuario usando la tabla intermedia
-      await newUser.addRoles(foundRoles);
+      await newUser.addRole(foundRoles);
       /*addRoles es un metodo generado por Sequelize para la tabla intermedia muchos a muchos*/
     } else {
       // Si no se especifican roles, asignar el rol predeterminado "user"
-      const defaultRole = await Role.findOne({
+      const defaultRole = await Roles.findOne({
         where: {
           name: "user"
         }
