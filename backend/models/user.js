@@ -1,14 +1,26 @@
 import {DataTypes} from 'sequelize';
 import {sequelize} from './index.js';
 import uid2 from 'uid2';
-import Roles from "./roles.js";
+import bcrypt from "bcryptjs";
 
 const User = sequelize.define('User', {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
   },
-  nombre: {
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  secondName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  lastName_father: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  lastName_mother: {
     type: DataTypes.STRING,
     allowNull: false,
   },
@@ -36,11 +48,11 @@ const User = sequelize.define('User', {
     beforeCreate: async (user) => {
       // Generar un UID único para el campo ID
       user.id = uid2(32);  // Genera un UID de 32 caracteres
+      // Encriptar la contraseña usando bcrypt
+      const salt = await bcrypt.genSalt(10);
+      user.hashed_password = await bcrypt.hash(user.hashed_password, salt);
     }
   }
 });
-// Relación muchos a muchos entre User y Roles
-User.belongsToMany(Roles, {through: 'UserRoles'});
-Roles.belongsToMany(User, {through: 'UserRoles'});
 export default User;
 
