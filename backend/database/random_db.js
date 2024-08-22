@@ -1,6 +1,8 @@
 import {faker} from '@faker-js/faker';
 import {sequelize} from '../models/index.js';  // Importa tu instancia de Sequelize
 import {Roles, User} from '../models/userRoles.js';
+import {writeFile} from 'fs';
+import path from 'path';
 import Order from '../models/order.js';
 import OrderDetails from '../models/orderDetails.js';
 import Payment from '../models/payment.js';
@@ -88,16 +90,22 @@ async function generateRandomData() {
       email: faker.internet.email(),
       hashed_password: password,
     });
-    usersCreated.push({email: newUser.email, password: password})
     
     // Asignar roles al usuario
     const roles = await Roles.findAll()
     const randomRole_1 = roles[faker.number.int({min: 0, max: defaultRoles.length - 1})];
     await newUser.addRole(randomRole_1.id);  // Asegúrate de usar solo el id del rol
     const addSecondRole = faker.datatype.boolean();
+    let randomRole_2;
     if (addSecondRole) {
-      const randomRole_2 = roles[faker.number.int({min: 0, max: defaultRoles.length - 1})];
+      randomRole_2 = roles[faker.number.int({min: 0, max: defaultRoles.length - 1})];
       await newUser.addRole(randomRole_2.id);
+    }
+    // Guardar los datos de los usuarios creados con sus roles
+    if (addSecondRole) {
+      usersCreated.push({email: newUser.email, password: password, roles: [randomRole_1.name, randomRole_2.name]});
+    } else {
+      usersCreated.push({email: newUser.email, password: password, roles: [randomRole_1.name]});
     }
   }
   const allUsers = await User.findAll();
@@ -192,9 +200,15 @@ async function generateRandomData() {
     });
   }
   await CartItems.bulkCreate(cartItemsData);
-  console.log("-----------------------| Usuarios Creados |-----------------------")
-  console.log(JSON.stringify(usersCreated))
-  console.log('Datos aleatorios generados correctamente.');
+  const jsonData = JSON.stringify(usersCreated, null, 2);
+  const filePath = path.join(process.cwd(), "database", 'users_db.json');
+  writeFile(filePath, jsonData, (err) => {
+    if (err) {
+      console.error('Error al escribir el archivo JSON:', err);
+    } else {
+      console.log('Archivo JSON creado con éxito.');
+    }
+  });
 }
 
 // Ejecutar la función para generar los datos aleatorios
