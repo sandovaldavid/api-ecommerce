@@ -21,7 +21,7 @@ import "./models/category.js";
 import "./models/order.js";
 import "./models/payment.js";
 import "./models/review.js";
-import "./models/carts.js";
+import "./models/cart.js";
 import "./models/orderDetails.js";
 import "./models/shippingAddress.js";
 import "./models/cartItems.js";
