@@ -1,5 +1,4 @@
-import Roles from "../models/roles.js";
-import User from "../models/user.js";
+import { User, Roles } from "../models/userRoles.js";
 
 export const checkDuplicateEmail = async (req, res, next) => {
   const email = req.body.email;
@@ -31,7 +30,7 @@ export const checkRolesExisted = async (req, res, next) => {
         name: "user"
       }
     });
-    req.body.roles = [defaultRole.name];
+    req.body.roles = [defaultRole.id];
   }
   next();
 };

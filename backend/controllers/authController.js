@@ -13,7 +13,6 @@ export const register = async (req, res) => {
       lastName_mother: lastNameMother,
       email,
       password,
-      roles
     } = req.body;
     
     // Crear el usuario con la contraseña encriptada
@@ -25,7 +24,7 @@ export const register = async (req, res) => {
       email,
       hashed_password: password
     });
-    await newUser.addRole(roles);
+    await newUser.addRole(req.body.roles);
     
     // Generar el token JWT
     const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
