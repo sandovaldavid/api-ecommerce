@@ -1,5 +1,5 @@
-import {Sequelize} from 'sequelize';
-import config from '../config/config.js';
+import { Sequelize } from "sequelize";
+import config from "../config/config.js";
 
 export const sequelize = new Sequelize(
   config.development.database,
@@ -11,7 +11,3 @@ export const sequelize = new Sequelize(
     dialect: config.development.dialect,
   }
 );
-
-
-
-

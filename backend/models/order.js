@@ -1,9 +1,9 @@
-import {DataTypes} from 'sequelize';
-import {sequelize} from './index.js';
-import User from './user.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "./index.js";
+import User from "./user.js";
 import uid2 from "uid2";
 
-const Order = sequelize.define('Order', {
+const Order = sequelize.define("Order", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -13,8 +13,8 @@ const Order = sequelize.define('Order', {
     allowNull: false,
   },
   estado: {
-    type: DataTypes.ENUM('pendiente', 'enviado', 'entregado'),
-    defaultValue: 'pendiente',
+    type: DataTypes.ENUM("pendiente", "enviado", "entregado"),
+    defaultValue: "pendiente",
   },
   created_at: {
     type: DataTypes.DATE,
@@ -28,14 +28,13 @@ const Order = sequelize.define('Order', {
   timestamps: false,
   hooks: {
     // Hook para añadir un UID único antes de crear un usuario
-    beforeCreate: async (user) => {
+    beforeCreate: async(user) => {
       // Generar un UID único para el campo ID
       user.id = uid2(32);  // Genera un UID de 32 caracteres
     }
   }
 });
 
-Order.belongsTo(User, {foreignKey: 'usuario_id'});
+Order.belongsTo(User, { foreignKey: "usuario_id" });
 
 export default Order;
-
