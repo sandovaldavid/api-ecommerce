@@ -1,2 +1,3 @@
 import * as authJwt from "./authJwt.js";
-export { authJwt };
+import * as verifySignUp from "./verifySignUp.js";
+export { authJwt,verifySignUp };
