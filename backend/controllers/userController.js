@@ -1,7 +1,7 @@
 import User from "../models/user.js";
 import bcrypt from "bcryptjs";
 
-export const getUserProfile = async(req, res) => {
+export const getUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id);
@@ -14,7 +14,7 @@ export const getUserProfile = async(req, res) => {
   }
 };
 
-export const updateUserProfile = async(req, res) => {
+export const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
     const { nombre, email, password } = req.body;
@@ -39,7 +39,7 @@ export const updateUserProfile = async(req, res) => {
   }
 };
 
-export const deleteUser = async(req, res) => {
+export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id);
@@ -53,7 +53,7 @@ export const deleteUser = async(req, res) => {
   }
 };
 
-export const getAllUsers = async(req, res) => {
+export const getAllUsers = async (req, res) => {
   try {
     const user = await User.findAll();
     if (!user) {

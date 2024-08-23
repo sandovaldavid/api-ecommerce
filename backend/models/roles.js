@@ -23,7 +23,7 @@ const defaultRoles = [
 ];
 
 // Hook para crear roles predeterminados si no existen
-Roles.afterSync(async() => {
+Roles.afterSync(async () => {
   try {
     for (const role of defaultRoles) {
       // Verifica si el rol ya existe en la base de datos

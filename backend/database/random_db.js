@@ -14,7 +14,7 @@ import CartItems from "../models/cartItems.js";
 import Category from "../models/category.js";
 
 // Función para generar datos aleatorios y guardarlos en la base de datos
-async function generateRandomData() {
+async function generateRandomData () {
   // Sincronizar la base de datos
   await sequelize.sync({ alter: true });  // Esto reiniciará la base de datos (opcional)
   

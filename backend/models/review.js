@@ -29,7 +29,7 @@ const Review = sequelize.define("Review", {
   timestamps: false,
   hooks: {
     // Hook para añadir un UID único antes de crear un usuario
-    beforeCreate: async(user) => {
+    beforeCreate: async (user) => {
       // Generar un UID único para el campo ID
       user.id = uid2(32);  // Genera un UID de 32 caracteres
     }

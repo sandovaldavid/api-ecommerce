@@ -45,7 +45,7 @@ const User = sequelize.define("User", {
   timestamps: false,
   hooks: {
     // Hook para añadir un UID único antes de crear un usuario
-    beforeCreate: async(user) => {
+    beforeCreate: async (user) => {
       // Generar un UID único para el campo ID
       user.id = uid2(32);  // Genera un UID de 32 caracteres
       // Encriptar la contraseña usando bcrypt
@@ -55,7 +55,7 @@ const User = sequelize.define("User", {
   }
 });
 
-User.prototype.comparePassword = async function(password, hashedPassword) {
+User.prototype.comparePassword = async function (password, hashedPassword) {
   try {
     return await bcrypt.compare(password, hashedPassword);
   } catch (error) {

@@ -1,6 +1,6 @@
 import OrderDetails from "../models/orderDetails.js";
 
-export const createOrderDetails = async(req, res) => {
+export const createOrderDetails = async (req, res) => {
   try {
     const { orden_id: ordenId, producto_id: productoId, cantidad, precio_unitario: precioUnitario } = req.body;
     const subtotal = cantidad * precioUnitario;
@@ -11,7 +11,7 @@ export const createOrderDetails = async(req, res) => {
   }
 };
 
-export const getOrderDetailsByOrderId = async(req, res) => {
+export const getOrderDetailsByOrderId = async (req, res) => {
   try {
     const { orden_id: ordenId } = req.params;
     const orderDetails = await OrderDetails.findAll({ where: { orden_id: ordenId } });

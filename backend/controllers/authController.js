@@ -3,7 +3,7 @@ import { Roles, User } from "../models/userRoles.js";
 import config from "../config/config.js";
 
 // Metodo de registro de Comentarios
-export const register = async(req, res) => {
+export const register = async (req, res) => {
   try {
     const { firstName, secondName, lastName_father: lastNameFather, lastName_mother: lastNameMother, email, password, roles } = req.body;
     
@@ -57,7 +57,7 @@ export const register = async(req, res) => {
 };
 
 // Metodo de inicio de sesión
-export const login = async(req, res) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
     // Buscar al usuario por correo electrónico

@@ -1,6 +1,6 @@
 import CartItem from "../models/cartItems.js";
 
-export const addCartItem = async(req, res) => {
+export const addCartItem = async (req, res) => {
   try {
     const { cart_id: cartId, product_id: productId, cantidad } = req.body;
     const cartItem = await CartItem.create({ cart_id: cartId, product_id: productId, cantidad });
@@ -10,7 +10,7 @@ export const addCartItem = async(req, res) => {
   }
 };
 
-export const updateCartItem = async(req, res) => {
+export const updateCartItem = async (req, res) => {
   try {
     const { id } = req.params;
     const { cantidad } = req.body;
@@ -26,7 +26,7 @@ export const updateCartItem = async(req, res) => {
   }
 };
 
-export const deleteCartItem = async(req, res) => {
+export const deleteCartItem = async (req, res) => {
   try {
     const { id } = req.params;
     const cartItem = await CartItem.findByPk(id);
@@ -40,7 +40,7 @@ export const deleteCartItem = async(req, res) => {
   }
 };
 
-export const getCartItemsByCartId = async(req, res) => {
+export const getCartItemsByCartId = async (req, res) => {
   try {
     const { cart_id: cartId } = req.params;
     const cartItems = await CartItem.findAll({ where: { cart_id: cartId } });

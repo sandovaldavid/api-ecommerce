@@ -1,6 +1,6 @@
 import Roles from "../models/roles.js";
 
-export const createRole = async(req, res) => {
+export const createRole = async (req, res) => {
   try {
     const { name } = req.body;
     const role = await Roles.create({ name });
@@ -9,7 +9,7 @@ export const createRole = async(req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-export const getAllRoles = async(req, res) => {
+export const getAllRoles = async (req, res) => {
   try {
     const roles = await Roles.findAll();
     if (!roles){

@@ -1,6 +1,6 @@
 import Payment from "../models/payment.js";
 
-export const createPayment = async(req, res) => {
+export const createPayment = async (req, res) => {
   try {
     const { orden_id: ordenId, payment_method: paymentMethod, amount } = req.body;
     const payment = await Payment.create({ orden_id: ordenId, payment_method: paymentMethod, amount });

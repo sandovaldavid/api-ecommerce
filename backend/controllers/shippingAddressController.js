@@ -1,6 +1,6 @@
 import ShippingAddress from "../models/shippingAddress.js";
 
-export const createShippingAddress = async(req, res) => {
+export const createShippingAddress = async (req, res) => {
   try {
     const { usuario_id: usuarioId, direccion, ciudad, estado_provincia: estadoProvincia, codigo_postal: codigoPostal, pais } = req.body;
     const shippingAddress = await ShippingAddress.create({
@@ -17,7 +17,7 @@ export const createShippingAddress = async(req, res) => {
   }
 };
 
-export const getShippingAddressesByUserId = async(req, res) => {
+export const getShippingAddressesByUserId = async (req, res) => {
   try {
     const { usuario_id: usuarioId } = req.params;
     const shippingAddresses = await ShippingAddress.findAll({ where: { usuario_id: usuarioId } });

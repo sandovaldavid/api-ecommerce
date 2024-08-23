@@ -1,6 +1,6 @@
 import Order from "../models/order.js";
 
-export const createOrder = async(req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const { usuario_id: usuarioId, productos, total } = req.body;
     const order = await Order.create({ usuario_id: usuarioId, total });

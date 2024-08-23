@@ -1,6 +1,6 @@
 import Cart from "../models/cart.js";
 
-export const createCart = async(req, res) => {
+export const createCart = async (req, res) => {
   try {
     const { usuario_id: usuarioId } = req.body;
     const cart = await Cart.create({ usuario_id: usuarioId });
@@ -10,7 +10,7 @@ export const createCart = async(req, res) => {
   }
 };
 
-export const getCartById = async(req, res) => {
+export const getCartById = async (req, res) => {
   try {
     const { id } = req.params;
     const cart = await Cart.findByPk(id);
@@ -23,7 +23,7 @@ export const getCartById = async(req, res) => {
   }
 };
 
-export const deleteCart = async(req, res) => {
+export const deleteCart = async (req, res) => {
   try {
     const { id } = req.params;
     const cart = await Cart.findByPk(id);

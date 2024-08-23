@@ -1,6 +1,6 @@
 import Review from "../models/review.js";
 
-export const createReview = async(req, res) => {
+export const createReview = async (req, res) => {
   try {
     const { usuario_id: usuarioId, producto_id: productoId, rating, review_text: reviewText } = req.body;
     const review = await Review.create({ usuario_id: usuarioId, producto_id: productoId, rating, review_text: reviewText });
