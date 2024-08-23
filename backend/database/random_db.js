@@ -75,6 +75,7 @@ async function generateRandomData() {
     // Asignar roles al usuario
     const roles = await Roles.findAll();
     const randomRole1 = roles[faker.number.int({ min: 0, max: defaultRoles.length - 1 })];
+    await newUser.addRole(randomRole1.id); // Asegúrate de usar solo el id del rol
     const addSecondRole = faker.datatype.boolean();
     if (addSecondRole) {
       const randomRole2 = roles[faker.number.int({ min: 0, max: defaultRoles.length - 1 })];
@@ -87,7 +88,6 @@ async function generateRandomData() {
         continue;
       }
     }
-    await newUser.addRole(randomRole1.id); // Asegúrate de usar solo el id del rol
     usersCreated.push({ email: newUser.email, password, roles: randomRole1.name });
     i++;
   }
