@@ -1,11 +1,11 @@
-import Payment from '../models/payment.js';
+import Payment from "../models/payment.js";
 
 export const createPayment = async (req, res) => {
   try {
-    const {orden_id, payment_method, amount} = req.body;
-    const payment = await Payment.create({orden_id, payment_method, amount});
+    const { orden_id: ordenId, payment_method: paymentMethod, amount } = req.body;
+    const payment = await Payment.create({ orden_id: ordenId, payment_method: paymentMethod, amount });
     res.status(201).json(payment);
   } catch (error) {
-    res.status(500).json({error: error.message});
+    res.status(500).json({ error: error.message });
   }
 };

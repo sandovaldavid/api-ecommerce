@@ -1,9 +1,11 @@
-import express from 'express';
-import {getAllProducts, createProduct} from '../controllers/productController.js';
+import express from "express";
+import { getAllProducts, createProduct } from "../controllers/productController.js";
+import { authJwt } from "../middlewares/index.js";
 
 const router = express.Router();
 
-router.get('/', getAllProducts);
-router.post('/', createProduct);
+router.get("/", getAllProducts);
+// noinspection JSCheckFunctionSignatures
+router.post("/",[authJwt.verifyToken, authJwt.isModerator], createProduct);
 
 export default router;

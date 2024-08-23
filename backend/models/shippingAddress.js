@@ -1,9 +1,9 @@
-import {DataTypes} from 'sequelize';
-import {sequelize} from './index.js';
-import User from './user.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "./index.js";
+import User from "./user.js";
 import uid2 from "uid2";
 
-const ShippingAddress = sequelize.define('ShippingAddress', {
+const ShippingAddress = sequelize.define("ShippingAddress", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -47,6 +47,6 @@ const ShippingAddress = sequelize.define('ShippingAddress', {
   }
 });
 
-ShippingAddress.belongsTo(User, {foreignKey: 'usuario_id'});
+ShippingAddress.belongsTo(User, { foreignKey: "usuario_id" });
 
 export default ShippingAddress;

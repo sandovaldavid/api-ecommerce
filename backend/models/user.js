@@ -1,9 +1,9 @@
-import {DataTypes} from 'sequelize';
-import {sequelize} from './index.js';
-import uid2 from 'uid2';
+import { DataTypes } from "sequelize";
+import { sequelize } from "./index.js";
+import uid2 from "uid2";
 import bcrypt from "bcryptjs";
 
-const User = sequelize.define('User', {
+const User = sequelize.define("User", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -54,5 +54,14 @@ const User = sequelize.define('User', {
     }
   }
 });
-export default User;
 
+User.prototype.comparePassword = async function (password, hashedPassword) {
+  try {
+    return await bcrypt.compare(password, hashedPassword);
+  } catch (error) {
+    console.error("Error al comparar la contraseña:", error);
+    throw new Error("Error en la comparación de contraseñas");
+  }
+};
+
+export default User;

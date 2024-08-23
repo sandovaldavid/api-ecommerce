@@ -1,8 +1,8 @@
-import {DataTypes} from 'sequelize';
-import {sequelize} from './index.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "./index.js";
 import uid2 from "uid2";  // Importa sequelize desde index.js
 
-const Product = sequelize.define('Product', {
+const Product = sequelize.define("Product", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -11,7 +11,7 @@ const Product = sequelize.define('Product', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  descripcion: {
+  description: {
     type: DataTypes.TEXT,
     allowNull: true,
   },

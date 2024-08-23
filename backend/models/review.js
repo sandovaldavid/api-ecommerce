@@ -1,10 +1,10 @@
-import {DataTypes} from 'sequelize';
-import {sequelize} from './index.js';
-import User from './user.js';
-import Product from './product.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "./index.js";
+import User from "./user.js";
+import Product from "./product.js";
 import uid2 from "uid2";
 
-const Review = sequelize.define('Review', {
+const Review = sequelize.define("Review", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -36,9 +36,7 @@ const Review = sequelize.define('Review', {
   }
 });
 
-Review.belongsTo(User, {foreignKey: 'usuario_id'});
-Review.belongsTo(Product, {foreignKey: 'producto_id'});
+Review.belongsTo(User, { foreignKey: "usuario_id" });
+Review.belongsTo(Product, { foreignKey: "producto_id" });
 
 export default Review;
-
-

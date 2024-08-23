@@ -1,10 +1,10 @@
-import {DataTypes} from 'sequelize';
-import {sequelize} from './index.js';
-import User from './user.js';
-import Product from './product.js';
+import { DataTypes } from "sequelize";
+import { sequelize } from "./index.js";
+import User from "./user.js";
+import Product from "./product.js";
 import uid2 from "uid2";
 
-const Cart = sequelize.define('Carts', {
+const Cart = sequelize.define("Carts", {
   id: {
     type: DataTypes.STRING,
     primaryKey: true,
@@ -28,7 +28,7 @@ const Cart = sequelize.define('Carts', {
   }
 });
 
-Cart.belongsTo(User, {foreignKey: 'usuario_id'});
-Cart.belongsToMany(Product, {through: 'CartItems'});
+Cart.belongsTo(User, { foreignKey: "usuario_id" });
+Cart.belongsToMany(Product, { through: "CartItems" });
 
 export default Cart;
