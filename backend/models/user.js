@@ -54,4 +54,14 @@ const User = sequelize.define("User", {
     }
   }
 });
+
+User.prototype.comparePassword = async function(password, hashedPassword) {
+  try {
+    return await bcrypt.compare(password, hashedPassword);
+  } catch (error) {
+    console.error("Error al comparar la contraseña:", error);
+    throw new Error("Error en la comparación de contraseñas");
+  }
+};
+
 export default User;

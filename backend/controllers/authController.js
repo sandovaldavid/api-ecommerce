@@ -67,7 +67,7 @@ export const login = async(req, res) => {
     }
     
     // Verificar la contraseña usando bcrypt
-    const isPasswordValid = await bcrypt.compare(password, user.hashed_password);
+    const isPasswordValid = await user.comparePassword(password, user.hashed_password);
     if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
