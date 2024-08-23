@@ -10,6 +10,7 @@ const config = {
     host: process.env.DB_HOST,             // Host de la base de datos
     port: process.env.DB_PORT || 3306,     // Puerto de la base de datos (3306 es el predeterminado para MySQL)
     dialect: "mysql",                      // Dialecto de la base de datos (MySQL en este caso)
+    secret: process.env.JWT_SECRET,        // Secreto para firmar los tokens JWT
   },
   test: {
     username: process.env.DB_USER,

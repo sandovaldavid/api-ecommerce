@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { Roles, User } from "../models/userRoles.js";
+import config from "../config/config.js";
 
 // Metodo de registro de Comentarios
 export const register = async(req, res) => {
@@ -72,7 +73,7 @@ export const login = async(req, res) => {
     }
     
     // Generar el token JWT
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ id: user.id }, config.development.secret, { expiresIn: "1h" });
     
     // Devolver el token
     res.status(200).json({ token });
