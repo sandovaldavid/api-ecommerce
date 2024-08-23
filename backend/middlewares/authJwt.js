@@ -1,0 +1,33 @@
+import jwt from "jsonwebtoken";
+import config from "../config/config.js";
+import { User, Roles } from "../models/userRoles.js";
+
+export const verifyToken = async (req, res, next) => {
+  const token = req.headers["x-access-token"];
+  if (!token) return res.status(403).json({ error: "A token is required for authentication" });
+  try {
+    const decoded = jwt.verify(token, config.development.secret);
+    req.userId = decoded.id;
+    const user = await User.findByPk(req.userId, { attributes: { exclude: ["password"] } });
+    if (!user) return res.status(404).json({ error: "No user found" });
+    next();
+  } catch {
+    return res.status(401).json({ error: "Invalid token" });
+  }
+};
+
+export const isModerator = async (req, res, next) => {
+  const user = await User.findByPk(req.userId);
+  const roles = await user.getRoles();
+  const hasModeratorRole = roles.some(role => role.name === "moderator");
+  if (!hasModeratorRole) return res.status(403).json({ message: "Require Moderator Role" });
+  next();
+};
+
+export const isAdmin = async (req, res, next) => {
+  const user = await User.findByPk(req.userId);
+  const roles = await user.getRoles();
+  const hasModeratorRole = roles.some(role => role.name === "admin");
+  if (!hasModeratorRole) return res.status(403).json({ message: "Require admin Role" });
+  next();
+};
