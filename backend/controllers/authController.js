@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";
 import { Roles, User } from "../models/userRoles.js";
 
 // Metodo de registro de Comentarios
