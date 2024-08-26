@@ -38,23 +38,10 @@ export const register = async (req, res) => {
 
 // Metodo de inicio de sesión
 export const login = async (req, res) => {
+  const userId = req.body.userId;
   try {
-    const { email, password } = req.body;
-    //TODO: Mejorar la lectura del código, coloca las validaciones en el archivo verifySignUp.js
-    // Buscar al usuario por correo electrónico
-    const user = await User.findOne({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-    //TODO: Mejorar la lectura del código, coloca las validaciones en el archivo verifySignUp.js
-    // Verificar la contraseña usando bcrypt
-    const isPasswordValid = await user.comparePassword(password, user.hashed_password);
-    if (!isPasswordValid) {
-      return res.status(401).json({ error: "Invalid email or password" });
-    }
-    
     // Generar el token JWT
-    const token = jwt.sign({ id: user.id }, config.development.secret, { expiresIn: "1h" });
+    const token = jwt.sign({ id: userId }, config.development.secret, { expiresIn: "1h" });
     
     // Devolver el token
     res.status(200).json({ token });
