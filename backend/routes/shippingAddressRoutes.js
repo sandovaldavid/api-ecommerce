@@ -1,9 +1,10 @@
 import express from "express";
-import { createShippingAddress, getShippingAddressesByUserId } from "../controllers/shippingAddressController.js";
+import { createShippingAddress, getShippingAddressesByUserId , getAllShippingAddresses } from "../controllers/shippingAddressController.js";
 
 const router = express.Router();
 
-router.post("/", createShippingAddress);
+router.post("/create/", createShippingAddress);
 router.get("/:usuario_id", getShippingAddressesByUserId);
+router.get("/", getAllShippingAddresses);
 
 export default router;
