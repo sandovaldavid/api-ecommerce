@@ -36,10 +36,18 @@ async function generateRandomData () {
   
     // Generar Categorías
     const categoriesData = [];
+    const usedNames = new Set();
+
     for (let i = 0; i < 5; i++) {
+        let nombre;
+        do {
+            nombre = faker.commerce.department();
+        } while (usedNames.has(nombre));
+
+        usedNames.add(nombre);
         categoriesData.push({
             id: faker.string.uuid(),
-            nombre: faker.commerce.department(),
+            nombre,
             description: faker.lorem.sentence(),
         });
     }
