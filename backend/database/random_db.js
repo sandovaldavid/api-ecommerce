@@ -194,6 +194,7 @@ async function generateRandomData () {
         });
     }
     await CartItems.bulkCreate(cartItemsData);
+    
     const jsonData = JSON.stringify(usersCreated, null, 2);
     const filePath = path.join(process.cwd(), "database", "users_db.json");
     writeFile(filePath, jsonData, (err) => {
@@ -201,11 +202,6 @@ async function generateRandomData () {
             console.error("Error al escribir el archivo JSON:", err);
         } else {
             console.log("Archivo JSON creado con éxito.");
-            let i=1;
-            usersToPrint.forEach(user => {
-                console.log(`User_${i},Email: ${user.email}, Password: ${user.password}, Roles: ${user.roles}`);
-                i++;
-            });
         }
     });
 }
