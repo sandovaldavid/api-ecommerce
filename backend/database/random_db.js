@@ -56,17 +56,26 @@ async function generateRandomData () {
   
     // Generar Productos
     const productsData = [];
+    const usedProductNames = new Set();
+
     for (let i = 0; i < 100; i++) {
+        let productName;
+        do {
+            productName = faker.commerce.productName();
+        } while (usedProductNames.has(productName));
+
+        usedProductNames.add(productName);
         productsData.push({
             id: faker.string.uuid(),
-            nombre: faker.commerce.productName(),
+            nombre: productName,
             url_img: "https://placehold.co/400x300",
             description: faker.commerce.productDescription(),
-            precio: faker.commerce.price(),
+            precio: faker.commerce.price({ min: 10, max: 1000, dec: 2, symbol: "" }),
             stock: faker.number.int({ min: 0, max: 100 }),
-            categoria_id: categoriesData[faker.number.int({ min: 0, max: 14 })].id,
+            categoria_id: categoriesData[faker.number.int({ min: 0, max: categoriesData.length - 1 })].id,
         });
     }
+
     await Product.bulkCreate(productsData);
   
     // Generar Usuarios y asignarles roles
