@@ -162,7 +162,7 @@ async function generateRandomData () {
   
     // Generar Direcciones de Envío
     const shippingAddressesData = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 25; i++) {
         shippingAddressesData.push({
             id: faker.string.uuid(),
             direccion: faker.location.streetAddress(),
