@@ -8,7 +8,7 @@ export const verifyToken = async (req, res, next) => {
     try {
         const decoded = jwt.verify(token, config.development.secret);
         req.userId = decoded.id;
-        const user = await User.findByPk(req.userId, { attributes: { exclude: ["password"] } });
+        const user = await User.findByPk(req.userId, { attributes: { exclude: ["hashed_password"] } });
         if (!user) return res.status(404).json({ error: "No user found" });
         next();
     } catch {
