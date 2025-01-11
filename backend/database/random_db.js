@@ -14,6 +14,7 @@ import CartItems from "../models/cartItems.js";
 import Category from "../models/category.js";
 
 // Función para generar datos aleatorios y guardarlos en la base de datos
+const usersToPrint = [];
 async function generateRandomData () {
     // Sincronizar la base de datos
     await sequelize.sync({ alter: true });  // Esto reiniciará la base de datos (opcional)
@@ -83,11 +84,13 @@ async function generateRandomData () {
                 continue;
             } else {
                 await newUser.addRole(randomRole2.id); // Asegúrate de usar solo el id del rol
+                usersToPrint.push({ email: newUser.email, password, roles: [randomRole1.name, randomRole2.name] });
                 usersCreated.push({ email: newUser.email, password, roles: [randomRole1.name, randomRole2.name] });
                 i++;
                 continue;
             }
         }
+        usersToPrint.push({ email: newUser.email, password, roles: [randomRole1.name] });
         usersCreated.push({ email: newUser.email, password, roles: randomRole1.name });
         i++;
     }
@@ -112,7 +115,7 @@ async function generateRandomData () {
     for (let i = 0; i < 10; i++) {
         ordersData.push({
             id: faker.string.uuid(),
-            total: faker.commerce.price({ min: 50, max: 500, dec: 2, symbol: "$" }),
+            total: faker.commerce.price({ min: 50, max: 500, dec: 2, symbol: "" }),
             estado: "pendiente",
             usuario_id: allUsers[faker.number.int({ min: 0, max: 9 })].id,
         });
@@ -125,8 +128,8 @@ async function generateRandomData () {
         orderDetailsData.push({
             id: faker.string.uuid(),
             cantidad: faker.number.int({ min: 1, max: 10 }),
-            precio_unitario: faker.commerce.price({ min: 10, max: 1000, dec: 2, symbol: "$" }),
-            subtotal: faker.commerce.price({ min: 10, max: 10000, dec: 2, symbol: "$" }),
+            precio_unitario: faker.commerce.price({ min: 10, max: 1000, dec: 2, symbol: "" }),
+            subtotal: faker.commerce.price({ min: 10, max: 10000, dec: 2, symbol: "" }),
             orden_id: ordersData[faker.number.int({ min: 0, max: 9 })].id,
             producto_id: productsData[faker.number.int({ min: 0, max: 9 })].id,
         });
@@ -139,9 +142,9 @@ async function generateRandomData () {
         paymentsData.push({
             id: faker.string.uuid(),
             payment_date: faker.date.past(),
-            payment_method: faker.finance.transactionType(),
-            payment_status: faker.finance.transactionType(),
-            amount: faker.commerce.price(),
+            payment_method: faker.helpers.arrayElement(["tarjeta_credito", "paypal"]),
+            payment_status: faker.helpers.arrayElement(["pagado", "pendiente"]),
+            amount: faker.commerce.price({ min: 50, max: 500, dec: 2, symbol: "" }),
             orden_id: ordersData[faker.number.int({ min: 0, max: 9 })].id,
         });
     }
@@ -152,11 +155,11 @@ async function generateRandomData () {
     for (let i = 0; i < 10; i++) {
         shippingAddressesData.push({
             id: faker.string.uuid(),
-            address_line_1: faker.location.streetAddress(),
-            address_line_2: faker.location.secondaryAddress(),
-            city: faker.location.city(),
-            state: faker.location.state(),
-            postal_code: faker.location.zipCode(),
+            direccion: faker.location.streetAddress(),
+            ciudad: faker.location.city(),
+            estado_provincia: faker.location.state(),
+            codigo_postal: faker.location.zipCode(),
+            pais: faker.location.country(),
             usuario_id: allUsers[faker.number.int({ min: 0, max: 9 })].id,
         });
     }
@@ -190,6 +193,11 @@ async function generateRandomData () {
             console.error("Error al escribir el archivo JSON:", err);
         } else {
             console.log("Archivo JSON creado con éxito.");
+            let i=1;
+            usersToPrint.forEach(user => {
+                console.log(`User_${i},Email: ${user.email}, Password: ${user.password}, Roles: ${user.roles}`);
+                i++;
+            });
         }
     });
 }
