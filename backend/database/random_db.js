@@ -170,7 +170,7 @@ async function generateRandomData () {
             estado_provincia: faker.location.state(),
             codigo_postal: faker.location.zipCode(),
             pais: faker.location.country(),
-            usuario_id: allUsers[faker.number.int({ min: 0, max: 24 })].id,
+            usuario_id: allUsers[i].id,
         });
     }
     await ShippingAddress.bulkCreate(shippingAddressesData);
