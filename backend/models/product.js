@@ -25,7 +25,7 @@ const Product = sequelize.define("Product", {
         defaultValue: 0,
     },
     categoria_id: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.STRING,
         allowNull: false,
     },
     created_at: {
