@@ -12,6 +12,7 @@ import ShippingAddress from "../models/shippingAddress.js";
 import Cart from "../models/cart.js";
 import CartItems from "../models/cartItems.js";
 import Category from "../models/category.js";
+import { url } from "inspector";
 
 // Función para generar datos aleatorios y guardarlos en la base de datos
 const usersToPrint = [];
@@ -59,6 +60,7 @@ async function generateRandomData () {
         productsData.push({
             id: faker.string.uuid(),
             nombre: faker.commerce.productName(),
+            url_img: "https://placehold.co/400x300",
             description: faker.commerce.productDescription(),
             precio: faker.commerce.price(),
             stock: faker.number.int({ min: 0, max: 100 }),
