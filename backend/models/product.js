@@ -10,6 +10,7 @@ const Product = sequelize.define("Product", {
     nombre: {
         type: DataTypes.STRING,
         allowNull: false,
+        unique: true,
     },
     description: {
         type: DataTypes.TEXT,
