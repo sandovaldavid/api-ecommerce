@@ -27,6 +27,10 @@ const deleteAllData = async () => {
         await ShippingAddress.destroy({ truncate: true, force: true });
         await Product.destroy({ truncate: true, force: true });
         await Category.destroy({ truncate: true, force: true });
+
+        // Eliminar la tabla intermedia UserRoles
+        await sequelize.query("TRUNCATE TABLE UserRoles");
+
         await User.destroy({ truncate: true, force: true });
         await Roles.destroy({ truncate: true, force: true });
 
