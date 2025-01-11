@@ -26,3 +26,12 @@ export const getShippingAddressesByUserId = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const getAllShippingAddresses = async (req, res) => {
+    try {
+        const shippingAddresses = await ShippingAddress.findAll();
+        res.status(200).json(shippingAddresses);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
