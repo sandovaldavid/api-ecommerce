@@ -41,6 +41,10 @@ const User = sequelize.define("User", {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },
+    last_login_at: {
+        type: DataTypes.DATE,
+        allowNull: true,
+    },
 }, {
     timestamps: false,
     hooks: {
