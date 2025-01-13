@@ -67,6 +67,12 @@ export const login = async (req, res) => {
             }]
         });
 
+        user.setAttributes({
+            last_login_at: new Date()
+        });
+
+        user.save();
+        
         // Generar el token JWT
         const token = jwt.sign({ id: userId }, config.development.secret, { expiresIn: "1h" });
 
