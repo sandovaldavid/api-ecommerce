@@ -429,47 +429,131 @@ export const deleteProduct = async (req, res) => {
 
 export const searchProducts = async (req, res) => {
     try {
+        // Validate and parse parameters
         const {
             query,
-            min_price,
-            max_price,
             categoria_id,
-            in_stock
+            in_stock,
+            sort_by = 'created_at',
+            order = 'DESC'
         } = req.query;
+
+        const min_price = parseFloat(req.query.min_price);
+        const max_price = parseFloat(req.query.max_price);
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+        const offset = (page - 1) * limit;
+
+        // Validate price range
+        if (!isNaN(min_price) && !isNaN(max_price) && min_price > max_price) {
+            return res.status(400).json({
+                error: "min_price cannot be greater than max_price"
+            });
+        }
 
         const whereClause = {};
 
+        // Improved text search
         if (query) {
-            whereClause[Op.or] = [
-                { nombre: { [Op.like]: `%${query}%` } },
-                { description: { [Op.like]: `%${query}%` } }
-            ];
+            const searchTerms = query.trim().split(' ').filter(term => term.length > 0);
+            if (searchTerms.length > 0) {
+                whereClause[Op.and] = searchTerms.map(term => ({
+                    [Op.or]: [
+                        {
+                            nombre: sequelize.where(
+                                sequelize.fn('LOWER', sequelize.col('Product.nombre')),
+                                'LIKE',
+                                `%${term.toLowerCase()}%`
+                            )
+                        },
+                        {
+                            description: sequelize.where(
+                                sequelize.fn('LOWER', sequelize.col('Product.description')),
+                                'LIKE',
+                                `%${term.toLowerCase()}%`
+                            )
+                        }
+                    ]
+                }));
+            }
         }
 
-        if (min_price || max_price) {
+        // Price filter
+        if (!isNaN(min_price) || !isNaN(max_price)) {
             whereClause.precio = {};
-            if (min_price) whereClause.precio[Op.gte] = min_price;
-            if (max_price) whereClause.precio[Op.lte] = max_price;
+            if (!isNaN(min_price)) whereClause.precio[Op.gte] = min_price;
+            if (!isNaN(max_price)) whereClause.precio[Op.lte] = max_price;
         }
 
+        // Category and stock filters
         if (categoria_id) whereClause.categoria_id = categoria_id;
         if (in_stock === 'true') whereClause.stock = { [Op.gt]: 0 };
 
-        const products = await Product.findAndCountAll({
+        // Validate sort field
+        const validSortFields = ['nombre', 'precio', 'created_at', 'stock'];
+        const sortField = validSortFields.includes(sort_by) ? sort_by : 'created_at';
+        const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+        // Execute optimized query
+        const { count, rows: products } = await Product.findAndCountAll({
             where: whereClause,
             include: [{
                 model: Category,
-                attributes: ['id', 'nombre']
-            }]
+                attributes: ['id', 'nombre'],
+                required: true
+            }],
+            attributes: [
+                'id',
+                'nombre',
+                'url_img',
+                'description',
+                'precio',
+                'stock',
+                'created_at',
+                'updated_at'
+            ],
+            order: [[sortField, sortOrder]],
+            limit,
+            offset,
+            distinct: true
         });
 
-        res.status(200).json({
-            message: "Products found",
-            data: products
+        // Format response
+        const formattedProducts = products.map(product => ({
+            ...product.toJSON(),
+            precio: parseFloat(product.precio)
+        }));
+
+        // Set cache headers
+        res.set('Cache-Control', 'public, max-age=300');
+
+        return res.status(200).json({
+            message: "Products found successfully",
+            data: {
+                products: formattedProducts,
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(count / limit),
+                    totalItems: count,
+                    itemsPerPage: limit
+                },
+                filters: {
+                    query,
+                    min_price,
+                    max_price,
+                    categoria_id,
+                    in_stock
+                },
+                sorting: {
+                    field: sortField,
+                    order: sortOrder
+                }
+            }
         });
+
     } catch (error) {
         console.error('Error searching products:', error);
-        res.status(500).json({
+        return res.status(500).json({
             error: "Error searching products",
             details: error.message
         });
