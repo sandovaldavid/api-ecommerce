@@ -14,6 +14,12 @@ const Roles = sequelize.define("Roles", {
     },
 }, {
     timestamps: false,
+    hooks: {
+        beforeCreate: async (role) => {
+            // Generar un UID único para el campo ID
+            role.id = uid2(32);
+        }
+    }
 });
 
 const defaultRoles = [
