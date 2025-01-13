@@ -517,36 +517,76 @@ export const updateProductStock = async (req, res) => {
         const { id } = req.params;
         const { quantity } = req.body;
 
-        const product = await Product.findByPk(id);
+        // Validate inputs
+        if (!id) {
+            return res.status(400).json({
+                error: "Product ID is required"
+            });
+        }
+
+        if (quantity === undefined) {
+            return res.status(400).json({
+                error: "Quantity is required"
+            });
+        }
+
+        // Parse quantity to integer
+        const quantityToAdd = parseInt(quantity);
+        if (isNaN(quantityToAdd)) {
+            return res.status(400).json({
+                error: "Quantity must be a valid number"
+            });
+        }
+
+        // Get product with minimal data
+        const product = await Product.findByPk(id, {
+            attributes: ['id', 'nombre', 'stock']
+        });
+
         if (!product) {
             return res.status(404).json({
-                error: "Product not found"
+                error: "Product not found",
+                productId: id
             });
         }
 
-        const newStock = product.stock + parseInt(quantity);
+        // Calculate new stock
+        const newStock = product.stock + quantityToAdd;
+
+        // Validate new stock
         if (newStock < 0) {
             return res.status(400).json({
-                error: "Insufficient stock"
+                error: "Insufficient stock",
+                currentStock: product.stock,
+                requestedChange: quantityToAdd
             });
         }
 
+        // Update stock with timestamp
         await product.update({
             stock: newStock,
             updated_at: new Date()
         });
 
-        res.status(200).json({
+        return res.status(200).json({
             message: "Stock updated successfully",
             data: {
                 productId: id,
+                productName: product.nombre,
                 previousStock: product.stock,
-                newStock: newStock
+                change: quantityToAdd,
+                newStock: newStock,
+                updatedAt: new Date()
             }
         });
+
     } catch (error) {
-        console.error('Error updating stock:', error);
-        res.status(500).json({
+        console.error('Error updating stock:', {
+            error: error.message,
+            stack: error.stack
+        });
+
+        return res.status(500).json({
             error: "Error updating stock",
             details: error.message
         });
