@@ -1,17 +1,25 @@
 import express from "express";
-import { createShippingAddress, getShippingAddressesByUserId, getAllShippingAddresses, deleteShippingAddress, updateShippingAddress } from "../controllers/shippingAddressController.js";
+import {
+    createShippingAddress,
+    getShippingAddressesByUserId,
+    getAllShippingAddresses,
+    deleteShippingAddress,
+    updateShippingAddress
+} from "../controllers/shippingAddressController.js";
 import { authJwt } from "../middlewares/index.js";
 
 const router = express.Router();
 
+// Base middleware for all routes
 router.use(authJwt.verifyToken);
-router.post("/", createShippingAddress);
-router.get("/user/:usuario_id", authJwt.isOwnerOrAdmin("usuario_id"), getShippingAddressesByUserId);
-router.delete("/:id_ShipingAddress", authJwt.isOwnerOrAdmin("usuario_id"), deleteShippingAddress);
-router.put("/:id_ShipingAddress", authJwt.isOwnerOrAdmin("usuario_id"), updateShippingAddress);
+
+// User routes
+router.get("/user/:usuario_id", [authJwt.isOwnerOrAdmin("usuario_id")], getShippingAddressesByUserId);
+router.post("/", [authJwt.isOwnerOrAdmin("usuario_id")], createShippingAddress);
+router.put("/:id_ShippingAddress", [authJwt.isOwnerOrAdmin("usuario_id")], updateShippingAddress);
+router.delete("/:id_ShipingAddress", [authJwt.isOwnerOrAdmin("usuario_id")], deleteShippingAddress);
 
 // Admin routes
-router.use(authJwt.isAdmin);
-router.get("/", getAllShippingAddresses);
+router.get("/", [authJwt.verifyToken, authJwt.hasRoles("admin")], getAllShippingAddresses);
 
 export default router;
