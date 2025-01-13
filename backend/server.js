@@ -15,6 +15,7 @@ import cartItemRoutes from "./routes/cartItemRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
+import {errorHandler} from "./middlewares/errorHandler.js";
 /*import "./models/user.js";
 import "./models/product.js";
 import "./models/category.js";
@@ -46,6 +47,7 @@ app.use("/api/cart-items", cartItemRoutes);
 app.use("/api/carts", cartRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/roles", roleRoutes);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 await sequelize.sync({ force: false });
