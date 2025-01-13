@@ -201,7 +201,7 @@ async function generateRandomData () {
             id: faker.string.uuid(),
             cantidad: faker.number.int({ min: 1, max: 30 }),
             cart_id: cartsData[faker.number.int({ min: 0, max: 99 })].id,
-            producto_id: productsData[faker.number.int({ min: 0, max: 99 })].id,
+            product_id: productsData[faker.number.int({ min: 0, max: 99 })].id,
         });
     }
     await CartItems.bulkCreate(cartItemsData);
