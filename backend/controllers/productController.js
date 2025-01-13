@@ -164,3 +164,65 @@ export const createProduct = async (req, res) => {
         });
     }
 };
+
+export const getProductById = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate ID
+        if (!id) {
+            return res.status(400).json({
+                error: "Product ID is required"
+            });
+        }
+
+        // Get product with cached query
+        const product = await Product.findByPk(id, {
+            include: [{
+                model: Category,
+                attributes: ['id', 'nombre', 'description']
+            }],
+            attributes: [
+                'id',
+                'nombre',
+                'url_img',
+                'description',
+                'precio',
+                'stock',
+                'categoria_id',
+                'created_at',
+                'updated_at'
+            ]
+        });
+
+        // Handle not found
+        if (!product) {
+            return res.status(404).json({
+                error: "Product not found",
+                productId: id
+            });
+        }
+
+        // Format response
+        const formattedProduct = {
+            ...product.toJSON(),
+            precio: parseFloat(product.precio)
+        };
+
+        return res.status(200).json({
+            message: "Product retrieved successfully",
+            data: formattedProduct
+        });
+
+    } catch (error) {
+        console.error('Error getting product:', {
+            error: error.message,
+            stack: error.stack
+        });
+
+        return res.status(500).json({
+            error: "Error retrieving product",
+            details: error.message
+        });
+    }
+};
