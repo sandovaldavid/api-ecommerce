@@ -424,3 +424,52 @@ export const deleteProduct = async (req, res) => {
         });
     }
 };
+
+export const searchProducts = async (req, res) => {
+    try {
+        const {
+            query,
+            min_price,
+            max_price,
+            categoria_id,
+            in_stock
+        } = req.query;
+
+        const whereClause = {};
+
+        if (query) {
+            whereClause[Op.or] = [
+                { nombre: { [Op.like]: `%${query}%` } },
+                { description: { [Op.like]: `%${query}%` } }
+            ];
+        }
+
+        if (min_price || max_price) {
+            whereClause.precio = {};
+            if (min_price) whereClause.precio[Op.gte] = min_price;
+            if (max_price) whereClause.precio[Op.lte] = max_price;
+        }
+
+        if (categoria_id) whereClause.categoria_id = categoria_id;
+        if (in_stock === 'true') whereClause.stock = { [Op.gt]: 0 };
+
+        const products = await Product.findAndCountAll({
+            where: whereClause,
+            include: [{
+                model: Category,
+                attributes: ['id', 'nombre']
+            }]
+        });
+
+        res.status(200).json({
+            message: "Products found",
+            data: products
+        });
+    } catch (error) {
+        console.error('Error searching products:', error);
+        res.status(500).json({
+            error: "Error searching products",
+            details: error.message
+        });
+    }
+};
