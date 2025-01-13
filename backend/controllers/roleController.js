@@ -84,17 +84,62 @@ export const assignRole = async (req, res) => {
 export const removeRole = async (req, res) => {
     try {
         const { userId, roleId } = req.body;
+
+        // Validar que se proporcionen los IDs necesarios
+        if (!userId || !roleId) {
+            return res.status(400).json({
+                error: "userId and roleId are required"
+            });
+        }
+
+        // Buscar usuario
         const user = await User.findByPk(userId);
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
+
+        // Buscar rol
         const role = await Roles.findByPk(roleId);
         if (!role) {
             return res.status(404).json({ error: "Role not found" });
         }
+
+        // Obtener roles actuales del usuario
+        const currentRoles = await user.getRoles();
+
+        // Verificar si el usuario tiene el rol
+        const hasRole = currentRoles.some(r => r.id === roleId);
+        if (!hasRole) {
+            return res.status(400).json({
+                error: "User doesn't have this role"
+            });
+        }
+
+        // Verificar que no sea el último rol del usuario
+        if (currentRoles.length === 1) {
+            return res.status(400).json({
+                error: "Cannot remove the last role from user"
+            });
+        }
+
+        // Remover el rol
         await user.removeRole(role);
-        res.status(200).send();
+
+        // Obtener roles actualizados para la respuesta
+        const updatedRoles = await user.getRoles();
+
+        res.status(200).json({
+            message: "Role removed successfully",
+            roles: updatedRoles.map(role => ({
+                id: role.id,
+                name: role.name
+            }))
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error in removeRole:', error);
+        res.status(500).json({
+            error: "Error removing role",
+            details: error.message
+        });
     }
-}
+};
