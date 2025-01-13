@@ -1,3 +1,4 @@
+import { sequelize } from "../models/index.js";
 import ShippingAddress from "../models/shippingAddress.js";
 import User from "../models/user.js";
 
@@ -284,27 +285,56 @@ export const deleteShippingAddress = async (req, res) => {
             });
         }
 
-        // Check if address exists before deleting
-        const address = await ShippingAddress.findByPk(id_ShipingAddress);
+        // Check if address exists and get minimal data
+        const address = await ShippingAddress.findByPk(id_ShipingAddress, {
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName'],
+                required: true
+            }],
+            attributes: ['id', 'usuario_id']
+        });
 
+        // Handle not found
         if (!address) {
             return res.status(404).json({
-                error: "Shipping address not found"
+                error: "Shipping address not found",
+                addressId: id_ShipingAddress
             });
         }
 
-        // Delete the address
-        await address.destroy();
+        // Verify ownership (additional security)
+        if (address.usuario_id !== req.userId && !req.isAdmin) {
+            return res.status(403).json({
+                error: "Not authorized to delete this address"
+            });
+        }
 
+        // Delete with transaction to ensure data consistency
+        await sequelize.transaction(async (t) => {
+            await address.destroy({ transaction: t });
+        });
+
+        // Return success response
         return res.status(200).json({
             message: "Shipping address deleted successfully",
             data: {
-                id: id_ShipingAddress
+                id: id_ShipingAddress,
+                userId: address.usuario_id,
+                deletedBy: {
+                    userId: req.userId,
+                    isAdmin: req.isAdmin
+                }
             }
         });
 
     } catch (error) {
-        console.error('Error deleting shipping address:', error);
+        console.error('Error deleting shipping address:', {
+            error: error.message,
+            stack: error.stack,
+            addressId: req.params.id_ShipingAddress
+        });
+
         return res.status(500).json({
             error: "Error deleting shipping address",
             details: error.message
