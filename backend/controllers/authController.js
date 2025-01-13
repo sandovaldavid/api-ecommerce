@@ -53,12 +53,37 @@ export const register = async (req, res) => {
 // Metodo de inicio de sesión
 export const login = async (req, res) => {
     const userId = req.body.userId;
+    console.log(userId);
     try {
-    // Generar el token JWT
+        // Buscar el usuario con sus roles, excluyendo la contraseña
+        const user = await User.findByPk(userId, {
+            attributes: {
+                exclude: ['hashed_password']
+            },
+            include: [{
+                model: Roles,
+                attributes: ['name'],
+                through: { attributes: [] }
+            }]
+        });
+
+        // Generar el token JWT
         const token = jwt.sign({ id: userId }, config.development.secret, { expiresIn: "1h" });
-    
-        // Devolver el token
-        res.status(200).json({ token });
+
+        // Devolver el token y la información del usuario
+        res.status(200).json({
+            token,
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                secondName: user.secondName,
+                lastName_father: user.lastName_father,
+                lastName_mother: user.lastName_mother,
+                email: user.email,
+                roles: user.Roles.map(role => role.name)
+            },
+            expiresIn: 3600 // 1 hora en segundos
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
