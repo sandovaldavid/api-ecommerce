@@ -555,25 +555,61 @@ export const updateProductStock = async (req, res) => {
 
 export const getFeaturedProducts = async (req, res) => {
     try {
+        // Get featured products with optimized query
         const featuredProducts = await Product.findAll({
             where: {
-                stock: { [Op.gt]: 0 }
+                stock: { [Op.gt]: 0 },
+                // Optionally add more criteria for "featured" products
+                precio: { [Op.gt]: 0 }
             },
             include: [{
                 model: Category,
-                attributes: ['id', 'nombre']
+                attributes: ['id', 'nombre', 'description']
             }],
-            order: [['created_at', 'DESC']],
+            attributes: [
+                'id',
+                'nombre',
+                'url_img',
+                'description',
+                'precio',
+                'stock',
+                'created_at'
+            ],
+            order: [
+                ['created_at', 'DESC'],
+                ['precio', 'DESC']
+            ],
             limit: 6
         });
 
-        res.status(200).json({
-            message: "Featured products retrieved",
-            data: featuredProducts
+        // Handle no products found
+        if (!featuredProducts.length) {
+            return res.status(404).json({
+                message: "No featured products available"
+            });
+        }
+
+        // Format response data
+        const formattedProducts = featuredProducts.map(product => ({
+            ...product.toJSON(),
+            precio: parseFloat(product.precio)
+        }));
+
+        return res.status(200).json({
+            message: "Featured products retrieved successfully",
+            data: {
+                products: formattedProducts,
+                count: formattedProducts.length
+            }
         });
+
     } catch (error) {
-        console.error('Error getting featured products:', error);
-        res.status(500).json({
+        console.error('Error getting featured products:', {
+            error: error.message,
+            stack: error.stack
+        });
+
+        return res.status(500).json({
             error: "Error retrieving featured products",
             details: error.message
         });
