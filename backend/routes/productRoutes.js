@@ -5,6 +5,6 @@ import { authJwt } from "../middlewares/index.js";
 const router = express.Router();
 
 router.get("/", getAllProducts);
-router.post("/",[authJwt.verifyToken, authJwt.isModerator], createProduct);
+router.post("/", [authJwt.verifyToken, authJwt.hasRoles("admin", "moderator")], createProduct);
 
 export default router;
