@@ -6,6 +6,6 @@ const router = express.Router();
 
 router.use(authJwt.verifyToken);
 router.get("/", getAllProducts);
-router.post("/", [authJwt.verifyToken, authJwt.hasRoles("admin", "moderator")], createProduct);
+router.post("/", authJwt.hasRoles("admin", "moderator"), createProduct);
 
 export default router;
