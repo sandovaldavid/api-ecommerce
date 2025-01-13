@@ -6,7 +6,7 @@ const router = express.Router();
 
 router.use(authJwt.verifyToken);
 router.post("/", createShippingAddress);
-router.get("/:usuario_id", getShippingAddressesByUserId);
+router.get("/user/:usuario_id", getShippingAddressesByUserId);
 router.get("/", getAllShippingAddresses);
 router.delete("/:id_ShipingAddress", deleteShippingAddress);
 
