@@ -186,22 +186,34 @@ export const getShippingAddressesByUserId = async (req, res) => {
 
 export const getAllShippingAddresses = async (req, res) => {
     try {
-        // Implement pagination
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        // Validate and parse pagination parameters
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
         const offset = (page - 1) * limit;
 
-        // Get total count for pagination
-        const totalCount = await ShippingAddress.count();
+        // Optional filters
+        const { ciudad, estado_provincia, pais } = req.query;
+        const whereClause = {};
+
+        if (ciudad) whereClause.ciudad = ciudad.trim();
+        if (estado_provincia) whereClause.estado_provincia = estado_provincia.trim();
+        if (pais) whereClause.pais = pais.trim();
+
+        // Get total count with filters
+        const totalCount = await ShippingAddress.count({
+            where: whereClause
+        });
 
         if (totalCount === 0) {
             return res.status(404).json({
-                message: "No shipping addresses found"
+                message: "No shipping addresses found",
+                filters: { ciudad, estado_provincia, pais }
             });
         }
 
-        // Get addresses with pagination and specific attributes
-        const shippingAddresses = await ShippingAddress.findAndCountAll({
+        // Get addresses with pagination and eager loading
+        const shippingAddresses = await ShippingAddress.findAll({
+            where: whereClause,
             limit,
             offset,
             order: [['created_at', 'DESC']],
@@ -219,26 +231,41 @@ export const getAllShippingAddresses = async (req, res) => {
             include: [{
                 model: User,
                 attributes: ['id', 'firstName', 'lastName_father', 'lastName_mother'],
-            }]
+                required: true
+            }],
+            distinct: true
         });
 
         // Calculate pagination metadata
         const totalPages = Math.ceil(totalCount / limit);
 
+        // Set cache headers
+        res.set('Cache-Control', 'private, max-age=300');
+
         return res.status(200).json({
             message: "Shipping addresses retrieved successfully",
             data: {
-                addresses: shippingAddresses.rows,
+                addresses: shippingAddresses,
                 pagination: {
                     currentPage: page,
                     totalPages,
                     totalItems: totalCount,
                     itemsPerPage: limit
+                },
+                filters: {
+                    ciudad,
+                    estado_provincia,
+                    pais
                 }
             }
         });
+
     } catch (error) {
-        console.error('Error fetching all shipping addresses:', error);
+        console.error('Error fetching all shipping addresses:', {
+            error: error.message,
+            stack: error.stack
+        });
+
         return res.status(500).json({
             error: "Error retrieving shipping addresses",
             details: error.message
