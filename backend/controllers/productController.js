@@ -1,6 +1,9 @@
 import { Op } from "sequelize";
 import Product from "../models/product.js";
 import Category from "../models/category.js";
+import OrderDetails from "../models/orderDetails.js";
+import Review from "../models/review.js";
+import CartItems from "../models/cartItems.js";
 
 export const getAllProducts = async (req, res) => {
     try {
@@ -344,6 +347,79 @@ export const updateProduct = async (req, res) => {
         console.error('Error updating product:', error);
         return res.status(500).json({
             error: "Error updating product",
+            details: error.message
+        });
+    }
+};
+
+export const deleteProduct = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate ID
+        if (!id) {
+            return res.status(400).json({
+                error: "Product ID is required"
+            });
+        }
+
+        // Check if product exists and get related info
+        const product = await Product.findByPk(id, {
+            include: [{
+                model: Category,
+                attributes: ['id', 'nombre']
+            }],
+            attributes: ['id', 'nombre', 'stock']
+        });
+
+        // Handle not found
+        if (!product) {
+            return res.status(404).json({
+                error: "Product not found",
+                productId: id
+            });
+        }
+
+        // Check if product can be deleted (optional business rules)
+        const hasActiveOrders = await OrderDetails.findOne({
+            where: { producto_id: id }
+        });
+
+        if (hasActiveOrders) {
+            return res.status(400).json({
+                error: "Cannot delete product with active orders"
+            });
+        }
+
+        // Delete related records first
+        await Review.destroy({
+            where: { producto_id: id }
+        });
+
+        await CartItems.destroy({
+            where: { product_id: id }
+        });
+
+        // Delete product
+        await product.destroy();
+
+        return res.status(200).json({
+            message: "Product deleted successfully",
+            data: {
+                productId: id,
+                productName: product.nombre,
+                category: product.Category.nombre
+            }
+        });
+
+    } catch (error) {
+        console.error('Error deleting product:', {
+            error: error.message,
+            stack: error.stack
+        });
+
+        return res.status(500).json({
+            error: "Error deleting product",
             details: error.message
         });
     }
