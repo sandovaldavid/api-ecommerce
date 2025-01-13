@@ -35,3 +35,22 @@ export const isAdmin = async (req, res, next) => {
         return res.status(500).json({ error: e.message });
     }
 };
+
+export const hasRoles = (...roles) => {
+    return async (req, res, next) => {
+        try {
+            const user = await User.findByPk(req.userId);
+            const userRoles = await user.getRoles();
+            const hasRequiredRole = userRoles.some(role => roles.includes(role.name));
+
+            if (!hasRequiredRole) {
+                return res.status(403).json({
+                    message: `Require one of these roles: ${roles.join(', ')}`
+                });
+            }
+            next();
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    };
+};
