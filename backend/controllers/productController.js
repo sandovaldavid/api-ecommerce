@@ -552,3 +552,30 @@ export const updateProductStock = async (req, res) => {
         });
     }
 };
+
+export const getFeaturedProducts = async (req, res) => {
+    try {
+        const featuredProducts = await Product.findAll({
+            where: {
+                stock: { [Op.gt]: 0 }
+            },
+            include: [{
+                model: Category,
+                attributes: ['id', 'nombre']
+            }],
+            order: [['created_at', 'DESC']],
+            limit: 6
+        });
+
+        res.status(200).json({
+            message: "Featured products retrieved",
+            data: featuredProducts
+        });
+    } catch (error) {
+        console.error('Error getting featured products:', error);
+        res.status(500).json({
+            error: "Error retrieving featured products",
+            details: error.message
+        });
+    }
+};
