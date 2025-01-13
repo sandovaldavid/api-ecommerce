@@ -84,10 +84,83 @@ export const getAllProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
     try {
-        const { nombre, descripcion, precio, stock, categoria_id: categoriaId } = req.body;
-        const product = await Product.create({ nombre, descripcion, precio, stock, categoria_id: categoriaId });
-        res.status(201).json(product);
+        const {
+            nombre,
+            description,
+            precio,
+            stock,
+            categoria_id: categoriaId,
+            url_img: urlImg
+        } = req.body;
+
+        // Input validation
+        if (!nombre || !precio || !categoriaId) {
+            return res.status(400).json({
+                error: "Missing required fields",
+                required: ["nombre", "precio", "categoria_id"]
+            });
+        }
+
+        // Validate price and stock
+        if (precio <= 0) {
+            return res.status(400).json({
+                error: "Price must be greater than 0"
+            });
+        }
+
+        if (stock < 0) {
+            return res.status(400).json({
+                error: "Stock cannot be negative"
+            });
+        }
+
+        // Check if category exists
+        const categoryExists = await Category.findByPk(categoriaId);
+        if (!categoryExists) {
+            return res.status(404).json({
+                error: "Category not found"
+            });
+        }
+
+        // Check if product name already exists
+        const existingProduct = await Product.findOne({
+            where: { nombre: nombre.trim() }
+        });
+
+        if (existingProduct) {
+            return res.status(400).json({
+                error: "Product name already exists"
+            });
+        }
+
+        // Create product with cleaned data
+        const product = await Product.create({
+            nombre: nombre.trim(),
+            description: description?.trim(),
+            precio: parseFloat(precio),
+            stock: parseInt(stock) || 0,
+            categoria_id: categoriaId,
+            url_img: urlImg?.trim() || "https://placehold.co/400x300"
+        });
+
+        // Get product with category information
+        const productWithCategory = await Product.findByPk(product.id, {
+            include: [{
+                model: Category,
+                attributes: ['id', 'nombre']
+            }]
+        });
+
+        return res.status(201).json({
+            message: "Product created successfully",
+            data: productWithCategory
+        });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error creating product:', error);
+        return res.status(500).json({
+            error: "Error creating product",
+            details: error.message
+        });
     }
 };
