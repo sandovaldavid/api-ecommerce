@@ -190,9 +190,45 @@ export const getAllShippingAddresses = async (req, res) => {
 export const deleteShippingAddress = async (req, res) => {
     try {
         const { id_ShipingAddress } = req.params;
-        await ShippingAddress.destroy({ where: { id_ShipingAddress } });
-        res.status(204).end();
+
+        // Validate ID
+        if (!id_ShipingAddress) {
+            return res.status(400).json({
+                error: "Shipping address ID is required"
+            });
+        }
+
+        // Check if address exists before deleting
+        const address = await ShippingAddress.findByPk(id_ShipingAddress);
+
+        if (!address) {
+            return res.status(404).json({
+                error: "Shipping address not found"
+            });
+        }
+
+        // Verify user ownership
+        if (address.usuario_id !== req.userId) {
+            return res.status(403).json({
+                error: "Not authorized to delete this shipping address"
+            });
+        }
+
+        // Delete the address
+        await address.destroy();
+
+        return res.status(200).json({
+            message: "Shipping address deleted successfully",
+            data: {
+                id: id_ShipingAddress
+            }
+        });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error deleting shipping address:', error);
+        return res.status(500).json({
+            error: "Error deleting shipping address",
+            details: error.message
+        });
     }
-}
+};
