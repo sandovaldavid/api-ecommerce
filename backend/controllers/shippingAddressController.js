@@ -434,3 +434,120 @@ export const updateShippingAddress = async (req, res) => {
         });
     }
 };
+
+export const getShippingAddressById = async (req, res) => {
+    try {
+        const { id_ShippingAddress } = req.params;
+
+        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName', 'lastName_father']
+            }]
+        });
+
+        if (!address) {
+            return res.status(404).json({
+                error: "Shipping address not found"
+            });
+        }
+
+        return res.status(200).json({
+            message: "Shipping address retrieved successfully",
+            data: address
+        });
+    } catch (error) {
+        console.error('Error getting shipping address:', error);
+        return res.status(500).json({
+            error: "Error retrieving shipping address",
+            details: error.message
+        });
+    }
+};
+
+export const validateShippingAddress = async (req, res) => {
+    try {
+        const { codigo_postal, ciudad, pais } = req.body;
+
+        // Add your address validation logic here
+        const isValid = await validateAddressService(codigo_postal, ciudad, pais);
+
+        return res.status(200).json({
+            message: "Address validation completed",
+            data: {
+                isValid,
+                details: isValid ? "Address is valid" : "Address validation failed"
+            }
+        });
+    } catch (error) {
+        console.error('Error validating address:', error);
+        return res.status(500).json({
+            error: "Error validating address",
+            details: error.message
+        });
+    }
+};
+
+export const setDefaultAddress = async (req, res) => {
+    try {
+        const { id_ShippingAddress } = req.params;
+        const { usuario_id } = req.body;
+
+        await sequelize.transaction(async (t) => {
+            // Remove default from all user addresses
+            await ShippingAddress.update(
+                { is_default: false },
+                {
+                    where: { usuario_id },
+                    transaction: t
+                }
+            );
+
+            // Set new default address
+            await ShippingAddress.update(
+                { is_default: true },
+                {
+                    where: { id: id_ShippingAddress },
+                    transaction: t
+                }
+            );
+        });
+
+        return res.status(200).json({
+            message: "Default address updated successfully"
+        });
+    } catch (error) {
+        console.error('Error setting default address:', error);
+        return res.status(500).json({
+            error: "Error setting default address",
+            details: error.message
+        });
+    }
+};
+
+export const bulkDeleteAddresses = async (req, res) => {
+    try {
+        const { addressIds } = req.body;
+
+        await sequelize.transaction(async (t) => {
+            await ShippingAddress.destroy({
+                where: {
+                    id: addressIds,
+                    usuario_id: req.userId
+                },
+                transaction: t
+            });
+        });
+
+        return res.status(200).json({
+            message: "Addresses deleted successfully",
+            data: { deletedCount: addressIds.length }
+        });
+    } catch (error) {
+        console.error('Error bulk deleting addresses:', error);
+        return res.status(500).json({
+            error: "Error deleting addresses",
+            details: error.message
+        });
+    }
+};
