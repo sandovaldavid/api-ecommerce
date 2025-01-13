@@ -150,3 +150,64 @@ export const getReviews = async (req, res) => {
         });
     }
 };
+
+export const deleteReview = async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Validate ID
+        if (!id) {
+            return res.status(400).json({
+                error: "Review ID is required"
+            });
+        }
+
+        // Check if review exists and include minimal user data
+        const review = await Review.findOne({
+            where: { id },
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName']
+            }]
+        });
+
+        if (!review) {
+            return res.status(404).json({
+                error: "Review not found"
+            });
+        }
+
+        // Check authorization (if user is owner or admin/moderator)
+        const userRoles = await req.user.getRoles();
+        const isAdminOrMod = userRoles.some(role =>
+            ["admin", "moderator"].includes(role.name)
+        );
+
+        if (!isAdminOrMod && req.userId !== review.usuario_id) {
+            return res.status(403).json({
+                error: "Not authorized to delete this review"
+            });
+        }
+
+        // Delete review
+        await review.destroy();
+
+        return res.status(200).json({
+            message: "Review deleted successfully",
+            data: {
+                id,
+                deletedBy: {
+                    userId: req.userId,
+                    isAdmin: isAdminOrMod
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error deleting review:', error);
+        return res.status(500).json({
+            error: "Error deleting review",
+            details: error.message
+        });
+    }
+};
