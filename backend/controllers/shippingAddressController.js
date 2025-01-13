@@ -35,3 +35,13 @@ export const getAllShippingAddresses = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+export const deleteShippingAddress = async (req, res) => {
+    try {
+        const { id_ShipingAddress } = req.params;
+        await ShippingAddress.destroy({ where: { id_ShipingAddress } });
+        res.status(204).end();
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
