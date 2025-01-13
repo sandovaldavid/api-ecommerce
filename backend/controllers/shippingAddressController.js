@@ -276,17 +276,17 @@ export const getAllShippingAddresses = async (req, res) => {
 
 export const deleteShippingAddress = async (req, res) => {
     try {
-        const { id_ShipingAddress } = req.params;
+        const { id_ShippingAddress } = req.params;
 
         // Validate ID
-        if (!id_ShipingAddress) {
+        if (!id_ShippingAddress) {
             return res.status(400).json({
                 error: "Shipping address ID is required"
             });
         }
 
         // Check if address exists and get minimal data
-        const address = await ShippingAddress.findByPk(id_ShipingAddress, {
+        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
             include: [{
                 model: User,
                 attributes: ['id', 'firstName'],
@@ -299,7 +299,7 @@ export const deleteShippingAddress = async (req, res) => {
         if (!address) {
             return res.status(404).json({
                 error: "Shipping address not found",
-                addressId: id_ShipingAddress
+                addressId: id_ShippingAddress
             });
         }
 
@@ -319,7 +319,7 @@ export const deleteShippingAddress = async (req, res) => {
         return res.status(200).json({
             message: "Shipping address deleted successfully",
             data: {
-                id: id_ShipingAddress,
+                id: id_ShippingAddress,
                 userId: address.usuario_id,
                 deletedBy: {
                     userId: req.userId,
@@ -332,7 +332,7 @@ export const deleteShippingAddress = async (req, res) => {
         console.error('Error deleting shipping address:', {
             error: error.message,
             stack: error.stack,
-            addressId: req.params.id_ShipingAddress
+            addressId: req.params.id_ShippingAddress
         });
 
         return res.status(500).json({
@@ -344,26 +344,77 @@ export const deleteShippingAddress = async (req, res) => {
 
 export const updateShippingAddress = async (req, res) => {
     try {
-        const { id_ShipingAddress } = req.params;
+        const { id_ShippingAddress } = req.params;
+        const {
+            direccion,
+            ciudad,
+            estado_provincia: estadoProvincia,
+            codigo_postal: codigoPostal,
+            pais
+        } = req.body;
 
         // Validate ID
-        if (!id_ShipingAddress) {
+        if (!id_ShippingAddress) {
             return res.status(400).json({
                 error: "Shipping address ID is required"
             });
         }
 
-        // Check if address exists before updating
-        const address = await ShippingAddress.findByPk(id_ShipingAddress);
+        // Check if address exists with user info
+        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName'],
+                required: true
+            }]
+        });
 
         if (!address) {
             return res.status(404).json({
-                error: "Shipping address not found"
+                error: "Shipping address not found",
+                addressId: id_ShippingAddress
             });
         }
 
-        // Update the address
-        const updatedAddress = await address.update(req.body);
+        // Verify ownership
+        if (address.usuario_id !== req.userId && !req.isAdmin) {
+            return res.status(403).json({
+                error: "Not authorized to update this address"
+            });
+        }
+
+        // Validate postal code if provided
+        if (codigoPostal) {
+            const postalCodeRegex = /^\d{5}(-\d{4})?$/;
+            if (!postalCodeRegex.test(codigoPostal.trim())) {
+                return res.status(400).json({
+                    error: "Invalid postal code format"
+                });
+            }
+        }
+
+        // Prepare update data
+        const updates = {
+            updated_at: new Date()
+        };
+
+        if (direccion) updates.direccion = direccion.trim();
+        if (ciudad) updates.ciudad = ciudad.trim();
+        if (estadoProvincia) updates.estado_provincia = estadoProvincia.trim();
+        if (codigoPostal) updates.codigo_postal = codigoPostal.trim();
+        if (pais) updates.pais = pais.trim();
+
+        // Update with transaction
+        const updatedAddress = await sequelize.transaction(async (t) => {
+            await address.update(updates, { transaction: t });
+            return address.reload({
+                include: [{
+                    model: User,
+                    attributes: ['id', 'firstName', 'lastName_father']
+                }],
+                transaction: t
+            });
+        });
 
         return res.status(200).json({
             message: "Shipping address updated successfully",
@@ -371,10 +422,15 @@ export const updateShippingAddress = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error updating shipping address:', error);
+        console.error('Error updating shipping address:', {
+            error: error.message,
+            stack: error.stack,
+            addressId: req.params.id_ShippingAddress
+        });
+
         return res.status(500).json({
             error: "Error updating shipping address",
             details: error.message
         });
     }
-} 
+};
