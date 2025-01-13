@@ -21,34 +21,65 @@ export const createShippingAddress = async (req, res) => {
             });
         }
 
+        // Check if user exists
+        const userExists = await User.findByPk(usuarioId);
+        if (!userExists) {
+            return res.status(404).json({
+                error: "User not found"
+            });
+        }
+
         // Check maximum addresses per user
         const userAddressCount = await ShippingAddress.count({
             where: { usuario_id: usuarioId }
         });
+
         if (userAddressCount >= 5) {
             return res.status(400).json({
-                error: "Maximum number of addresses reached (5)"
+                error: "Maximum number of addresses reached (5)",
+                currentCount: userAddressCount
             });
         }
 
-        // Create shipping address
+        // Validate postal code format (example)
+        const postalCodeRegex = /^\d{5}(-\d{4})?$/;
+        if (!postalCodeRegex.test(codigoPostal.trim())) {
+            return res.status(400).json({
+                error: "Invalid postal code format"
+            });
+        }
+
+        // Create shipping address with cleaned data
         const shippingAddress = await ShippingAddress.create({
             usuario_id: usuarioId,
             direccion: direccion.trim(),
             ciudad: ciudad.trim(),
             estado_provincia: estadoProvincia.trim(),
             codigo_postal: codigoPostal.trim(),
-            pais: pais.trim()
+            pais: pais.trim(),
+            created_at: new Date(),
+            updated_at: new Date()
         });
 
-        // Return success response
+        // Get address with user information
+        const addressWithUser = await ShippingAddress.findByPk(shippingAddress.id, {
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName', 'lastName_father']
+            }]
+        });
+
         return res.status(201).json({
             message: "Shipping address created successfully",
-            data: shippingAddress
+            data: addressWithUser
         });
 
     } catch (error) {
-        console.error('Error creating shipping address:', error);
+        console.error('Error creating shipping address:', {
+            error: error.message,
+            stack: error.stack
+        });
+
         return res.status(500).json({
             error: "Error creating shipping address",
             details: error.message
