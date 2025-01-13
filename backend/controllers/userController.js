@@ -4,7 +4,11 @@ import bcrypt from "bcryptjs";
 export const getUserProfile = async (req, res) => {
     try {
         const { id } = req.params;
-        const user = await User.findByPk(id);
+        const user = await User.findByPk(id, {
+            attributes: {
+                exclude: ["hashed_password", "updated_at", "last_login_at"],
+            },
+        });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
