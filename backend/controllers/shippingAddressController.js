@@ -1,4 +1,5 @@
 import ShippingAddress from "../models/shippingAddress.js";
+import User from "../models/user.js";
 
 export const createShippingAddress = async (req, res) => {
     try {
@@ -126,10 +127,63 @@ export const getShippingAddressesByUserId = async (req, res) => {
 
 export const getAllShippingAddresses = async (req, res) => {
     try {
-        const shippingAddresses = await ShippingAddress.findAll();
-        res.status(200).json(shippingAddresses);
+        // Implement pagination
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        // Get total count for pagination
+        const totalCount = await ShippingAddress.count();
+
+        if (totalCount === 0) {
+            return res.status(404).json({
+                message: "No shipping addresses found"
+            });
+        }
+
+        // Get addresses with pagination and specific attributes
+        const shippingAddresses = await ShippingAddress.findAndCountAll({
+            limit,
+            offset,
+            order: [['created_at', 'DESC']],
+            attributes: [
+                'id',
+                'direccion',
+                'ciudad',
+                'estado_provincia',
+                'codigo_postal',
+                'pais',
+                'usuario_id',
+                'created_at',
+                'updated_at'
+            ],
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName', 'lastName_father', 'lastName_mother'],
+            }]
+        });
+
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(totalCount / limit);
+
+        return res.status(200).json({
+            message: "Shipping addresses retrieved successfully",
+            data: {
+                addresses: shippingAddresses.rows,
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalItems: totalCount,
+                    itemsPerPage: limit
+                }
+            }
+        });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error fetching all shipping addresses:', error);
+        return res.status(500).json({
+            error: "Error retrieving shipping addresses",
+            details: error.message
+        });
     }
 };
 
