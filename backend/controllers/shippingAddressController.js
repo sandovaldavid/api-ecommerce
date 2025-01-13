@@ -58,10 +58,69 @@ export const createShippingAddress = async (req, res) => {
 export const getShippingAddressesByUserId = async (req, res) => {
     try {
         const { usuario_id: usuarioId } = req.params;
-        const shippingAddresses = await ShippingAddress.findAll({ where: { usuario_id: usuarioId } });
-        res.status(200).json(shippingAddresses);
+
+        // Validate user ID
+        if (!usuarioId) {
+            return res.status(400).json({
+                error: "User ID is required"
+            });
+        }
+
+        // Check if user has any addresses
+        const addressCount = await ShippingAddress.count({
+            where: { usuario_id: usuarioId }
+        });
+
+        if (addressCount === 0) {
+            return res.status(404).json({
+                message: "No shipping addresses found for this user"
+            });
+        }
+
+        // Get addresses with pagination
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const shippingAddresses = await ShippingAddress.findAndCountAll({
+            where: { usuario_id: usuarioId },
+            limit,
+            offset,
+            order: [['created_at', 'DESC']],
+            attributes: [
+                'id',
+                'direccion',
+                'ciudad',
+                'estado_provincia',
+                'codigo_postal',
+                'pais',
+                'created_at',
+                'updated_at'
+            ]
+        });
+
+        // Format response
+        const totalPages = Math.ceil(shippingAddresses.count / limit);
+
+        return res.status(200).json({
+            message: "Shipping addresses retrieved successfully",
+            data: {
+                addresses: shippingAddresses.rows,
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalItems: shippingAddresses.count,
+                    itemsPerPage: limit
+                }
+            }
+        });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error fetching shipping addresses:', error);
+        return res.status(500).json({
+            error: "Error retrieving shipping addresses",
+            details: error.message
+        });
     }
 };
 
