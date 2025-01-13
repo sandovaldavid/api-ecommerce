@@ -1,9 +1,11 @@
 import express from "express";
-import { createShippingAddress, getShippingAddressesByUserId , getAllShippingAddresses } from "../controllers/shippingAddressController.js";
+import { createShippingAddress, getShippingAddressesByUserId, getAllShippingAddresses } from "../controllers/shippingAddressController.js";
+import { authJwt } from "../middlewares/index.js";
 
 const router = express.Router();
 
-router.post("/create/", createShippingAddress);
+router.use(authJwt.verifyToken);
+router.post("/", createShippingAddress);
 router.get("/:usuario_id", getShippingAddressesByUserId);
 router.get("/", getAllShippingAddresses);
 
