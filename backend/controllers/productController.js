@@ -473,3 +473,41 @@ export const searchProducts = async (req, res) => {
         });
     }
 };
+
+export const getProductReviews = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const reviews = await Review.findAndCountAll({
+            where: { producto_id: id },
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName', 'lastName_father']
+            }],
+            limit,
+            offset,
+            order: [['created_at', 'DESC']]
+        });
+
+        res.status(200).json({
+            message: "Product reviews retrieved",
+            data: {
+                reviews: reviews.rows,
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(reviews.count / limit),
+                    totalItems: reviews.count
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error getting product reviews:', error);
+        res.status(500).json({
+            error: "Error retrieving product reviews",
+            details: error.message
+        });
+    }
+};
