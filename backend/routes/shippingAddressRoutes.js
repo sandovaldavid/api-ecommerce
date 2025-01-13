@@ -6,9 +6,12 @@ const router = express.Router();
 
 router.use(authJwt.verifyToken);
 router.post("/", createShippingAddress);
-router.get("/user/:usuario_id", getShippingAddressesByUserId);
-router.get("/", getAllShippingAddresses);
-router.delete("/:id_ShipingAddress", deleteShippingAddress);
+router.get("/user/:usuario_id", authJwt.isOwnerOrAdmin("usuario_id"), getShippingAddressesByUserId);
+router.delete("/:id_ShipingAddress", authJwt.isOwnerOrAdmin("usuario_id"), deleteShippingAddress);
 router.put("/:id_ShipingAddress", authJwt.isOwnerOrAdmin("usuario_id"), updateShippingAddress);
+
+// Admin routes
+router.use(authJwt.isAdmin);
+router.get("/", getAllShippingAddresses);
 
 export default router;
