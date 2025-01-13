@@ -1,4 +1,4 @@
-import User from "../models/user.js";
+import { User, Roles } from "../models/userRoles.js";
 import bcrypt from "bcryptjs";
 
 export const getUserProfile = async (req, res) => {
@@ -8,11 +8,26 @@ export const getUserProfile = async (req, res) => {
             attributes: {
                 exclude: ["hashed_password", "updated_at", "last_login_at"],
             },
+            include: [{
+                model: Roles,
+                attributes: ['name'],
+                through: { attributes: [] }
+            }]
         });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.status(200).json(user);
+        res.status(200).json({
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                secondName: user.secondName,
+                lastName_father: user.lastName_father,
+                lastName_mother: user.lastName_mother,
+                email: user.email,
+                roles: user.Roles.map(role => role.name)
+            },
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
