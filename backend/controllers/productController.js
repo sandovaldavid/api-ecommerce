@@ -1,9 +1,11 @@
-import { Op } from "sequelize";
+import { Op, fn, col } from "sequelize";
+import { sequelize } from "../models/index.js";
 import Product from "../models/product.js";
 import Category from "../models/category.js";
 import OrderDetails from "../models/orderDetails.js";
 import Review from "../models/review.js";
 import CartItems from "../models/cartItems.js";
+import User from "../models/user.js";
 
 export const getAllProducts = async (req, res) => {
     try {
@@ -477,35 +479,98 @@ export const searchProducts = async (req, res) => {
 export const getProductReviews = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // Validate ID
+        if (!id) {
+            return res.status(400).json({
+                error: "Product ID is required"
+            });
+        }
+
+        // Validate product exists
+        const product = await Product.findByPk(id, {
+            attributes: ['id', 'nombre']
+        });
+
+        if (!product) {
+            return res.status(404).json({
+                error: "Product not found",
+                productId: id
+            });
+        }
+
+        // Implement pagination
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const offset = (page - 1) * limit;
 
+        // Get reviews with pagination and related data
         const reviews = await Review.findAndCountAll({
             where: { producto_id: id },
             include: [{
                 model: User,
-                attributes: ['id', 'firstName', 'lastName_father']
+                attributes: ['id', 'firstName', 'lastName_father', 'lastName_mother']
             }],
+            attributes: [
+                'id',
+                'rating',
+                'review_text',
+                'created_at',
+                'updated_at'
+            ],
+            order: [['created_at', 'DESC']],
             limit,
-            offset,
-            order: [['created_at', 'DESC']]
+            offset
         });
 
-        res.status(200).json({
-            message: "Product reviews retrieved",
+        // Handle no reviews found
+        if (reviews.count === 0) {
+            return res.status(404).json({
+                message: "No reviews found for this product",
+                productId: id,
+                productName: product.nombre
+            });
+        }
+
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(reviews.count / limit);
+
+        // Calculate average rating
+        const averageRating = await Review.findOne({
+            where: { producto_id: id },
+            attributes: [
+                [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.col('rating')), 1), 'avgRating'],
+                [sequelize.fn('COUNT', sequelize.col('rating')), 'totalRatings']
+            ],
+            raw: true
+        });
+
+        return res.status(200).json({
+            message: "Product reviews retrieved successfully",
             data: {
+                product: {
+                    id: product.id,
+                    nombre: product.nombre,
+                    averageRating: averageRating?.avgRating || 0,
+                    totalRatings: averageRating?.totalRatings || 0
+                },
                 reviews: reviews.rows,
                 pagination: {
                     currentPage: page,
-                    totalPages: Math.ceil(reviews.count / limit),
-                    totalItems: reviews.count
+                    totalPages,
+                    totalItems: reviews.count,
+                    itemsPerPage: limit
                 }
             }
         });
+
     } catch (error) {
-        console.error('Error getting product reviews:', error);
-        res.status(500).json({
+        console.error('Error getting product reviews:', {
+            error: error.message,
+            stack: error.stack
+        });
+
+        return res.status(500).json({
             error: "Error retrieving product reviews",
             details: error.message
         });
