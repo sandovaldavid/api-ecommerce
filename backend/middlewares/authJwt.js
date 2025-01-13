@@ -54,3 +54,34 @@ export const hasRoles = (...roles) => {
         }
     };
 };
+
+export const isOwnerOrAdmin = (paramId) => {
+    return async (req, res, next) => {
+        try {
+            const user = await User.findByPk(req.userId);
+            const userRoles = await user.getRoles();
+
+            // Verificar si es admin o moderador
+            const isAdminOrMod = userRoles.some(role =>
+                ["admin", "moderator"].includes(role.name)
+            );
+
+            // Verificar si es el propietario
+            const isOwner = req.userId === req.params[paramId];
+
+            if (!isOwner && !isAdminOrMod) {
+                return res.status(403).json({
+                    message: "Require owner, admin or moderator privileges"
+                });
+            }
+
+            // Agregar flag para uso en el controlador
+            req.isAdmin = userRoles.some(role => role.name === "admin");
+            req.isModerator = userRoles.some(role => role.name === "moderator");
+
+            next();
+        } catch (error) {
+            return res.status(500).json({ error: error.message });
+        }
+    };
+};
