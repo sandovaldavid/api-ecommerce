@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "./index.js";
 import uid2 from "uid2";  // Importa sequelize desde index.js
+import Category from "./category.js";
 
 const Product = sequelize.define("Product", {
     id: {
@@ -29,10 +30,6 @@ const Product = sequelize.define("Product", {
         allowNull: false,
         defaultValue: 0,
     },
-    categoria_id: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
     created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
@@ -51,5 +48,7 @@ const Product = sequelize.define("Product", {
         }
     }
 });
+
+Category.hasMany(Product, { foreignKey: "categoria_id" });
 
 export default Product;
