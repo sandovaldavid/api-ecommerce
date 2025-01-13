@@ -98,22 +98,24 @@ export const getShippingAddressesByUserId = async (req, res) => {
             });
         }
 
-        // Check if user has any addresses
-        const addressCount = await ShippingAddress.count({
-            where: { usuario_id: usuarioId }
+        // Check if user exists
+        const user = await User.findByPk(usuarioId, {
+            attributes: ['id', 'firstName', 'lastName_father']
         });
 
-        if (addressCount === 0) {
+        if (!user) {
             return res.status(404).json({
-                message: "No shipping addresses found for this user"
+                error: "User not found",
+                userId: usuarioId
             });
         }
 
         // Get addresses with pagination
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
         const offset = (page - 1) * limit;
 
+        // Get addresses count and data in a single query
         const shippingAddresses = await ShippingAddress.findAndCountAll({
             where: { usuario_id: usuarioId },
             limit,
@@ -128,15 +130,37 @@ export const getShippingAddressesByUserId = async (req, res) => {
                 'pais',
                 'created_at',
                 'updated_at'
-            ]
+            ],
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName', 'lastName_father'],
+                required: true
+            }],
+            distinct: true
         });
 
-        // Format response
+        // Handle no addresses found
+        if (shippingAddresses.count === 0) {
+            return res.status(404).json({
+                message: "No shipping addresses found for this user",
+                userId: usuarioId,
+                userName: user.firstName
+            });
+        }
+
+        // Calculate pagination metadata
         const totalPages = Math.ceil(shippingAddresses.count / limit);
+
+        // Set cache headers for better performance
+        res.set('Cache-Control', 'private, max-age=300');
 
         return res.status(200).json({
             message: "Shipping addresses retrieved successfully",
             data: {
+                user: {
+                    id: user.id,
+                    name: `${user.firstName} ${user.lastName_father}`
+                },
                 addresses: shippingAddresses.rows,
                 pagination: {
                     currentPage: page,
@@ -148,7 +172,11 @@ export const getShippingAddressesByUserId = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching shipping addresses:', error);
+        console.error('Error fetching shipping addresses:', {
+            error: error.message,
+            stack: error.stack
+        });
+
         return res.status(500).json({
             error: "Error retrieving shipping addresses",
             details: error.message
