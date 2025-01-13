@@ -211,3 +211,84 @@ export const deleteReview = async (req, res) => {
         });
     }
 };
+
+export const updateReview = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { rating, review_text: reviewText } = req.body;
+
+        // Input validation
+        if (!id) {
+            return res.status(400).json({
+                error: "Review ID is required"
+            });
+        }
+
+        // Validate rating if provided
+        if (rating && (rating < 1 || rating > 5)) {
+            return res.status(400).json({
+                error: "Rating must be between 1 and 5"
+            });
+        }
+
+        // Check if review exists with minimal data loading
+        const review = await Review.findByPk(id, {
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName']
+            }]
+        });
+
+        if (!review) {
+            return res.status(404).json({
+                error: "Review not found"
+            });
+        }
+
+        // Authorization check
+        const userRoles = await req.user.getRoles();
+        const isAdminOrMod = userRoles.some(role =>
+            ["admin", "moderator"].includes(role.name)
+        );
+
+        if (!isAdminOrMod && req.userId !== review.usuario_id) {
+            return res.status(403).json({
+                error: "Not authorized to update this review"
+            });
+        }
+
+        // Update review with validation
+        const updates = {};
+        if (rating) updates.rating = rating;
+        if (reviewText !== undefined) updates.review_text = reviewText.trim();
+        updates.updated_at = new Date();
+
+        await review.update(updates);
+
+        // Get updated review with related data
+        const updatedReview = await Review.findByPk(id, {
+            include: [
+                {
+                    model: User,
+                    attributes: ['id', 'firstName', 'lastName_father']
+                },
+                {
+                    model: Product,
+                    attributes: ['id', 'nombre', 'descripcion']
+                }
+            ]
+        });
+
+        return res.status(200).json({
+            message: "Review updated successfully",
+            data: updatedReview
+        });
+
+    } catch (error) {
+        console.error('Error updating review:', error);
+        return res.status(500).json({
+            error: "Error updating review",
+            details: error.message
+        });
+    }
+};
