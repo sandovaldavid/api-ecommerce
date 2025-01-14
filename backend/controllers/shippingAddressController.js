@@ -7,7 +7,7 @@ export const createShippingAddress = async (req, res) => {
         // Destructure and validate required fields
         const {
             usuario_id: usuarioId,
-            direccion: address,
+            address,
             ciudad,
             estado_provincia: estadoProvincia,
             codigo_postal: codigoPostal,
