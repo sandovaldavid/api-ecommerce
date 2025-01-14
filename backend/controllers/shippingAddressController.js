@@ -439,25 +439,73 @@ export const getShippingAddressById = async (req, res) => {
     try {
         const { id_ShippingAddress } = req.params;
 
-        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
-            include: [{
-                model: User,
-                attributes: ['id', 'firstName', 'lastName_father']
-            }]
-        });
-
-        if (!address) {
-            return res.status(404).json({
-                error: "Shipping address not found"
+        // Validate ID
+        if (!id_ShippingAddress) {
+            return res.status(400).json({
+                error: "Shipping address ID is required"
             });
         }
 
+        // Get address with user info and selected attributes
+        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
+            attributes: [
+                'id',
+                'direccion',
+                'ciudad',
+                'estado_provincia',
+                'codigo_postal',
+                'pais',
+                'usuario_id',
+                'created_at',
+                'updated_at'
+            ],
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName', 'lastName_father'],
+                required: true
+            }]
+        });
+
+        // Handle not found
+        if (!address) {
+            return res.status(404).json({
+                error: "Shipping address not found",
+                addressId: id_ShippingAddress
+            });
+        }
+
+        // Verify ownership (additional security)
+        if (address.usuario_id !== req.userId && !req.isAdmin) {
+            return res.status(403).json({
+                error: "Not authorized to view this address"
+            });
+        }
+
+        // Set cache headers for better performance
+        res.set('Cache-Control', 'private, max-age=300');
+
+        // Format response
+        const formattedAddress = {
+            ...address.toJSON(),
+            user: {
+                id: address.User.id,
+                name: `${address.User.firstName} ${address.User.lastName_father}`
+            }
+        };
+        delete formattedAddress.User;
+
         return res.status(200).json({
             message: "Shipping address retrieved successfully",
-            data: address
+            data: formattedAddress
         });
+
     } catch (error) {
-        console.error('Error getting shipping address:', error);
+        console.error('Error getting shipping address:', {
+            error: error.message,
+            stack: error.stack,
+            addressId: req.params.id_ShippingAddress
+        });
+
         return res.status(500).json({
             error: "Error retrieving shipping address",
             details: error.message
