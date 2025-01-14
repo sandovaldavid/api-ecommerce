@@ -690,22 +690,79 @@ export const bulkDeleteAddresses = async (req, res) => {
     try {
         const { addressIds } = req.body;
 
-        await sequelize.transaction(async (t) => {
-            await ShippingAddress.destroy({
+        // Validate input
+        if (!addressIds || !Array.isArray(addressIds) || addressIds.length === 0) {
+            return res.status(400).json({
+                error: "Valid address IDs array is required",
+                details: "Must provide an array of address IDs"
+            });
+        }
+
+        // Validate maximum number of addresses to delete at once
+        if (addressIds.length > 10) {
+            return res.status(400).json({
+                error: "Too many addresses",
+                details: "Can only delete up to 10 addresses at once"
+            });
+        }
+
+        // Verify addresses exist and belong to user
+        const addresses = await ShippingAddress.findAll({
+            where: {
+                id: addressIds,
+                usuario_id: req.userId
+            },
+            attributes: ['id', 'usuario_id']
+        });
+
+        // Check if all addresses were found
+        if (addresses.length !== addressIds.length) {
+            const foundIds = addresses.map(addr => addr.id);
+            const notFound = addressIds.filter(id => !foundIds.includes(id));
+
+            return res.status(404).json({
+                error: "Some addresses not found or not authorized",
+                details: {
+                    requestedIds: addressIds,
+                    notFoundIds: notFound
+                }
+            });
+        }
+
+        // Delete addresses with transaction
+        const deletedCount = await sequelize.transaction(async (t) => {
+            const result = await ShippingAddress.destroy({
                 where: {
                     id: addressIds,
                     usuario_id: req.userId
                 },
                 transaction: t
             });
+
+            return result;
         });
 
+        // Return success response
         return res.status(200).json({
             message: "Addresses deleted successfully",
-            data: { deletedCount: addressIds.length }
+            data: {
+                deletedCount,
+                deletedIds: addressIds,
+                deletedBy: {
+                    userId: req.userId,
+                    isAdmin: req.isAdmin
+                }
+            }
         });
+
     } catch (error) {
-        console.error('Error bulk deleting addresses:', error);
+        console.error('Error bulk deleting addresses:', {
+            error: error.message,
+            stack: error.stack,
+            addressIds: req.body.addressIds,
+            userId: req.userId
+        });
+
         return res.status(500).json({
             error: "Error deleting addresses",
             details: error.message
