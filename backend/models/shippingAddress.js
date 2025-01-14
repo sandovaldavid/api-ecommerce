@@ -28,6 +28,10 @@ const ShippingAddress = sequelize.define("ShippingAddress", {
         type: DataTypes.STRING,
         allowNull: false,
     },
+    is_default: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     created_at: {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
