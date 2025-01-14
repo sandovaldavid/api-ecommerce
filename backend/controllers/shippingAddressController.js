@@ -193,12 +193,12 @@ export const getAllShippingAddresses = async (req, res) => {
         const offset = (page - 1) * limit;
 
         // Optional filters
-        const { ciudad, estado_provincia, pais } = req.query;
+        const { city, stateProvince, country } = req.query;
         const whereClause = {};
 
-        if (ciudad) whereClause.city = ciudad.trim();
-        if (estado_provincia) whereClause.stateProvince = estado_provincia.trim();
-        if (pais) whereClause.country = pais.trim();
+        if (city) whereClause.city = city.trim();
+        if (stateProvince) whereClause.stateProvince = stateProvince.trim();
+        if (country) whereClause.country = country.trim();
 
         // Get total count with filters
         const totalCount = await ShippingAddress.count({
@@ -208,7 +208,7 @@ export const getAllShippingAddresses = async (req, res) => {
         if (totalCount === 0) {
             return res.status(404).json({
                 message: "No shipping addresses found",
-                filters: { ciudad: city, estado_provincia: stateProvince, pais: country }
+                filters: { city, stateProvince, country }
             });
         }
 
@@ -254,9 +254,9 @@ export const getAllShippingAddresses = async (req, res) => {
                     itemsPerPage: limit
                 },
                 filters: {
-                    ciudad: city,
-                    estado_provincia: stateProvince,
-                    pais: country
+                    city,
+                    stateProvince,
+                    country
                 }
             }
         });
