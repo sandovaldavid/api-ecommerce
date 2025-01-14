@@ -16,7 +16,7 @@ const ShippingAddress = sequelize.define("ShippingAddress", {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    estado_provincia: {
+    stateProvince: {
         type: DataTypes.STRING,
         allowNull: false,
     },

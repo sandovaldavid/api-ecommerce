@@ -18,7 +18,7 @@ export const createShippingAddress = async (req, res) => {
         if (!usuarioId || !direccion || !ciudad || !estadoProvincia || !codigoPostal || !pais) {
             return res.status(400).json({
                 error: "All fields are required",
-                required: ["usuario_id", "address", "city", "estado_provincia", "codigo_postal", "pais"]
+                required: ["usuario_id", "address", "city", "stateProvince", "codigo_postal", "pais"]
             });
         }
 
@@ -55,7 +55,7 @@ export const createShippingAddress = async (req, res) => {
             usuario_id: usuarioId,
             address: direccion.trim(),
             city: ciudad.trim(),
-            estado_provincia: estadoProvincia.trim(),
+            stateProvince: estadoProvincia.trim(),
             codigo_postal: codigoPostal.trim(),
             pais: pais.trim(),
             created_at: new Date(),
@@ -126,7 +126,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
                 'id',
                 'address',
                 'city',
-                'estado_provincia',
+                'stateProvince',
                 'codigo_postal',
                 'pais',
                 'created_at',
@@ -197,7 +197,7 @@ export const getAllShippingAddresses = async (req, res) => {
         const whereClause = {};
 
         if (ciudad) whereClause.city = ciudad.trim();
-        if (estado_provincia) whereClause.estado_provincia = estado_provincia.trim();
+        if (estado_provincia) whereClause.stateProvince = estado_provincia.trim();
         if (pais) whereClause.pais = pais.trim();
 
         // Get total count with filters
@@ -208,7 +208,7 @@ export const getAllShippingAddresses = async (req, res) => {
         if (totalCount === 0) {
             return res.status(404).json({
                 message: "No shipping addresses found",
-                filters: { ciudad: city, estado_provincia, pais }
+                filters: { ciudad: city, estado_provincia: stateProvince, pais }
             });
         }
 
@@ -222,7 +222,7 @@ export const getAllShippingAddresses = async (req, res) => {
                 'id',
                 'address',
                 'city',
-                'estado_provincia',
+                'stateProvince',
                 'codigo_postal',
                 'pais',
                 'usuario_id',
@@ -255,7 +255,7 @@ export const getAllShippingAddresses = async (req, res) => {
                 },
                 filters: {
                     ciudad: city,
-                    estado_provincia,
+                    estado_provincia: stateProvince,
                     pais
                 }
             }
@@ -400,7 +400,7 @@ export const updateShippingAddress = async (req, res) => {
 
         if (direccion) updates.address = direccion.trim();
         if (ciudad) updates.city = ciudad.trim();
-        if (estadoProvincia) updates.estado_provincia = estadoProvincia.trim();
+        if (estadoProvincia) updates.stateProvince = estadoProvincia.trim();
         if (codigoPostal) updates.codigo_postal = codigoPostal.trim();
         if (pais) updates.pais = pais.trim();
 
@@ -452,7 +452,7 @@ export const getShippingAddressById = async (req, res) => {
                 'id',
                 'address',
                 'city',
-                'estado_provincia',
+                'stateProvince',
                 'codigo_postal',
                 'pais',
                 'usuario_id',
@@ -658,7 +658,7 @@ export const setDefaultAddress = async (req, res) => {
                 'id',
                 'address',
                 'city',
-                'estado_provincia',
+                'stateProvince',
                 'codigo_postal',
                 'pais',
                 'is_default',

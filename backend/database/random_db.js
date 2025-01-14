@@ -176,7 +176,7 @@ async function generateRandomData () {
             id: faker.string.uuid(),
             address: faker.location.streetAddress(),
             city: faker.location.city(),
-            estado_provincia: faker.location.state(),
+            stateProvince: faker.location.state(),
             codigo_postal: faker.location.zipCode(),
             pais: faker.location.country(),
             usuario_id: allUsers[i].id,
