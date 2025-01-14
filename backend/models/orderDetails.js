@@ -9,11 +9,11 @@ const OrderDetails = sequelize.define("OrderDetails", {
         type: DataTypes.STRING,
         primaryKey: true,
     },
-    cantidad: {
+    quantity: {
         type: DataTypes.INTEGER,
         allowNull: false,
     },
-    precio_unitario: {
+    unitPrice: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },

@@ -145,8 +145,8 @@ async function generateRandomData () {
     for (let i = 0; i < 800; i++) {
         orderDetailsData.push({
             id: faker.string.uuid(),
-            cantidad: faker.number.int({ min: 1, max: 10 }),
-            precio_unitario: faker.commerce.price({ min: 10, max: 1000, dec: 2, symbol: "" }),
+            quantity: faker.number.int({ min: 1, max: 10 }),
+            unitPrice: faker.commerce.price({ min: 10, max: 1000, dec: 2, symbol: "" }),
             subtotal: faker.commerce.price({ min: 10, max: 10000, dec: 2, symbol: "" }),
             orden_id: ordersData[faker.number.int({ min: 0, max: 499 })].id,
             producto_id: productsData[faker.number.int({ min: 0, max: 99 })].id,
@@ -198,7 +198,7 @@ async function generateRandomData () {
     for (let i = 0; i < 300; i++) {
         cartItemsData.push({
             id: faker.string.uuid(),
-            cantidad: faker.number.int({ min: 1, max: 30 }),
+            quantity: faker.number.int({ min: 1, max: 30 }),
             cart_id: cartsData[faker.number.int({ min: 0, max: 99 })].id,
             product_id: productsData[faker.number.int({ min: 0, max: 99 })].id,
         });

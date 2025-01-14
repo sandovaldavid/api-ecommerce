@@ -6,7 +6,7 @@ export const createOrder = async (req, res) => {
         const order = await Order.create({ usuario_id: usuarioId, total });
     
         for (const producto of productos) {
-            await order.addProduct(producto.id, { through: { cantidad: producto.cantidad, precio_unitario: producto.price } });
+            await order.addProduct(producto.id, { through: { quantity: producto.quantity, unitPrice: producto.price } });
         }
     
         res.status(201).json(order);
