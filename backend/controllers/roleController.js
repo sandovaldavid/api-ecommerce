@@ -127,14 +127,73 @@ export const getAllRoles = async (req, res) => {
 export const deleteRole = async (req, res) => {
     try {
         const { id } = req.params;
-        const role = await Roles.findByPk(id);
-        if (!role) {
-            return res.status(404).json({ error: "Role not found" });
+
+        // Validate ID
+        if (!id) {
+            return res.status(400).json({
+                error: "Role ID is required"
+            });
         }
-        await role.destroy();
-        res.status(204).send();
+
+        // First get role information
+        const role = await Roles.findByPk(id);
+
+        if (!role) {
+            return res.status(404).json({
+                error: "Role not found",
+                roleId: id
+            });
+        }
+
+        // Prevent deletion of default roles
+        const defaultRoles = ['admin', 'user', 'moderator'];
+        if (defaultRoles.includes(role.name)) {
+            return res.status(400).json({
+                error: "Cannot delete default role",
+                roleName: role.name
+            });
+        }
+
+        // Check if role is in use with separate query
+        const userCount = await sequelize.query(
+            'SELECT COUNT(DISTINCT userId) as count FROM UserRoles WHERE roleId = :roleId',
+            {
+                replacements: { roleId: id },
+                type: sequelize.QueryTypes.SELECT
+            }
+        );
+
+        if (userCount[0].count > 0) {
+            return res.status(400).json({
+                error: "Cannot delete role with active users",
+                usersCount: userCount[0].count
+            });
+        }
+
+        // Delete role with transaction
+        await sequelize.transaction(async (t) => {
+            await role.destroy({ transaction: t });
+        });
+
+        return res.status(200).json({
+            message: "Role deleted successfully",
+            data: {
+                id: role.id,
+                name: role.name
+            }
+        });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error deleting role:', {
+            error: error.message,
+            stack: error.stack,
+            roleId: req.params.id
+        });
+
+        return res.status(500).json({
+            error: "Error deleting role",
+            details: error.message
+        });
     }
 };
 
