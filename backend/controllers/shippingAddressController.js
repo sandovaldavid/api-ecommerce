@@ -18,7 +18,7 @@ export const createShippingAddress = async (req, res) => {
         if (!usuarioId || !direccion || !ciudad || !estadoProvincia || !codigoPostal || !pais) {
             return res.status(400).json({
                 error: "All fields are required",
-                required: ["usuario_id", "direccion", "ciudad", "estado_provincia", "codigo_postal", "pais"]
+                required: ["usuario_id", "address", "ciudad", "estado_provincia", "codigo_postal", "pais"]
             });
         }
 
@@ -53,7 +53,7 @@ export const createShippingAddress = async (req, res) => {
         // Create shipping address with cleaned data
         const shippingAddress = await ShippingAddress.create({
             usuario_id: usuarioId,
-            direccion: direccion.trim(),
+            address: direccion.trim(),
             ciudad: ciudad.trim(),
             estado_provincia: estadoProvincia.trim(),
             codigo_postal: codigoPostal.trim(),
@@ -124,7 +124,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
             order: [['created_at', 'DESC']],
             attributes: [
                 'id',
-                'direccion',
+                'address',
                 'ciudad',
                 'estado_provincia',
                 'codigo_postal',
@@ -220,7 +220,7 @@ export const getAllShippingAddresses = async (req, res) => {
             order: [['created_at', 'DESC']],
             attributes: [
                 'id',
-                'direccion',
+                'address',
                 'ciudad',
                 'estado_provincia',
                 'codigo_postal',
@@ -398,7 +398,7 @@ export const updateShippingAddress = async (req, res) => {
             updated_at: new Date()
         };
 
-        if (direccion) updates.direccion = direccion.trim();
+        if (direccion) updates.address = direccion.trim();
         if (ciudad) updates.ciudad = ciudad.trim();
         if (estadoProvincia) updates.estado_provincia = estadoProvincia.trim();
         if (codigoPostal) updates.codigo_postal = codigoPostal.trim();
@@ -450,7 +450,7 @@ export const getShippingAddressById = async (req, res) => {
         const address = await ShippingAddress.findByPk(id_ShippingAddress, {
             attributes: [
                 'id',
-                'direccion',
+                'address',
                 'ciudad',
                 'estado_provincia',
                 'codigo_postal',
@@ -656,7 +656,7 @@ export const setDefaultAddress = async (req, res) => {
             }],
             attributes: [
                 'id',
-                'direccion',
+                'address',
                 'ciudad',
                 'estado_provincia',
                 'codigo_postal',

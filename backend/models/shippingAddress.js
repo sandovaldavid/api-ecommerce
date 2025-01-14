@@ -8,7 +8,7 @@ const ShippingAddress = sequelize.define("ShippingAddress", {
         type: DataTypes.STRING,
         primaryKey: true,
     },
-    direccion: {
+    address: {
         type: DataTypes.STRING,
         allowNull: false,
     },
