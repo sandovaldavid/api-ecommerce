@@ -34,15 +34,15 @@ async function generateRandomData () {
     const usedNames = new Set();
 
     for (let i = 0; i < 15; i++) {
-        let nombre;
+        let name;
         do {
-            nombre = faker.commerce.department();
-        } while (usedNames.has(nombre));
+            name = faker.commerce.department();
+        } while (usedNames.has(name));
 
-        usedNames.add(nombre);
+        usedNames.add(name);
         categoriesData.push({
             id: faker.string.uuid(),
-            nombre: name,
+            name,
             description: faker.lorem.sentence(),
         });
     }
@@ -65,7 +65,7 @@ async function generateRandomData () {
             description: faker.commerce.productDescription(),
             price: faker.commerce.price({ min: 10, max: 1000, dec: 2, symbol: "" }),
             stock: faker.number.int({ min: 0, max: 100 }),
-            categoria_id: categoriesData[faker.number.int({ min: 0, max: categoriesData.length - 1 })].id,
+            categoryId: categoriesData[faker.number.int({ min: 0, max: categoriesData.length - 1 })].id,
         });
     }
 
@@ -93,7 +93,7 @@ async function generateRandomData () {
             if (randomRole2.name === "user") {
                 continue;
             } else {
-                await newUser.addRole(randomRole2.id); // Asegúrate de usar solo el id del rol
+                await newUser.addRole(randomRole2.id);
                 usersToPrint.push({ email: newUser.email, password, roles: [randomRole1.name, randomRole2.name] });
                 usersCreated.push({ email: newUser.email, password, roles: [randomRole1.name, randomRole2.name] });
                 i++;
@@ -112,8 +112,8 @@ async function generateRandomData () {
             id: faker.string.uuid(),
             rating: faker.number.int({ min: 1, max: 5 }),
             review_text: faker.lorem.sentence(),
-            usuario_id: allUsers[faker.number.int({ min: 0, max: 24 })].id,
-            producto_id: productsData[faker.number.int({ min: 0, max: 99 })].id,
+            userId: allUsers[faker.number.int({ min: 0, max: 24 })].id,
+            productId: productsData[faker.number.int({ min: 0, max: 99 })].id,
         });
     }
     await Review.bulkCreate(reviewsData);
@@ -123,8 +123,8 @@ async function generateRandomData () {
         ordersData.push({
             id: faker.string.uuid(),
             total: faker.commerce.price({ min: 50, max: 500, dec: 2, symbol: "" }),
-            state: "pendiente",
-            usuario_id: allUsers[faker.number.int({ min: 0, max: 24 })].id,
+            state: "pending",
+            userId: allUsers[faker.number.int({ min: 0, max: 24 })].id,
         });
     }
     await Order.bulkCreate(ordersData);
@@ -136,8 +136,8 @@ async function generateRandomData () {
             quantity: faker.number.int({ min: 1, max: 10 }),
             unitPrice: faker.commerce.price({ min: 10, max: 1000, dec: 2, symbol: "" }),
             subtotal: faker.commerce.price({ min: 10, max: 10000, dec: 2, symbol: "" }),
-            orden_id: ordersData[faker.number.int({ min: 0, max: 499 })].id,
-            producto_id: productsData[faker.number.int({ min: 0, max: 99 })].id,
+            orderId: ordersData[faker.number.int({ min: 0, max: 499 })].id,
+            productId: productsData[faker.number.int({ min: 0, max: 99 })].id,
         });
     }
     await OrderDetails.bulkCreate(orderDetailsData);
@@ -150,7 +150,7 @@ async function generateRandomData () {
             payment_method: faker.helpers.arrayElement(["tarjeta_credito", "paypal"]),
             payment_status: faker.helpers.arrayElement(["pagado", "pendiente"]),
             amount: faker.commerce.price({ min: 50, max: 500, dec: 2, symbol: "" }),
-            orden_id: ordersData[faker.number.int({ min: 0, max: 499 })].id,
+            orderId: ordersData[faker.number.int({ min: 0, max: 499 })].id,
         });
     }
     await Payment.bulkCreate(paymentsData);
@@ -164,7 +164,7 @@ async function generateRandomData () {
             stateProvince: faker.location.state(),
             zipCode: faker.location.zipCode(),
             country: faker.location.country(),
-            usuario_id: allUsers[i].id,
+            userId: allUsers[i].id,
         });
     }
     await ShippingAddress.bulkCreate(shippingAddressesData);
@@ -173,7 +173,7 @@ async function generateRandomData () {
     for (let i = 0; i < 100; i++) {
         cartsData.push({
             id: faker.string.uuid(),
-            usuario_id: allUsers[faker.number.int({ min: 0, max: 24 })].id,
+            userId: allUsers[faker.number.int({ min: 0, max: 24 })].id,
         });
     }
     await Cart.bulkCreate(cartsData);
@@ -183,8 +183,8 @@ async function generateRandomData () {
         cartItemsData.push({
             id: faker.string.uuid(),
             quantity: faker.number.int({ min: 1, max: 30 }),
-            cart_id: cartsData[faker.number.int({ min: 0, max: 99 })].id,
-            product_id: productsData[faker.number.int({ min: 0, max: 99 })].id,
+            cartId: cartsData[faker.number.int({ min: 0, max: 99 })].id,
+            productId: productsData[faker.number.int({ min: 0, max: 99 })].id,
         });
     }
     await CartItems.bulkCreate(cartItemsData);
