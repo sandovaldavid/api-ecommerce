@@ -201,44 +201,92 @@ export const assignRole = async (req, res) => {
     try {
         const { userId, roleId } = req.body;
 
-        // Buscar usuario
-        const user = await User.findByPk(userId);
-        if (!user) {
-            return res.status(404).json({ error: "User not found" });
-        }
-
-        // Buscar rol a asignar
-        const roleToAssign = await Roles.findByPk(roleId);
-        if (!roleToAssign) {
-            return res.status(404).json({ error: "Role not found" });
-        }
-
-        // Obtener roles actuales del usuario
-        const currentRoles = await user.getRoles();
-
-        // Verificar si ya tiene el rol
-        const alreadyHasRole = currentRoles.some(role => role.id === roleId);
-        if (alreadyHasRole) {
+        // Input validation
+        if (!userId || !roleId) {
             return res.status(400).json({
-                error: "User already has this role"
+                error: "Missing required fields",
+                required: ["userId", "roleId"]
             });
         }
 
-        // Agregar el nuevo rol manteniendo los anteriores
-        await user.addRole(roleToAssign);
+        // Get user and role in parallel for better performance
+        const [user, roleToAssign] = await Promise.all([
+            User.findByPk(userId, {
+                include: [{
+                    model: Roles,
+                    attributes: ['id', 'name']
+                }]
+            }),
+            Roles.findByPk(roleId, {
+                attributes: ['id', 'name']
+            })
+        ]);
 
-        // Obtener roles actualizados para la respuesta
-        const updatedRoles = await user.getRoles();
+        // Validate user exists
+        if (!user) {
+            return res.status(404).json({
+                error: "User not found",
+                userId
+            });
+        }
 
-        res.status(200).json({
-            message: "Role assigned successfully",
-            roles: updatedRoles.map(role => ({
-                id: role.id,
-                name: role.name
-            }))
+        // Validate role exists
+        if (!roleToAssign) {
+            return res.status(404).json({
+                error: "Role not found",
+                roleId
+            });
+        }
+
+        // Check if user already has this role
+        const alreadyHasRole = user.Roles.some(role => role.id === roleId);
+        if (alreadyHasRole) {
+            return res.status(400).json({
+                error: "User already has this role",
+                role: roleToAssign.name
+            });
+        }
+
+        // Add role with transaction
+        await sequelize.transaction(async (t) => {
+            await user.addRole(roleToAssign, { transaction: t });
         });
+
+        // Get updated roles for response
+        const updatedUser = await User.findByPk(userId, {
+            include: [{
+                model: Roles,
+                attributes: ['id', 'name']
+            }],
+            attributes: ['id', 'firstName', 'lastName_father']
+        });
+
+        return res.status(200).json({
+            message: "Role assigned successfully",
+            data: {
+                user: {
+                    id: updatedUser.id,
+                    name: `${updatedUser.firstName} ${updatedUser.lastName_father}`
+                },
+                roles: updatedUser.Roles.map(role => ({
+                    id: role.id,
+                    name: role.name
+                }))
+            }
+        });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error assigning role:', {
+            error: error.message,
+            stack: error.stack,
+            userId: req.body.userId,
+            roleId: req.body.roleId
+        });
+
+        return res.status(500).json({
+            error: "Error assigning role",
+            details: error.message
+        });
     }
 };
 
