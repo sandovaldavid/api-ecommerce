@@ -178,7 +178,7 @@ async function generateRandomData () {
             city: faker.location.city(),
             stateProvince: faker.location.state(),
             zipCode: faker.location.zipCode(),
-            pais: faker.location.country(),
+            country: faker.location.country(),
             usuario_id: allUsers[i].id,
         });
     }

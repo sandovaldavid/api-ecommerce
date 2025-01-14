@@ -18,7 +18,7 @@ export const createShippingAddress = async (req, res) => {
         if (!usuarioId || !address || !ciudad || !stateProvince || !zipCode || !pais) {
             return res.status(400).json({
                 error: "All fields are required",
-                required: ["usuario_id", "address", "city", "stateProvince", "zipCode", "pais"]
+                required: ["usuario_id", "address", "city", "stateProvince", "zipCode", "country"]
             });
         }
 
@@ -57,7 +57,7 @@ export const createShippingAddress = async (req, res) => {
             city: ciudad.trim(),
             stateProvince: stateProvince.trim(),
             zipCode: zipCode.trim(),
-            pais: pais.trim(),
+            country: pais.trim(),
             created_at: new Date(),
             updated_at: new Date()
         });
@@ -128,7 +128,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
                 'city',
                 'stateProvince',
                 'zipCode',
-                'pais',
+                'country',
                 'created_at',
                 'updated_at'
             ],
@@ -198,7 +198,7 @@ export const getAllShippingAddresses = async (req, res) => {
 
         if (ciudad) whereClause.city = ciudad.trim();
         if (estado_provincia) whereClause.stateProvince = estado_provincia.trim();
-        if (pais) whereClause.pais = pais.trim();
+        if (pais) whereClause.country = pais.trim();
 
         // Get total count with filters
         const totalCount = await ShippingAddress.count({
@@ -208,7 +208,7 @@ export const getAllShippingAddresses = async (req, res) => {
         if (totalCount === 0) {
             return res.status(404).json({
                 message: "No shipping addresses found",
-                filters: { ciudad: city, estado_provincia: stateProvince, pais }
+                filters: { ciudad: city, estado_provincia: stateProvince, pais: country }
             });
         }
 
@@ -224,7 +224,7 @@ export const getAllShippingAddresses = async (req, res) => {
                 'city',
                 'stateProvince',
                 'zipCode',
-                'pais',
+                'country',
                 'usuario_id',
                 'created_at',
                 'updated_at'
@@ -256,7 +256,7 @@ export const getAllShippingAddresses = async (req, res) => {
                 filters: {
                     ciudad: city,
                     estado_provincia: stateProvince,
-                    pais
+                    pais: country
                 }
             }
         });
@@ -402,7 +402,7 @@ export const updateShippingAddress = async (req, res) => {
         if (ciudad) updates.city = ciudad.trim();
         if (estadoProvincia) updates.stateProvince = estadoProvincia.trim();
         if (codigoPostal) updates.zipCode = codigoPostal.trim();
-        if (pais) updates.pais = pais.trim();
+        if (pais) updates.country = pais.trim();
 
         // Update with transaction
         const updatedAddress = await sequelize.transaction(async (t) => {
@@ -454,7 +454,7 @@ export const getShippingAddressById = async (req, res) => {
                 'city',
                 'stateProvince',
                 'zipCode',
-                'pais',
+                'country',
                 'usuario_id',
                 'created_at',
                 'updated_at'
@@ -527,7 +527,7 @@ export const validateShippingAddress = async (req, res) => {
         if (!codigoPostal || !ciudad || !pais) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["zipCode", "city", "pais"]
+                required: ["zipCode", "city", "country"]
             });
         }
 
@@ -535,7 +535,7 @@ export const validateShippingAddress = async (req, res) => {
         const cleanedData = {
             codigoPostal: codigoPostal.trim(),
             city: ciudad.trim(),
-            pais: pais.trim(),
+            country: pais.trim(),
             estadoProvincia: estadoProvincia?.trim()
         };
 
@@ -568,7 +568,7 @@ export const validateShippingAddress = async (req, res) => {
                 validatedAddress: {
                     codigoPostal: cleanedData.codigoPostal,
                     city: cleanedData.city,
-                    pais: cleanedData.pais,
+                    country: cleanedData.country,
                     estadoProvincia: cleanedData.estadoProvincia
                 }
             }
@@ -660,7 +660,7 @@ export const setDefaultAddress = async (req, res) => {
                 'city',
                 'stateProvince',
                 'zipCode',
-                'pais',
+                'country',
                 'is_default',
                 'updated_at'
             ]
