@@ -13,20 +13,16 @@ import Cart from "../models/cart.js";
 import CartItems from "../models/cartItems.js";
 import Category from "../models/category.js";
 
-// Función para generar datos aleatorios y guardarlos en la base de datos
 const usersToPrint = [];
 async function generateRandomData () {
-    // Sincronizar la base de datos
     await sequelize.sync({ alter: true });  // Esto reiniciará la base de datos (opcional)
   
-    // Usar los roles predefinidos de roles.js
     const defaultRoles = [
         { id: faker.string.uuid(), name: "admin" },
         { id: faker.string.uuid(), name: "user" },
         { id: faker.string.uuid(), name: "moderator" },
     ];
   
-    // Crear roles predeterminados si no existen
     for (const role of defaultRoles) {
         const existingRole = await Roles.findOne({ where: { name: role.name } });
         if (!existingRole) {
@@ -34,7 +30,6 @@ async function generateRandomData () {
         }
     }
   
-    // Generar Categorías
     const categoriesData = [];
     const usedNames = new Set();
 
@@ -53,7 +48,6 @@ async function generateRandomData () {
     }
     await Category.bulkCreate(categoriesData);
   
-    // Generar Productos
     const productsData = [];
     const usedProductNames = new Set();
 
@@ -77,7 +71,6 @@ async function generateRandomData () {
 
     await Product.bulkCreate(productsData);
   
-    // Generar Usuarios y asignarles roles
     const usersCreated = [];
     for (let i = 0; i < 25; i) {
         const password = faker.internet.password();
@@ -91,7 +84,6 @@ async function generateRandomData () {
             hashed_password: password,
         });
     
-        // Asignar roles al usuario
         const roles = await Roles.findAll();
         const randomRole1 = roles[faker.number.int({ min: 0, max: defaultRoles.length - 1 })];
         await newUser.addRole(randomRole1.id); // Asegúrate de usar solo el id del rol
@@ -114,8 +106,6 @@ async function generateRandomData () {
     }
     const allUsers = await User.findAll();
   
-    // Generar Reviews
-  
     const reviewsData = [];
     for (let i = 0; i < 500; i++) {
         reviewsData.push({
@@ -128,7 +118,6 @@ async function generateRandomData () {
     }
     await Review.bulkCreate(reviewsData);
   
-    // Generar Órdenes
     const ordersData = [];
     for (let i = 0; i < 500; i++) {
         ordersData.push({
@@ -140,7 +129,6 @@ async function generateRandomData () {
     }
     await Order.bulkCreate(ordersData);
   
-    // Generar Detalles de Orden
     const orderDetailsData = [];
     for (let i = 0; i < 800; i++) {
         orderDetailsData.push({
@@ -154,7 +142,6 @@ async function generateRandomData () {
     }
     await OrderDetails.bulkCreate(orderDetailsData);
   
-    // Generar Pagos
     const paymentsData = [];
     for (let i = 0; i < 10; i++) {
         paymentsData.push({
@@ -168,7 +155,6 @@ async function generateRandomData () {
     }
     await Payment.bulkCreate(paymentsData);
   
-    // Generar Direcciones de Envío
     const shippingAddressesData = [];
     for (let i = 0; i < 25; i++) {
         shippingAddressesData.push({
@@ -183,7 +169,6 @@ async function generateRandomData () {
     }
     await ShippingAddress.bulkCreate(shippingAddressesData);
   
-    // Generar Carritos
     const cartsData = [];
     for (let i = 0; i < 100; i++) {
         cartsData.push({
@@ -193,7 +178,6 @@ async function generateRandomData () {
     }
     await Cart.bulkCreate(cartsData);
   
-    // Generar Ítems de Carrito
     const cartItemsData = [];
     for (let i = 0; i < 300; i++) {
         cartItemsData.push({
@@ -216,7 +200,6 @@ async function generateRandomData () {
     });
 }
 
-// Ejecutar la función para generar los datos aleatorios
 generateRandomData().catch(error => {
     console.error("Error al generar datos aleatorios:", error);
 });
