@@ -515,20 +515,72 @@ export const getShippingAddressById = async (req, res) => {
 
 export const validateShippingAddress = async (req, res) => {
     try {
-        const { codigo_postal, ciudad, pais } = req.body;
+        // Destructure and validate required fields
+        const {
+            codigo_postal: codigoPostal,
+            ciudad,
+            pais,
+            estado_provincia: estadoProvincia
+        } = req.body;
 
-        // Add your address validation logic here
-        const isValid = await validateAddressService(codigo_postal, ciudad, pais);
+        // Input validation
+        if (!codigoPostal || !ciudad || !pais) {
+            return res.status(400).json({
+                error: "Missing required fields",
+                required: ["codigo_postal", "ciudad", "pais"]
+            });
+        }
 
+        // Clean input data
+        const cleanedData = {
+            codigoPostal: codigoPostal.trim(),
+            ciudad: ciudad.trim(),
+            pais: pais.trim(),
+            estadoProvincia: estadoProvincia?.trim()
+        };
+
+        // Validate postal code format
+        const postalCodeRegex = /^\d{5}(-\d{4})?$/;
+        if (!postalCodeRegex.test(cleanedData.codigoPostal)) {
+            return res.status(400).json({
+                error: "Invalid postal code format",
+                details: "Postal code must be in format: 12345 or 12345-6789"
+            });
+        }
+
+        // Validate city name (alphanumeric with spaces)
+        const cityRegex = /^[a-zA-Z\s]{2,50}$/;
+        if (!cityRegex.test(cleanedData.ciudad)) {
+            return res.status(400).json({
+                error: "Invalid city format",
+                details: "City must contain only letters and spaces, length between 2-50 characters"
+            });
+        }
+
+        // Set cache headers for better performance
+        res.set('Cache-Control', 'private, max-age=300');
+
+        // Return validation result
         return res.status(200).json({
             message: "Address validation completed",
             data: {
-                isValid,
-                details: isValid ? "Address is valid" : "Address validation failed"
+                isValid: true,
+                validatedAddress: {
+                    codigoPostal: cleanedData.codigoPostal,
+                    ciudad: cleanedData.ciudad,
+                    pais: cleanedData.pais,
+                    estadoProvincia: cleanedData.estadoProvincia
+                }
             }
         });
+
     } catch (error) {
-        console.error('Error validating address:', error);
+        console.error('Error validating address:', {
+            error: error.message,
+            stack: error.stack,
+            requestBody: req.body
+        });
+
         return res.status(500).json({
             error: "Error validating address",
             details: error.message
