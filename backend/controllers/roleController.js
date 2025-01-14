@@ -294,59 +294,100 @@ export const removeRole = async (req, res) => {
     try {
         const { userId, roleId } = req.body;
 
-        // Validar que se proporcionen los IDs necesarios
+        // Input validation
         if (!userId || !roleId) {
             return res.status(400).json({
-                error: "userId and roleId are required"
+                error: "Missing required fields",
+                required: ["userId", "roleId"]
             });
         }
 
-        // Buscar usuario
-        const user = await User.findByPk(userId);
+        // Get user with roles in a single query
+        const user = await User.findByPk(userId, {
+            include: [{
+                model: Roles,
+                attributes: ['id', 'name']
+            }]
+        });
+
+        // Validate user exists
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            return res.status(404).json({
+                error: "User not found",
+                userId
+            });
         }
 
-        // Buscar rol
-        const role = await Roles.findByPk(roleId);
-        if (!role) {
-            return res.status(404).json({ error: "Role not found" });
+        // Validate role exists
+        const roleToRemove = await Roles.findByPk(roleId, {
+            attributes: ['id', 'name']
+        });
+
+        if (!roleToRemove) {
+            return res.status(404).json({
+                error: "Role not found",
+                roleId
+            });
         }
 
-        // Obtener roles actuales del usuario
-        const currentRoles = await user.getRoles();
-
-        // Verificar si el usuario tiene el rol
-        const hasRole = currentRoles.some(r => r.id === roleId);
+        // Check if user has the role
+        const hasRole = user.Roles.some(role => role.id === roleId);
         if (!hasRole) {
             return res.status(400).json({
-                error: "User doesn't have this role"
+                error: "User doesn't have this role",
+                role: roleToRemove.name
             });
         }
 
-        // Verificar que no sea el último rol del usuario
-        if (currentRoles.length === 1) {
+        // Prevent removing last role
+        if (user.Roles.length === 1) {
             return res.status(400).json({
-                error: "Cannot remove the last role from user"
+                error: "Cannot remove the last role from user",
+                currentRole: user.Roles[0].name
             });
         }
 
-        // Remover el rol
-        await user.removeRole(role);
-
-        // Obtener roles actualizados para la respuesta
-        const updatedRoles = await user.getRoles();
-
-        res.status(200).json({
-            message: "Role removed successfully",
-            roles: updatedRoles.map(role => ({
-                id: role.id,
-                name: role.name
-            }))
+        // Remove role with transaction
+        await sequelize.transaction(async (t) => {
+            await user.removeRole(roleToRemove, { transaction: t });
         });
+
+        // Get updated user data
+        const updatedUser = await User.findByPk(userId, {
+            include: [{
+                model: Roles,
+                attributes: ['id', 'name']
+            }],
+            attributes: ['id', 'firstName', 'lastName_father']
+        });
+
+        return res.status(200).json({
+            message: "Role removed successfully",
+            data: {
+                user: {
+                    id: updatedUser.id,
+                    name: `${updatedUser.firstName} ${updatedUser.lastName_father}`
+                },
+                removedRole: {
+                    id: roleToRemove.id,
+                    name: roleToRemove.name
+                },
+                currentRoles: updatedUser.Roles.map(role => ({
+                    id: role.id,
+                    name: role.name
+                }))
+            }
+        });
+
     } catch (error) {
-        console.error('Error in removeRole:', error);
-        res.status(500).json({
+        console.error('Error removing role:', {
+            error: error.message,
+            stack: error.stack,
+            userId: req.body.userId,
+            roleId: req.body.roleId
+        });
+
+        return res.status(500).json({
             error: "Error removing role",
             details: error.message
         });
