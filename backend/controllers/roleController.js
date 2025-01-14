@@ -1,15 +1,73 @@
+import { sequelize } from "../models/index.js";
 import Roles from "../models/roles.js";
 import User from "../models/user.js";
 
 export const createRole = async (req, res) => {
     try {
         const { name } = req.body;
-        const role = await Roles.create({ name });
-        res.status(201).json(role);
+
+        // Input validation
+        if (!name || typeof name !== 'string') {
+            return res.status(400).json({
+                error: "Valid role name is required",
+                details: "Name must be a non-empty string"
+            });
+        }
+
+        // Clean role name
+        const cleanName = name.trim().toLowerCase();
+
+        // Validate role name format
+        const nameRegex = /^[a-z0-9_]{3,20}$/;
+        if (!nameRegex.test(cleanName)) {
+            return res.status(400).json({
+                error: "Invalid role name format",
+                details: "Name must be 3-20 characters long and contain only lowercase letters, numbers and underscore"
+            });
+        }
+
+        // Check if role already exists
+        const existingRole = await Roles.findOne({
+            where: { name: cleanName }
+        });
+
+        if (existingRole) {
+            return res.status(400).json({
+                error: "Role already exists",
+                roleName: cleanName
+            });
+        }
+
+        // Create role with transaction
+        const role = await sequelize.transaction(async (t) => {
+            return await Roles.create({
+                name: cleanName
+            }, { transaction: t });
+        });
+
+        // Return success response
+        return res.status(201).json({
+            message: "Role created successfully",
+            data: {
+                id: role.id,
+                name: role.name,
+                createdAt: role.created_at
+            }
+        });
+
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Error creating role:', {
+            error: error.message,
+            stack: error.stack
+        });
+
+        return res.status(500).json({
+            error: "Error creating role",
+            details: error.message
+        });
     }
 };
+
 export const getAllRoles = async (req, res) => {
     try {
         const roles = await Roles.findAll();
