@@ -147,8 +147,8 @@ async function generateRandomData () {
         paymentsData.push({
             id: faker.string.uuid(),
             payment_date: faker.date.past(),
-            payment_method: faker.helpers.arrayElement(["tarjeta_credito", "paypal"]),
-            payment_status: faker.helpers.arrayElement(["pagado", "pendiente"]),
+            payment_method: faker.helpers.arrayElement(["creditCard", "paypal"]),
+            payment_status: faker.helpers.arrayElement(["paid", "pending"]),
             amount: faker.commerce.price({ min: 50, max: 500, dec: 2, symbol: "" }),
             orderId: ordersData[faker.number.int({ min: 0, max: 499 })].id,
         });
