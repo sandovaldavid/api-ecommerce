@@ -276,17 +276,17 @@ export const getAllShippingAddresses = async (req, res) => {
 
 export const deleteShippingAddress = async (req, res) => {
     try {
-        const { id_ShippingAddress } = req.params;
+        const { IdShippingAddress } = req.params;
 
         // Validate ID
-        if (!id_ShippingAddress) {
+        if (!IdShippingAddress) {
             return res.status(400).json({
                 error: "Shipping address ID is required"
             });
         }
 
         // Check if address exists and get minimal data
-        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
+        const address = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
                 attributes: ['id', 'firstName'],
@@ -299,7 +299,7 @@ export const deleteShippingAddress = async (req, res) => {
         if (!address) {
             return res.status(404).json({
                 error: "Shipping address not found",
-                addressId: id_ShippingAddress
+                addressId: IdShippingAddress
             });
         }
 
@@ -319,7 +319,7 @@ export const deleteShippingAddress = async (req, res) => {
         return res.status(200).json({
             message: "Shipping address deleted successfully",
             data: {
-                id: id_ShippingAddress,
+                id: IdShippingAddress,
                 userId: address.userId,
                 deletedBy: {
                     userId: req.userId,
@@ -344,7 +344,7 @@ export const deleteShippingAddress = async (req, res) => {
 
 export const updateShippingAddress = async (req, res) => {
     try {
-        const { id_ShippingAddress } = req.params;
+        const { IdShippingAddress } = req.params;
         const {
             address,
             city,
@@ -354,14 +354,14 @@ export const updateShippingAddress = async (req, res) => {
         } = req.body;
 
         // Validate ID
-        if (!id_ShippingAddress) {
+        if (!IdShippingAddress) {
             return res.status(400).json({
                 error: "Shipping address ID is required"
             });
         }
 
         // Check if address exists with user info
-        const verifyAddress = await ShippingAddress.findByPk(id_ShippingAddress, {
+        const verifyAddress = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
                 attributes: ['id', 'firstName'],
@@ -372,7 +372,7 @@ export const updateShippingAddress = async (req, res) => {
         if (!verifyAddress) {
             return res.status(404).json({
                 error: "Shipping address not found",
-                addressId: id_ShippingAddress
+                addressId: IdShippingAddress
             });
         }
 
@@ -437,17 +437,17 @@ export const updateShippingAddress = async (req, res) => {
 
 export const getShippingAddressById = async (req, res) => {
     try {
-        const { id_ShippingAddress } = req.params;
+        const { IdShippingAddress } = req.params;
 
         // Validate ID
-        if (!id_ShippingAddress) {
+        if (!IdShippingAddress) {
             return res.status(400).json({
                 error: "Shipping address ID is required"
             });
         }
 
         // Get address with user info and selected attributes
-        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
+        const address = await ShippingAddress.findByPk(IdShippingAddress, {
             attributes: [
                 'id',
                 'address',
@@ -470,7 +470,7 @@ export const getShippingAddressById = async (req, res) => {
         if (!address) {
             return res.status(404).json({
                 error: "Shipping address not found",
-                addressId: id_ShippingAddress
+                addressId: IdShippingAddress
             });
         }
 
@@ -590,21 +590,21 @@ export const validateShippingAddress = async (req, res) => {
 
 export const setDefaultAddress = async (req, res) => {
     try {
-        const { id_ShippingAddress } = req.params;
+        const { IdShippingAddress } = req.params;
         const { userId } = req.body;
 
         // Validate inputs
-        if (!id_ShippingAddress || !userId) {
+        if (!IdShippingAddress || !userId) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["id_ShippingAddress", "userId"]
+                required: ["IdShippingAddress", "userId"]
             });
         }
 
         // Verify address exists and belongs to user
         const address = await ShippingAddress.findOne({
             where: {
-                id: id_ShippingAddress,
+                id: IdShippingAddress,
                 userId: userId
             },
             attributes: ['id', 'userId']
@@ -613,7 +613,7 @@ export const setDefaultAddress = async (req, res) => {
         if (!address) {
             return res.status(404).json({
                 error: "Shipping address not found or not authorized",
-                addressId: id_ShippingAddress
+                addressId: IdShippingAddress
             });
         }
 
@@ -649,7 +649,7 @@ export const setDefaultAddress = async (req, res) => {
         });
 
         // Get updated address with user info
-        const updatedAddress = await ShippingAddress.findByPk(id_ShippingAddress, {
+        const updatedAddress = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
                 attributes: ['id', 'firstName', 'lastName_father']
