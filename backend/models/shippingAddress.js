@@ -20,7 +20,7 @@ const ShippingAddress = sequelize.define("ShippingAddress", {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    codigo_postal: {
+    zipCode: {
         type: DataTypes.STRING,
         allowNull: false,
     },
