@@ -346,11 +346,11 @@ export const updateShippingAddress = async (req, res) => {
     try {
         const { id_ShippingAddress } = req.params;
         const {
-            direccion,
-            ciudad,
-            estado_provincia: estadoProvincia,
-            codigo_postal: codigoPostal,
-            pais
+            address,
+            city,
+            stateProvince,
+            zipCode,
+            country
         } = req.body;
 
         // Validate ID
@@ -361,7 +361,7 @@ export const updateShippingAddress = async (req, res) => {
         }
 
         // Check if address exists with user info
-        const address = await ShippingAddress.findByPk(id_ShippingAddress, {
+        const verifyAddress = await ShippingAddress.findByPk(id_ShippingAddress, {
             include: [{
                 model: User,
                 attributes: ['id', 'firstName'],
@@ -369,7 +369,7 @@ export const updateShippingAddress = async (req, res) => {
             }]
         });
 
-        if (!address) {
+        if (!verifyAddress) {
             return res.status(404).json({
                 error: "Shipping address not found",
                 addressId: id_ShippingAddress
@@ -377,16 +377,16 @@ export const updateShippingAddress = async (req, res) => {
         }
 
         // Verify ownership
-        if (address.usuario_id !== req.userId && !req.isAdmin) {
+        if (verifyAddress.usuario_id !== req.userId && !req.isAdmin) {
             return res.status(403).json({
                 error: "Not authorized to update this address"
             });
         }
 
         // Validate postal code if provided
-        if (codigoPostal) {
+        if (zipCode) {
             const postalCodeRegex = /^\d{5}(-\d{4})?$/;
-            if (!postalCodeRegex.test(codigoPostal.trim())) {
+            if (!postalCodeRegex.test(zipCode.trim())) {
                 return res.status(400).json({
                     error: "Invalid postal code format"
                 });
@@ -398,16 +398,16 @@ export const updateShippingAddress = async (req, res) => {
             updated_at: new Date()
         };
 
-        if (direccion) updates.address = direccion.trim();
-        if (ciudad) updates.city = ciudad.trim();
-        if (estadoProvincia) updates.stateProvince = estadoProvincia.trim();
-        if (codigoPostal) updates.zipCode = codigoPostal.trim();
-        if (pais) updates.country = pais.trim();
+        if (address) updates.address = address.trim();
+        if (city) updates.city = city.trim();
+        if (stateProvince) updates.stateProvince = stateProvince.trim();
+        if (zipCode) updates.zipCode = zipCode.trim();
+        if (country) updates.country = country.trim();
 
         // Update with transaction
         const updatedAddress = await sequelize.transaction(async (t) => {
-            await address.update(updates, { transaction: t });
-            return address.reload({
+            await verifyAddress.update(updates, { transaction: t });
+            return verifyAddress.reload({
                 include: [{
                     model: User,
                     attributes: ['id', 'firstName', 'lastName_father']
