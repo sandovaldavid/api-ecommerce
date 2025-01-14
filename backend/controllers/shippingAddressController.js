@@ -8,7 +8,7 @@ export const createShippingAddress = async (req, res) => {
         const {
             usuario_id: usuarioId,
             address,
-            ciudad: city,
+            city,
             stateProvince,
             zipCode,
             country
