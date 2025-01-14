@@ -199,7 +199,8 @@ export const deleteRole = async (req, res) => {
 
 export const assignRole = async (req, res) => {
     try {
-        const { userId, roleId } = req.body;
+        const { userId } = req.params;
+        const { roleId } = req.body;
 
         // Input validation
         if (!userId || !roleId) {
@@ -292,7 +293,7 @@ export const assignRole = async (req, res) => {
 
 export const removeRole = async (req, res) => {
     try {
-        const { userId, roleId } = req.body;
+        const { userId, roleId } = req.params;
 
         // Input validation
         if (!userId || !roleId) {
