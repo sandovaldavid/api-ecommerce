@@ -12,7 +12,7 @@ const ShippingAddress = sequelize.define("ShippingAddress", {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    ciudad: {
+    city: {
         type: DataTypes.STRING,
         allowNull: false,
     },

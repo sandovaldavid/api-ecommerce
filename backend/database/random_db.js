@@ -175,7 +175,7 @@ async function generateRandomData () {
         shippingAddressesData.push({
             id: faker.string.uuid(),
             address: faker.location.streetAddress(),
-            ciudad: faker.location.city(),
+            city: faker.location.city(),
             estado_provincia: faker.location.state(),
             codigo_postal: faker.location.zipCode(),
             pais: faker.location.country(),

@@ -18,7 +18,7 @@ export const createShippingAddress = async (req, res) => {
         if (!usuarioId || !direccion || !ciudad || !estadoProvincia || !codigoPostal || !pais) {
             return res.status(400).json({
                 error: "All fields are required",
-                required: ["usuario_id", "address", "ciudad", "estado_provincia", "codigo_postal", "pais"]
+                required: ["usuario_id", "address", "city", "estado_provincia", "codigo_postal", "pais"]
             });
         }
 
@@ -54,7 +54,7 @@ export const createShippingAddress = async (req, res) => {
         const shippingAddress = await ShippingAddress.create({
             usuario_id: usuarioId,
             address: direccion.trim(),
-            ciudad: ciudad.trim(),
+            city: ciudad.trim(),
             estado_provincia: estadoProvincia.trim(),
             codigo_postal: codigoPostal.trim(),
             pais: pais.trim(),
@@ -125,7 +125,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
             attributes: [
                 'id',
                 'address',
-                'ciudad',
+                'city',
                 'estado_provincia',
                 'codigo_postal',
                 'pais',
@@ -196,7 +196,7 @@ export const getAllShippingAddresses = async (req, res) => {
         const { ciudad, estado_provincia, pais } = req.query;
         const whereClause = {};
 
-        if (ciudad) whereClause.ciudad = ciudad.trim();
+        if (ciudad) whereClause.city = ciudad.trim();
         if (estado_provincia) whereClause.estado_provincia = estado_provincia.trim();
         if (pais) whereClause.pais = pais.trim();
 
@@ -208,7 +208,7 @@ export const getAllShippingAddresses = async (req, res) => {
         if (totalCount === 0) {
             return res.status(404).json({
                 message: "No shipping addresses found",
-                filters: { ciudad, estado_provincia, pais }
+                filters: { ciudad: city, estado_provincia, pais }
             });
         }
 
@@ -221,7 +221,7 @@ export const getAllShippingAddresses = async (req, res) => {
             attributes: [
                 'id',
                 'address',
-                'ciudad',
+                'city',
                 'estado_provincia',
                 'codigo_postal',
                 'pais',
@@ -254,7 +254,7 @@ export const getAllShippingAddresses = async (req, res) => {
                     itemsPerPage: limit
                 },
                 filters: {
-                    ciudad,
+                    ciudad: city,
                     estado_provincia,
                     pais
                 }
@@ -399,7 +399,7 @@ export const updateShippingAddress = async (req, res) => {
         };
 
         if (direccion) updates.address = direccion.trim();
-        if (ciudad) updates.ciudad = ciudad.trim();
+        if (ciudad) updates.city = ciudad.trim();
         if (estadoProvincia) updates.estado_provincia = estadoProvincia.trim();
         if (codigoPostal) updates.codigo_postal = codigoPostal.trim();
         if (pais) updates.pais = pais.trim();
@@ -451,7 +451,7 @@ export const getShippingAddressById = async (req, res) => {
             attributes: [
                 'id',
                 'address',
-                'ciudad',
+                'city',
                 'estado_provincia',
                 'codigo_postal',
                 'pais',
@@ -527,14 +527,14 @@ export const validateShippingAddress = async (req, res) => {
         if (!codigoPostal || !ciudad || !pais) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["codigo_postal", "ciudad", "pais"]
+                required: ["codigo_postal", "city", "pais"]
             });
         }
 
         // Clean input data
         const cleanedData = {
             codigoPostal: codigoPostal.trim(),
-            ciudad: ciudad.trim(),
+            city: ciudad.trim(),
             pais: pais.trim(),
             estadoProvincia: estadoProvincia?.trim()
         };
@@ -550,7 +550,7 @@ export const validateShippingAddress = async (req, res) => {
 
         // Validate city name (alphanumeric with spaces)
         const cityRegex = /^[a-zA-Z\s]{2,50}$/;
-        if (!cityRegex.test(cleanedData.ciudad)) {
+        if (!cityRegex.test(cleanedData.city)) {
             return res.status(400).json({
                 error: "Invalid city format",
                 details: "City must contain only letters and spaces, length between 2-50 characters"
@@ -567,7 +567,7 @@ export const validateShippingAddress = async (req, res) => {
                 isValid: true,
                 validatedAddress: {
                     codigoPostal: cleanedData.codigoPostal,
-                    ciudad: cleanedData.ciudad,
+                    city: cleanedData.city,
                     pais: cleanedData.pais,
                     estadoProvincia: cleanedData.estadoProvincia
                 }
@@ -657,7 +657,7 @@ export const setDefaultAddress = async (req, res) => {
             attributes: [
                 'id',
                 'address',
-                'ciudad',
+                'city',
                 'estado_provincia',
                 'codigo_postal',
                 'pais',
