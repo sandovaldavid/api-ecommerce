@@ -8,7 +8,7 @@ const Product = sequelize.define("Product", {
         type: DataTypes.STRING,
         primaryKey: true,
     },
-    nombre: {
+    name: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
@@ -21,7 +21,7 @@ const Product = sequelize.define("Product", {
         type: DataTypes.TEXT,
         allowNull: true,
     },
-    precio: {
+    price: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },

@@ -27,7 +27,7 @@ export const register = async (req, res) => {
             hashed_password: password
         });
 
-        // Buscar los roles por nombre y obtener sus IDs
+        // Buscar los roles por name y obtener sus IDs
         if (roles && roles.length > 0) {
             const foundRoles = await Roles.findAll({
                 where: { name: roles }

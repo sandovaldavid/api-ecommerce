@@ -47,7 +47,7 @@ export const updateUserProfile = async (req, res) => {
             return res.status(404).json({ error: "User not found" });
         }
     
-        if (nombre) user.nombre = nombre;
+        if (nombre) user.name = nombre;
         if (email) user.email = email;
     
         if (password) {

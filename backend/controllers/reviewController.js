@@ -57,7 +57,7 @@ export const createReview = async (req, res) => {
                 },
                 {
                     model: Product,
-                    attributes: ['id', 'nombre', 'descripcion']
+                    attributes: ['id', 'name', 'descripcion']
                 }
             ]
         });
@@ -114,7 +114,7 @@ export const getReviews = async (req, res) => {
                 },
                 {
                     model: Product,
-                    attributes: ['id', 'nombre', 'description']
+                    attributes: ['id', 'name', 'description']
                 }
             ],
             attributes: [
@@ -274,7 +274,7 @@ export const updateReview = async (req, res) => {
                 },
                 {
                     model: Product,
-                    attributes: ['id', 'nombre', 'descripcion']
+                    attributes: ['id', 'name', 'descripcion']
                 }
             ]
         });

@@ -12,7 +12,7 @@ export const getAllCategories = async (req, res) => {
 export const createCategory = async (req, res) => {
     try {
         const { nombre, descripcion } = req.body;
-        const category = await Category.create({ nombre, descripcion });
+        const category = await Category.create({ nombre: name, descripcion });
         res.status(201).json(category);
     } catch (error) {
         res.status(500).json({ error: error.message });
