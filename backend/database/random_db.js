@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { sequelize } from "../models/index.js";  // Importa tu instancia de Sequelize
+import { sequelize } from "../models/index.js";
 import { Roles, User } from "../models/userRoles.js";
 import { writeFile } from "fs";
 import path from "path";
