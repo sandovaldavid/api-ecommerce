@@ -70,13 +70,57 @@ export const createRole = async (req, res) => {
 
 export const getAllRoles = async (req, res) => {
     try {
-        const roles = await Roles.findAll();
-        if (!roles){
-            return res.status(404).json({ error: "Roles not found" });
+        // Add pagination
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+        const offset = (page - 1) * limit;
+
+        // Get total count
+        const totalCount = await Roles.count();
+
+        if (totalCount === 0) {
+            return res.status(404).json({
+                message: "No roles found"
+            });
         }
-        res.status(200).json(roles);
-    } catch (e) {
-        res.status(500).json({ error: e.message });
+
+        // Get roles with pagination and specific attributes
+        const roles = await Roles.findAll({
+            attributes: ['id', 'name'],
+            order: [['name', 'ASC']],
+            limit,
+            offset
+        });
+
+        // Calculate pagination metadata
+        const totalPages = Math.ceil(totalCount / limit);
+
+        // Set cache headers for better performance
+        res.set('Cache-Control', 'private, max-age=300');
+
+        return res.status(200).json({
+            message: "Roles retrieved successfully",
+            data: {
+                roles,
+                pagination: {
+                    currentPage: page,
+                    totalPages,
+                    totalItems: totalCount,
+                    itemsPerPage: limit
+                }
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching roles:', {
+            error: error.message,
+            stack: error.stack
+        });
+
+        return res.status(500).json({
+            error: "Error retrieving roles",
+            details: error.message
+        });
     }
 };
 
