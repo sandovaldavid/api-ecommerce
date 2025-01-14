@@ -13,8 +13,8 @@ const Order = sequelize.define("Order", {
         allowNull: false,
     },
     state: {
-        type: DataTypes.ENUM("pendiente", "enviado", "entregado"),
-        defaultValue: "pendiente",
+        type: DataTypes.ENUM("pending", "sent", "delivered"),
+        defaultValue: "pending",
     },
     created_at: {
         type: DataTypes.DATE,
