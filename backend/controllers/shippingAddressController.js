@@ -7,7 +7,7 @@ export const createShippingAddress = async (req, res) => {
         // Destructure and validate required fields
         const {
             usuario_id: usuarioId,
-            direccion,
+            direccion: address,
             ciudad,
             estado_provincia: estadoProvincia,
             codigo_postal: codigoPostal,
@@ -15,7 +15,7 @@ export const createShippingAddress = async (req, res) => {
         } = req.body;
 
         // Input validation
-        if (!usuarioId || !direccion || !ciudad || !estadoProvincia || !codigoPostal || !pais) {
+        if (!usuarioId || !address || !ciudad || !estadoProvincia || !codigoPostal || !pais) {
             return res.status(400).json({
                 error: "All fields are required",
                 required: ["usuario_id", "address", "city", "stateProvince", "codigo_postal", "pais"]
@@ -53,7 +53,7 @@ export const createShippingAddress = async (req, res) => {
         // Create shipping address with cleaned data
         const shippingAddress = await ShippingAddress.create({
             usuario_id: usuarioId,
-            address: direccion.trim(),
+            address: address.trim(),
             city: ciudad.trim(),
             stateProvince: estadoProvincia.trim(),
             codigo_postal: codigoPostal.trim(),
