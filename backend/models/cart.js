@@ -20,15 +20,13 @@ const Cart = sequelize.define("Carts", {
 }, {
     timestamps: false,
     hooks: {
-    // Hook para añadir un UID único antes de crear un usuario
         beforeCreate: async (user) => {
-            // Generar un UID único para el campo ID
-            user.id = uid2(32);  // Genera un UID de 32 caracteres
+            user.id = uid2(32);
         }
     }
 });
 
-Cart.belongsTo(User, { foreignKey: "usuario_id" });
+Cart.belongsTo(User, { foreignKey: "userId" });
 Cart.belongsToMany(Product, { through: "CartItems" });
 
 export default Cart;

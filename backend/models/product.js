@@ -1,6 +1,6 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "./index.js";
-import uid2 from "uid2";  // Importa sequelize desde index.js
+import uid2 from "uid2";
 import Category from "./category.js";
 
 const Product = sequelize.define("Product", {
@@ -41,14 +41,12 @@ const Product = sequelize.define("Product", {
 }, {
     timestamps: false,
     hooks: {
-    // Hook para añadir un UID único antes de crear un usuario
         beforeCreate: async (user) => {
-            // Generar un UID único para el campo ID
-            user.id = uid2(32);  // Genera un UID de 32 caracteres
+            user.id = uid2(32);
         }
     }
 });
 
-Product.belongsTo(Category, { foreignKey: "categoria_id" });
+Product.belongsTo(Category, { foreignKey: "categoryId" });
 
 export default Product;

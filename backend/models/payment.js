@@ -14,12 +14,12 @@ const Payment = sequelize.define("Payment", {
         defaultValue: DataTypes.NOW,
     },
     payment_method: {
-        type: DataTypes.ENUM("tarjeta_credito", "paypal"),
+        type: DataTypes.ENUM("creditCard", "paypal"),
         allowNull: false,
     },
     payment_status: {
-        type: DataTypes.ENUM("pagado", "pendiente"),
-        defaultValue: "pendiente",
+        type: DataTypes.ENUM("paid", "pending"),
+        defaultValue: "pending",
     },
     amount: {
         type: DataTypes.DECIMAL(10, 2),
@@ -36,14 +36,12 @@ const Payment = sequelize.define("Payment", {
 }, {
     timestamps: false,
     hooks: {
-    // Hook para añadir un UID único antes de crear un usuario
         beforeCreate: async (user) => {
-            // Generar un UID único para el campo ID
-            user.id = uid2(32);  // Genera un UID de 32 caracteres
+            user.id = uid2(32);
         }
     }
 });
 
-Payment.belongsTo(Order, { foreignKey: "orden_id" });
+Payment.belongsTo(Order, { foreignKey: "orderId" });
 
 export default Payment;

@@ -24,15 +24,13 @@ const OrderDetails = sequelize.define("OrderDetails", {
 }, {
     timestamps: false,
     hooks: {
-    // Hook para añadir un UID único antes de crear un usuario
         beforeCreate: async (user) => {
-            // Generar un UID único para el campo ID
-            user.id = uid2(32);  // Genera un UID de 32 caracteres
+            user.id = uid2(32);
         }
     }
 });
 
-OrderDetails.belongsTo(Order, { foreignKey: "orden_id" });
-OrderDetails.belongsTo(Product, { foreignKey: "producto_id" });
+OrderDetails.belongsTo(Order, { foreignKey: "orderId" });
+OrderDetails.belongsTo(Product, { foreignKey: "productId" });
 
 export default OrderDetails;
