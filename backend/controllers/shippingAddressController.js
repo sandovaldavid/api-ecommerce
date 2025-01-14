@@ -591,33 +591,94 @@ export const validateShippingAddress = async (req, res) => {
 export const setDefaultAddress = async (req, res) => {
     try {
         const { id_ShippingAddress } = req.params;
-        const { usuario_id } = req.body;
+        const { usuario_id: usuarioId } = req.body;
 
+        // Validate inputs
+        if (!id_ShippingAddress || !usuarioId) {
+            return res.status(400).json({
+                error: "Missing required fields",
+                required: ["id_ShippingAddress", "usuario_id"]
+            });
+        }
+
+        // Verify address exists and belongs to user
+        const address = await ShippingAddress.findOne({
+            where: {
+                id: id_ShippingAddress,
+                usuario_id: usuarioId
+            },
+            attributes: ['id', 'usuario_id']
+        });
+
+        if (!address) {
+            return res.status(404).json({
+                error: "Shipping address not found or not authorized",
+                addressId: id_ShippingAddress
+            });
+        }
+
+        // Verify ownership
+        if (address.usuario_id !== req.userId && !req.isAdmin) {
+            return res.status(403).json({
+                error: "Not authorized to modify this address"
+            });
+        }
+
+        // Update addresses with transaction
         await sequelize.transaction(async (t) => {
             // Remove default from all user addresses
             await ShippingAddress.update(
-                { is_default: false },
                 {
-                    where: { usuario_id },
+                    is_default: false,
+                    updated_at: new Date()
+                },
+                {
+                    where: { usuario_id: usuarioId },
                     transaction: t
                 }
             );
 
             // Set new default address
-            await ShippingAddress.update(
-                { is_default: true },
+            await address.update(
                 {
-                    where: { id: id_ShippingAddress },
-                    transaction: t
-                }
+                    is_default: true,
+                    updated_at: new Date()
+                },
+                { transaction: t }
             );
         });
 
-        return res.status(200).json({
-            message: "Default address updated successfully"
+        // Get updated address with user info
+        const updatedAddress = await ShippingAddress.findByPk(id_ShippingAddress, {
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName', 'lastName_father']
+            }],
+            attributes: [
+                'id',
+                'direccion',
+                'ciudad',
+                'estado_provincia',
+                'codigo_postal',
+                'pais',
+                'is_default',
+                'updated_at'
+            ]
         });
+
+        return res.status(200).json({
+            message: "Default address updated successfully",
+            data: updatedAddress
+        });
+
     } catch (error) {
-        console.error('Error setting default address:', error);
+        console.error('Error setting default address:', {
+            error: error.message,
+            stack: error.stack,
+            addressId: req.params.id_ShippingAddress,
+            userId: req.body.usuario_id
+        });
+
         return res.status(500).json({
             error: "Error setting default address",
             details: error.message
