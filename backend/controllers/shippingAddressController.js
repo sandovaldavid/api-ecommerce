@@ -6,7 +6,7 @@ export const createShippingAddress = async (req, res) => {
     try {
         // Destructure and validate required fields
         const {
-            usuario_id: usuarioId,
+            usuario_id: userId,
             address,
             city,
             stateProvince,
@@ -15,15 +15,15 @@ export const createShippingAddress = async (req, res) => {
         } = req.body;
 
         // Input validation
-        if (!usuarioId || !address || !city || !stateProvince || !zipCode || !country) {
+        if (!userId || !address || !city || !stateProvince || !zipCode || !country) {
             return res.status(400).json({
                 error: "All fields are required",
-                required: ["usuario_id", "address", "city", "stateProvince", "zipCode", "country"]
+                required: ["userId", "address", "city", "stateProvince", "zipCode", "country"]
             });
         }
 
         // Check if user exists
-        const userExists = await User.findByPk(usuarioId);
+        const userExists = await User.findByPk(userId);
         if (!userExists) {
             return res.status(404).json({
                 error: "User not found"
@@ -32,7 +32,7 @@ export const createShippingAddress = async (req, res) => {
 
         // Check maximum addresses per user
         const userAddressCount = await ShippingAddress.count({
-            where: { usuario_id: usuarioId }
+            where: { userId }
         });
 
         if (userAddressCount >= 5) {
@@ -52,7 +52,7 @@ export const createShippingAddress = async (req, res) => {
 
         // Create shipping address with cleaned data
         const shippingAddress = await ShippingAddress.create({
-            usuario_id: usuarioId,
+            userId: userId,
             address: address.trim(),
             city: city.trim(),
             stateProvince: stateProvince.trim(),
@@ -90,24 +90,24 @@ export const createShippingAddress = async (req, res) => {
 
 export const getShippingAddressesByUserId = async (req, res) => {
     try {
-        const { usuario_id: usuarioId } = req.params;
+        const { userId } = req.params;
 
         // Validate user ID
-        if (!usuarioId) {
+        if (!userId) {
             return res.status(400).json({
                 error: "User ID is required"
             });
         }
 
         // Check if user exists
-        const user = await User.findByPk(usuarioId, {
+        const user = await User.findByPk(userId, {
             attributes: ['id', 'firstName', 'lastName_father']
         });
 
         if (!user) {
             return res.status(404).json({
                 error: "User not found",
-                userId: usuarioId
+                userId: userId
             });
         }
 
@@ -118,7 +118,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
 
         // Get addresses count and data in a single query
         const shippingAddresses = await ShippingAddress.findAndCountAll({
-            where: { usuario_id: usuarioId },
+            where: { userId },
             limit,
             offset,
             order: [['created_at', 'DESC']],
@@ -144,7 +144,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
         if (shippingAddresses.count === 0) {
             return res.status(404).json({
                 message: "No shipping addresses found for this user",
-                userId: usuarioId,
+                userId: userId,
                 userName: user.firstName
             });
         }
@@ -225,7 +225,7 @@ export const getAllShippingAddresses = async (req, res) => {
                 'stateProvince',
                 'zipCode',
                 'country',
-                'usuario_id',
+                'userId',
                 'created_at',
                 'updated_at'
             ],
@@ -292,7 +292,7 @@ export const deleteShippingAddress = async (req, res) => {
                 attributes: ['id', 'firstName'],
                 required: true
             }],
-            attributes: ['id', 'usuario_id']
+            attributes: ['id', 'userId']
         });
 
         // Handle not found
@@ -304,7 +304,7 @@ export const deleteShippingAddress = async (req, res) => {
         }
 
         // Verify ownership (additional security)
-        if (address.usuario_id !== req.userId && !req.isAdmin) {
+        if (address.userId !== req.userId && !req.isAdmin) {
             return res.status(403).json({
                 error: "Not authorized to delete this address"
             });
@@ -320,7 +320,7 @@ export const deleteShippingAddress = async (req, res) => {
             message: "Shipping address deleted successfully",
             data: {
                 id: id_ShippingAddress,
-                userId: address.usuario_id,
+                userId: address.userId,
                 deletedBy: {
                     userId: req.userId,
                     isAdmin: req.isAdmin
@@ -377,7 +377,7 @@ export const updateShippingAddress = async (req, res) => {
         }
 
         // Verify ownership
-        if (verifyAddress.usuario_id !== req.userId && !req.isAdmin) {
+        if (verifyAddress.userId !== req.userId && !req.isAdmin) {
             return res.status(403).json({
                 error: "Not authorized to update this address"
             });
@@ -455,7 +455,7 @@ export const getShippingAddressById = async (req, res) => {
                 'stateProvince',
                 'zipCode',
                 'country',
-                'usuario_id',
+                'userId',
                 'created_at',
                 'updated_at'
             ],
@@ -475,7 +475,7 @@ export const getShippingAddressById = async (req, res) => {
         }
 
         // Verify ownership (additional security)
-        if (address.usuario_id !== req.userId && !req.isAdmin) {
+        if (address.userId !== req.userId && !req.isAdmin) {
             return res.status(403).json({
                 error: "Not authorized to view this address"
             });
@@ -591,13 +591,13 @@ export const validateShippingAddress = async (req, res) => {
 export const setDefaultAddress = async (req, res) => {
     try {
         const { id_ShippingAddress } = req.params;
-        const { usuario_id: usuarioId } = req.body;
+        const { userId } = req.body;
 
         // Validate inputs
-        if (!id_ShippingAddress || !usuarioId) {
+        if (!id_ShippingAddress || !userId) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["id_ShippingAddress", "usuario_id"]
+                required: ["id_ShippingAddress", "userId"]
             });
         }
 
@@ -605,9 +605,9 @@ export const setDefaultAddress = async (req, res) => {
         const address = await ShippingAddress.findOne({
             where: {
                 id: id_ShippingAddress,
-                usuario_id: usuarioId
+                userId: userId
             },
-            attributes: ['id', 'usuario_id']
+            attributes: ['id', 'userId']
         });
 
         if (!address) {
@@ -618,7 +618,7 @@ export const setDefaultAddress = async (req, res) => {
         }
 
         // Verify ownership
-        if (address.usuario_id !== req.userId && !req.isAdmin) {
+        if (address.userId !== req.userId && !req.isAdmin) {
             return res.status(403).json({
                 error: "Not authorized to modify this address"
             });
@@ -633,7 +633,7 @@ export const setDefaultAddress = async (req, res) => {
                     updated_at: new Date()
                 },
                 {
-                    where: { usuario_id: usuarioId },
+                    where: { userId: userId },
                     transaction: t
                 }
             );
@@ -676,7 +676,7 @@ export const setDefaultAddress = async (req, res) => {
             error: error.message,
             stack: error.stack,
             addressId: req.params.id_ShippingAddress,
-            userId: req.body.usuario_id
+            userId: req.body.userId
         });
 
         return res.status(500).json({
@@ -710,9 +710,9 @@ export const bulkDeleteAddresses = async (req, res) => {
         const addresses = await ShippingAddress.findAll({
             where: {
                 id: addressIds,
-                usuario_id: req.userId
+                userId: req.userId
             },
-            attributes: ['id', 'usuario_id']
+            attributes: ['id', 'userId']
         });
 
         // Check if all addresses were found
@@ -734,7 +734,7 @@ export const bulkDeleteAddresses = async (req, res) => {
             const result = await ShippingAddress.destroy({
                 where: {
                     id: addressIds,
-                    usuario_id: req.userId
+                    userId: req.userId
                 },
                 transaction: t
             });

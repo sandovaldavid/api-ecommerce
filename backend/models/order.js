@@ -33,6 +33,6 @@ const Order = sequelize.define("Order", {
     }
 });
 
-Order.belongsTo(User, { foreignKey: "usuario_id" });
+Order.belongsTo(User, { foreignKey: "userId" });
 
 export default Order;

@@ -18,14 +18,14 @@ const router = express.Router();
 router.use(authJwt.verifyToken);
 
 // User routes
-router.get("/user/:usuario_id", [authJwt.isOwnerOrAdmin("usuario_id")], getShippingAddressesByUserId);
-router.post("/", [authJwt.isOwnerOrAdmin("usuario_id")], createShippingAddress);
-router.put("/:id_ShippingAddress", [authJwt.isOwnerOrAdmin("usuario_id")], updateShippingAddress);
-router.delete("/:id_ShippingAddress", [authJwt.isOwnerOrAdmin("usuario_id")], deleteShippingAddress);
-router.get("/:id_ShippingAddress", authJwt.isOwnerOrAdmin("usuario_id"), getShippingAddressById);
+router.get("/user/:usuario_id", [authJwt.isOwnerOrAdmin("userId")], getShippingAddressesByUserId);
+router.post("/", [authJwt.isOwnerOrAdmin("userId")], createShippingAddress);
+router.put("/:id_ShippingAddress", [authJwt.isOwnerOrAdmin("userId")], updateShippingAddress);
+router.delete("/:id_ShippingAddress", [authJwt.isOwnerOrAdmin("userId")], deleteShippingAddress);
+router.get("/:id_ShippingAddress", authJwt.isOwnerOrAdmin("userId"), getShippingAddressById);
 router.post("/validate", validateShippingAddress);
-router.patch("/:id_ShippingAddress/default", authJwt.isOwnerOrAdmin("usuario_id"), setDefaultAddress);
-router.delete("/bulk", authJwt.isOwnerOrAdmin("usuario_id"), bulkDeleteAddresses);
+router.patch("/:id_ShippingAddress/default", authJwt.isOwnerOrAdmin("userId"), setDefaultAddress);
+router.delete("/bulk", authJwt.isOwnerOrAdmin("userId"), bulkDeleteAddresses);
 
 // Admin routes
 router.get("/", [authJwt.verifyToken, authJwt.hasRoles("admin")], getAllShippingAddresses);

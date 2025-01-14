@@ -15,7 +15,7 @@ export const createReview = async (req, res) => {
         if (!usuarioId || !productoId || !rating) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["usuario_id", "producto_id", "rating"]
+                required: ["userId", "producto_id", "rating"]
             });
         }
 
@@ -29,7 +29,7 @@ export const createReview = async (req, res) => {
         // Check if user already reviewed this product
         const existingReview = await Review.findOne({
             where: {
-                usuario_id: usuarioId,
+                userId: usuarioId,
                 producto_id: productoId
             }
         });
@@ -42,7 +42,7 @@ export const createReview = async (req, res) => {
 
         // Create review
         const review = await Review.create({
-            usuario_id: usuarioId,
+            userId: usuarioId,
             producto_id: productoId,
             rating,
             review_text: reviewText?.trim() || null
@@ -90,7 +90,7 @@ export const getReviews = async (req, res) => {
         const whereClause = {};
         if (producto_id) whereClause.producto_id = producto_id;
         if (rating) whereClause.rating = rating;
-        if (usuario_id) whereClause.usuario_id = usuario_id;
+        if (usuario_id) whereClause.userId = usuario_id;
 
         // Get total count for pagination
         const totalCount = await Review.count({ where: whereClause });
@@ -183,7 +183,7 @@ export const deleteReview = async (req, res) => {
             ["admin", "moderator"].includes(role.name)
         );
 
-        if (!isAdminOrMod && req.userId !== review.usuario_id) {
+        if (!isAdminOrMod && req.userId !== review.userId) {
             return res.status(403).json({
                 error: "Not authorized to delete this review"
             });
@@ -251,7 +251,7 @@ export const updateReview = async (req, res) => {
             ["admin", "moderator"].includes(role.name)
         );
 
-        if (!isAdminOrMod && req.userId !== review.usuario_id) {
+        if (!isAdminOrMod && req.userId !== review.userId) {
             return res.status(403).json({
                 error: "Not authorized to update this review"
             });

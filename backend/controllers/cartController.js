@@ -3,7 +3,7 @@ import Cart from "../models/cart.js";
 export const createCart = async (req, res) => {
     try {
         const { usuario_id: usuarioId } = req.body;
-        const cart = await Cart.create({ usuario_id: usuarioId });
+        const cart = await Cart.create({ userId: usuarioId });
         res.status(201).json(cart);
     } catch (error) {
         res.status(500).json({ error: error.message });

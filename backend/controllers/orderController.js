@@ -3,7 +3,7 @@ import Order from "../models/order.js";
 export const createOrder = async (req, res) => {
     try {
         const { usuario_id: usuarioId, productos, total } = req.body;
-        const order = await Order.create({ usuario_id: usuarioId, total });
+        const order = await Order.create({ userId: usuarioId, total });
     
         for (const producto of productos) {
             await order.addProduct(producto.id, { through: { quantity: producto.quantity, unitPrice: producto.price } });
