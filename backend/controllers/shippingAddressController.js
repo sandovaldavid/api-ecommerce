@@ -517,14 +517,14 @@ export const validateShippingAddress = async (req, res) => {
     try {
         // Destructure and validate required fields
         const {
-            codigo_postal: codigoPostal,
-            ciudad,
-            pais,
-            estado_provincia: estadoProvincia
+            zipCode,
+            city,
+            country,
+            stateProvince
         } = req.body;
 
         // Input validation
-        if (!codigoPostal || !ciudad || !pais) {
+        if (!zipCode || !city || !country) {
             return res.status(400).json({
                 error: "Missing required fields",
                 required: ["zipCode", "city", "country"]
@@ -533,15 +533,15 @@ export const validateShippingAddress = async (req, res) => {
 
         // Clean input data
         const cleanedData = {
-            codigoPostal: codigoPostal.trim(),
-            city: ciudad.trim(),
-            country: pais.trim(),
-            estadoProvincia: estadoProvincia?.trim()
+            zipCode: zipCode.trim(),
+            city: city.trim(),
+            country: country.trim(),
+            stateProvince: stateProvince?.trim()
         };
 
         // Validate postal code format
         const postalCodeRegex = /^\d{5}(-\d{4})?$/;
-        if (!postalCodeRegex.test(cleanedData.codigoPostal)) {
+        if (!postalCodeRegex.test(cleanedData.zipCode)) {
             return res.status(400).json({
                 error: "Invalid postal code format",
                 details: "Postal code must be in format: 12345 or 12345-6789"
@@ -566,10 +566,10 @@ export const validateShippingAddress = async (req, res) => {
             data: {
                 isValid: true,
                 validatedAddress: {
-                    codigoPostal: cleanedData.codigoPostal,
+                    zipCode: cleanedData.zipCode,
                     city: cleanedData.city,
                     country: cleanedData.country,
-                    estadoProvincia: cleanedData.estadoProvincia
+                    stateProvince: cleanedData.stateProvince
                 }
             }
         });
