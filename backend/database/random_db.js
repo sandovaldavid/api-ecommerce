@@ -15,7 +15,7 @@ import Category from "../models/category.js";
 
 const usersToPrint = [];
 async function generateRandomData () {
-    await sequelize.sync({ alter: true });  // Esto reiniciará la base de datos (opcional)
+    await sequelize.sync({ alter: true });
   
     const defaultRoles = [
         { id: faker.string.uuid(), name: "admin" },
@@ -86,7 +86,7 @@ async function generateRandomData () {
     
         const roles = await Roles.findAll();
         const randomRole1 = roles[faker.number.int({ min: 0, max: defaultRoles.length - 1 })];
-        await newUser.addRole(randomRole1.id); // Asegúrate de usar solo el id del rol
+        await newUser.addRole(randomRole1.id);
         const addSecondRole = faker.datatype.boolean();
         if (addSecondRole) {
             const randomRole2 = roles[faker.number.int({ min: 0, max: defaultRoles.length - 1 })];
