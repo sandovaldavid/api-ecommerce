@@ -193,13 +193,13 @@ async function generateRandomData () {
     const filePath = path.join(process.cwd(), "database", "users_db.json");
     writeFile(filePath, jsonData, (err) => {
         if (err) {
-            console.error("Error al escribir el archivo JSON:", err);
+            console.error("Error to write JSON:", err);
         } else {
-            console.log("Archivo JSON creado con éxito.");
+            console.log("JSON file created successfully");
         }
     });
 }
 
 generateRandomData().catch(error => {
-    console.error("Error al generar datos aleatorios:", error);
+    console.error("Error generating random data:", error);
 });
