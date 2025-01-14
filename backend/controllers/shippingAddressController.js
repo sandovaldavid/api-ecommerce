@@ -10,12 +10,12 @@ export const createShippingAddress = async (req, res) => {
             address,
             ciudad,
             stateProvince,
-            codigo_postal: codigoPostal,
+            zipCode,
             pais
         } = req.body;
 
         // Input validation
-        if (!usuarioId || !address || !ciudad || !stateProvince || !codigoPostal || !pais) {
+        if (!usuarioId || !address || !ciudad || !stateProvince || !zipCode || !pais) {
             return res.status(400).json({
                 error: "All fields are required",
                 required: ["usuario_id", "address", "city", "stateProvince", "codigo_postal", "pais"]
@@ -44,7 +44,7 @@ export const createShippingAddress = async (req, res) => {
 
         // Validate postal code format (example)
         const postalCodeRegex = /^\d{5}(-\d{4})?$/;
-        if (!postalCodeRegex.test(codigoPostal.trim())) {
+        if (!postalCodeRegex.test(zipCode.trim())) {
             return res.status(400).json({
                 error: "Invalid postal code format"
             });
@@ -56,7 +56,7 @@ export const createShippingAddress = async (req, res) => {
             address: address.trim(),
             city: ciudad.trim(),
             stateProvince: stateProvince.trim(),
-            codigo_postal: codigoPostal.trim(),
+            codigo_postal: zipCode.trim(),
             pais: pais.trim(),
             created_at: new Date(),
             updated_at: new Date()
