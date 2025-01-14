@@ -1,4 +1,4 @@
-import { Op, fn, col } from "sequelize";
+import { Op } from "sequelize";
 import { sequelize } from "../models/index.js";
 import Product from "../models/product.js";
 import Category from "../models/category.js";
