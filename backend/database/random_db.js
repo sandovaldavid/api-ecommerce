@@ -134,7 +134,7 @@ async function generateRandomData () {
         ordersData.push({
             id: faker.string.uuid(),
             total: faker.commerce.price({ min: 50, max: 500, dec: 2, symbol: "" }),
-            estado: "pendiente",
+            state: "pendiente",
             usuario_id: allUsers[faker.number.int({ min: 0, max: 24 })].id,
         });
     }

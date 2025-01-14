@@ -12,7 +12,7 @@ const Order = sequelize.define("Order", {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
     },
-    estado: {
+    state: {
         type: DataTypes.ENUM("pendiente", "enviado", "entregado"),
         defaultValue: "pendiente",
     },
