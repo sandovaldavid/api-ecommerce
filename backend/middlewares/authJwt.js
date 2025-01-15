@@ -1,18 +1,69 @@
-import jwt from "jsonwebtoken";
-import config from "../config/config.js";
 import { User } from "../models/userRoles.js";
+import { TokenService } from "../services/tokenService.js";
+import { UserService } from "../services/userService.js";
 
 export const verifyToken = async (req, res, next) => {
-    const token = req.headers["x-access-token"];
-    if (!token) return res.status(403).json({ error: "A token is required for authentication" });
     try {
-        const decoded = jwt.verify(token, config.development.secret);
-        req.userId = decoded.id;
-        const user = await User.findByPk(req.userId, { attributes: { exclude: ["hashed_password"] } });
-        if (!user) return res.status(404).json({ error: "No user found" });
+        // Use TokenService to extract and validate token
+        const tokenResult = TokenService.extractFromHeaders(req);
+        if (!tokenResult.success) {
+            return res.status(401).json({
+                error: "No token provided",
+                details: tokenResult.error
+            });
+        }
+
+        // Validate token
+        const validationResult = TokenService.validate(tokenResult.token);
+        if (!validationResult.isValid) {
+            return res.status(401).json({
+                error: "Invalid token",
+                details: validationResult.error
+            });
+        }
+
+        // Get user ID from decoded token
+        const userId = validationResult.decoded.id;
+        if (!userId) {
+            return res.status(401).json({
+                error: "Invalid token payload",
+                details: "User ID not found in token"
+            });
+        }
+
+        // Use UserService to validate user
+        const user = await UserService.findById(userId);
+        const validation = UserService.validateUser(user);
+
+        if (!validation.isValid) {
+            return res.status(401).json({
+                error: "User validation failed",
+                details: validation.error
+            });
+        }
+
+        // Attach user and role info to request
+        req.userId = user.id;
+        req.user = validation.user;
+        req.isAdmin = user.Roles?.some(role => role.name === "admin") || false;
+        req.isModerator = user.Roles?.some(role => role.name === "moderator") || false;
+
+        // Cache control headers for security
+        res.set('Cache-Control', 'no-store');
+        res.set('Pragma', 'no-cache');
+
         next();
-    } catch {
-        return res.status(401).json({ error: "Invalid token" });
+    } catch (error) {
+        console.error('Token verification error:', {
+            error: error.message,
+            stack: error.stack,
+            path: req.path
+        });
+
+        return res.status(401).json({
+            error: "Authentication failed",
+            details: error.message
+        });
     }
 };
 
