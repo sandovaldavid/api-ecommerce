@@ -1,18 +1,19 @@
 import Review from "../models/review.js";
 import User from "../models/user.js";
 import Product from "../models/product.js";
+import { AuthorizationService } from "../services/authorizationService.js";
 
 export const createReview = async (req, res) => {
     try {
         const {
-            usuario_id: usuarioId,
-            producto_id: productoId,
+            userId,
+            productId,
             rating,
-            review_text: reviewText
+            reviewText
         } = req.body;
 
         // Input validation
-        if (!usuarioId || !productoId || !rating) {
+        if (!userId || !productId || !rating) {
             return res.status(400).json({
                 error: "Missing required fields",
                 required: ["userId", "productId", "rating"]
@@ -29,8 +30,8 @@ export const createReview = async (req, res) => {
         // Check if user already reviewed this product
         const existingReview = await Review.findOne({
             where: {
-                userId: usuarioId,
-                productId: productoId
+                userId,
+                productId
             }
         });
 
@@ -42,10 +43,10 @@ export const createReview = async (req, res) => {
 
         // Create review
         const review = await Review.create({
-            userId: usuarioId,
-            productId: productoId,
+            userId,
+            productId,
             rating,
-            review_text: reviewText?.trim() || null
+            reviewText: reviewText?.trim() || null
         });
 
         // Get review with user and product data
@@ -57,7 +58,7 @@ export const createReview = async (req, res) => {
                 },
                 {
                     model: Product,
-                    attributes: ["id", "name", "descripcion"]
+                    attributes: ["id", "name", "description"]
                 }
             ]
         });
@@ -84,13 +85,13 @@ export const getReviews = async (req, res) => {
         const offset = (page - 1) * limit;
 
         // Get filters from query params
-        const { producto_id, rating, usuario_id } = req.query;
+        const { productId, rating, userId } = req.query;
 
         // Build where clause
         const whereClause = {};
-        if (producto_id) whereClause.productId = producto_id;
+        if (productId) whereClause.productId = productId;
         if (rating) whereClause.rating = rating;
-        if (usuario_id) whereClause.userId = usuario_id;
+        if (userId) whereClause.userId = userId;
 
         // Get total count for pagination
         const totalCount = await Review.count({ where: whereClause });
@@ -120,7 +121,7 @@ export const getReviews = async (req, res) => {
             attributes: [
                 "id",
                 "rating",
-                "review_text",
+                "reviewText",
                 "created_at",
                 "updated_at"
             ]
@@ -155,56 +156,71 @@ export const deleteReview = async (req, res) => {
     try {
         const { id } = req.params;
 
-        // Validate ID
+        // Input validation
         if (!id) {
             return res.status(400).json({
                 error: "Review ID is required"
             });
         }
 
-        // Check if review exists and include minimal user data
-        const review = await Review.findOne({
-            where: { id },
-            include: [{
-                model: User,
-                attributes: ["id", "firstName"]
-            }]
-        });
-
-        if (!review) {
-            return res.status(404).json({
-                error: "Review not found"
-            });
-        }
-
-        // Check authorization (if user is owner or admin/moderator)
-        const userRoles = await req.user.getRoles();
-        const isAdminOrMod = userRoles.some(role =>
-            ["admin", "moderator"].includes(role.name)
+        // Check authorization
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            id,
+            'review',
+            {
+                model: Review,
+                attributes: ['id', 'userId', 'rating', 'reviewText', 'created_at'],
+                includeUser: true
+            }
         );
 
-        if (!isAdminOrMod && req.userId !== review.userId) {
-            return res.status(403).json({
-                error: "Not authorized to delete this review"
+        if (!authResult.isAuthorized) {
+            return res.status(authResult.statusCode).json({
+                error: authResult.error,
+                details: authResult.details
             });
         }
 
-        // Delete review
-        await review.destroy();
+        // Delete review with transaction
+        await sequelize.transaction(async (t) => {
+            await authResult.resource.destroy({ transaction: t });
+
+            // Log deletion for audit
+            await sequelize.models.AuditLog.create({
+                action: 'DELETE_REVIEW',
+                userId: req.userId,
+                resourceId: id,
+                resourceType: 'review',
+                details: JSON.stringify({
+                    deletedBy: {
+                        userId: req.userId,
+                        isAdmin: authResult.isAdmin
+                    }
+                })
+            }, { transaction: t });
+        });
 
         return res.status(200).json({
             message: "Review deleted successfully",
             data: {
-                id,
+                reviewId: id,
                 deletedBy: {
                     userId: req.userId,
-                    isAdmin: isAdminOrMod
+                    isAdmin: authResult.isAdmin,
+                    timestamp: new Date()
                 }
             }
         });
 
     } catch (error) {
-        console.error("Error deleting review:", error);
+        console.error('Error deleting review:', {
+            error: error.message,
+            stack: error.stack,
+            reviewId: req.params.id,
+            userId: req.userId
+        });
+
         return res.status(500).json({
             error: "Error deleting review",
             details: error.message
