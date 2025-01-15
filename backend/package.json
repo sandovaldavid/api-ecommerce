@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": " nodemon server.js",
     "lint": "npx eslint .",
-    "fix": "npx eslint . --fix",
+    "--fix": "npx eslint . --fix",
     "random_date": "node database/random_db.js",
     "delete_data": "node database/delete_data.js"
   },
