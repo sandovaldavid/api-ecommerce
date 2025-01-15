@@ -2,7 +2,7 @@ import { User } from "../models/userRoles.js";
 import { Roles } from "../models/userRoles.js";
 
 export class UserService {
-    static async findById(userId) {
+    static async findById (userId) {
         try {
             return await User.findByPk(userId, {
                 attributes: {
@@ -10,12 +10,12 @@ export class UserService {
                 },
                 include: [{
                     model: Roles,
-                    attributes: ['id', 'name'],
+                    attributes: ["id", "name"],
                     through: { attributes: [] }
                 }]
             });
         } catch (error) {
-            console.error('Error finding user:', {
+            console.error("Error finding user:", {
                 error: error.message,
                 stack: error.stack,
                 userId
@@ -24,7 +24,7 @@ export class UserService {
         }
     }
 
-    static validateUser(user) {
+    static validateUser (user) {
         try {
             if (!user) {
                 return {
@@ -52,7 +52,7 @@ export class UserService {
                 }
             };
         } catch (error) {
-            console.error('User validation error:', {
+            console.error("User validation error:", {
                 error: error.message,
                 stack: error.stack,
                 userId: user?.id
@@ -65,14 +65,14 @@ export class UserService {
         }
     }
 
-    static async hasRole(userId, roleName) {
+    static async hasRole (userId, roleName) {
         try {
             const user = await this.findById(userId);
             if (!user) return false;
 
             return user.Roles.some(role => role.name === roleName);
         } catch (error) {
-            console.error('Role check error:', {
+            console.error("Role check error:", {
                 error: error.message,
                 stack: error.stack,
                 userId,
@@ -82,14 +82,14 @@ export class UserService {
         }
     }
 
-    static async hasRoles(userId, roles) {
+    static async hasRoles (userId, roles) {
         try {
             const user = await this.findById(userId);
             if (!user) return false;
 
             return user.Roles.some(role => roles.includes(role.name));
         } catch (error) {
-            console.error('Roles check error:', {
+            console.error("Roles check error:", {
                 error: error.message,
                 stack: error.stack,
                 userId,

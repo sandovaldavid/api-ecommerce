@@ -49,12 +49,12 @@ export const verifyToken = async (req, res, next) => {
         req.isModerator = user.Roles?.some(role => role.name === "moderator") || false;
 
         // Cache control headers for security
-        res.set('Cache-Control', 'no-store');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-store");
+        res.set("Pragma", "no-cache");
 
         next();
     } catch (error) {
-        console.error('Token verification error:', {
+        console.error("Token verification error:", {
             error: error.message,
             stack: error.stack,
             path: req.path
@@ -96,7 +96,7 @@ export const hasRoles = (...roles) => {
 
             if (!hasRequiredRole) {
                 return res.status(403).json({
-                    message: `Require one of these roles: ${roles.join(', ')}`
+                    message: `Require one of these roles: ${roles.join(", ")}`
                 });
             }
             next();

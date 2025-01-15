@@ -10,7 +10,7 @@ export const getUserProfile = async (req, res) => {
             },
             include: [{
                 model: Roles,
-                attributes: ['name'],
+                attributes: ["name"],
                 through: { attributes: [] }
             }]
         });

@@ -689,7 +689,7 @@ export const setDefaultAddress = async (req, res) => {
 export const bulkDeleteAddresses = async (req, res) => {
     try {
         const { addressIds } = req.body;
-        console.log('addressIds', addressIds);
+        console.log("addressIds", addressIds);
         const MAX_ADDRESSES = 10;
 
         // Input validation
@@ -716,10 +716,10 @@ export const bulkDeleteAddresses = async (req, res) => {
             },
             include: [{
                 model: User,
-                attributes: ['id', 'firstName'],
+                attributes: ["id", "firstName"],
                 required: true
             }],
-            attributes: ['id', 'userId', 'is_default']
+            attributes: ["id", "userId", "is_default"]
         });
 
         // Check if default addresses are being deleted
@@ -760,7 +760,7 @@ export const bulkDeleteAddresses = async (req, res) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
 
         return res.status(200).json({
             message: "Addresses deleted successfully",
@@ -776,7 +776,7 @@ export const bulkDeleteAddresses = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error bulk deleting addresses:', {
+        console.error("Error bulk deleting addresses:", {
             error: error.message,
             stack: error.stack,
             addressIds: req.body.addressIds,

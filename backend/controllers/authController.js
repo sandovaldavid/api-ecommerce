@@ -58,11 +58,11 @@ export const login = async (req, res) => {
         // Buscar el usuario con sus roles, excluyendo la contraseña
         const user = await User.findByPk(userId, {
             attributes: {
-                exclude: ['hashed_password']
+                exclude: ["hashed_password"]
             },
             include: [{
                 model: Roles,
-                attributes: ['name'],
+                attributes: ["name"],
                 through: { attributes: [] }
             }]
         });

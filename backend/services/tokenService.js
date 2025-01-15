@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import config from "../config/config.js";
 
 export class TokenService {
-    static validate(token) {
+    static validate (token) {
         try {
             if (!token) {
                 return {
@@ -12,7 +12,7 @@ export class TokenService {
             }
 
             // Remove 'Bearer ' if present
-            const cleanToken = token.replace(/^Bearer\s+/, '');
+            const cleanToken = token.replace(/^Bearer\s+/, "");
 
             // Verify token
             const decoded = jwt.verify(cleanToken, config.development.secret);
@@ -22,7 +22,7 @@ export class TokenService {
                 decoded
             };
         } catch (error) {
-            console.error('Token validation error:', {
+            console.error("Token validation error:", {
                 error: error.message,
                 stack: error.stack
             });
@@ -34,7 +34,7 @@ export class TokenService {
         }
     }
 
-    static decode(token) {
+    static decode (token) {
         try {
             if (!token) {
                 return {
@@ -44,7 +44,7 @@ export class TokenService {
             }
 
             // Remove 'Bearer ' if present
-            const cleanToken = token.replace(/^Bearer\s+/, '');
+            const cleanToken = token.replace(/^Bearer\s+/, "");
 
             // Decode token without verification
             const decoded = jwt.decode(cleanToken);
@@ -65,7 +65,7 @@ export class TokenService {
                 }
             };
         } catch (error) {
-            console.error('Token decode error:', {
+            console.error("Token decode error:", {
                 error: error.message,
                 stack: error.stack
             });
@@ -77,7 +77,7 @@ export class TokenService {
         }
     }
 
-    static generate(userId, expiresIn = "1h") {
+    static generate (userId, expiresIn = "1h") {
         try {
             const token = jwt.sign(
                 { id: userId },
@@ -91,7 +91,7 @@ export class TokenService {
                 expiresIn
             };
         } catch (error) {
-            console.error('Token generation error:', {
+            console.error("Token generation error:", {
                 error: error.message,
                 stack: error.stack
             });
@@ -103,7 +103,7 @@ export class TokenService {
         }
     }
 
-    static extractFromHeaders(req) {
+    static extractFromHeaders (req) {
         try {
             const token = req.headers["x-access-token"] || req.headers["authorization"];
             if (!token) {
@@ -114,14 +114,14 @@ export class TokenService {
             }
 
             // Remove 'Bearer ' if present
-            const cleanToken = token.replace(/^Bearer\s+/, '');
+            const cleanToken = token.replace(/^Bearer\s+/, "");
 
             return {
                 success: true,
                 token: cleanToken
             };
         } catch (error) {
-            console.error('Token extraction error:', {
+            console.error("Token extraction error:", {
                 error: error.message,
                 stack: error.stack
             });

@@ -7,7 +7,7 @@ export const createRole = async (req, res) => {
         const { name } = req.body;
 
         // Input validation
-        if (!name || typeof name !== 'string') {
+        if (!name || typeof name !== "string") {
             return res.status(400).json({
                 error: "Valid role name is required",
                 details: "Name must be a non-empty string"
@@ -56,7 +56,7 @@ export const createRole = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error creating role:', {
+        console.error("Error creating role:", {
             error: error.message,
             stack: error.stack
         });
@@ -86,8 +86,8 @@ export const getAllRoles = async (req, res) => {
 
         // Get roles with pagination and specific attributes
         const roles = await Roles.findAll({
-            attributes: ['id', 'name'],
-            order: [['name', 'ASC']],
+            attributes: ["id", "name"],
+            order: [["name", "ASC"]],
             limit,
             offset
         });
@@ -96,7 +96,7 @@ export const getAllRoles = async (req, res) => {
         const totalPages = Math.ceil(totalCount / limit);
 
         // Set cache headers for better performance
-        res.set('Cache-Control', 'private, max-age=300');
+        res.set("Cache-Control", "private, max-age=300");
 
         return res.status(200).json({
             message: "Roles retrieved successfully",
@@ -112,7 +112,7 @@ export const getAllRoles = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching roles:', {
+        console.error("Error fetching roles:", {
             error: error.message,
             stack: error.stack
         });
@@ -146,7 +146,7 @@ export const deleteRole = async (req, res) => {
         }
 
         // Prevent deletion of default roles
-        const defaultRoles = ['admin', 'user', 'moderator'];
+        const defaultRoles = ["admin", "user", "moderator"];
         if (defaultRoles.includes(role.name)) {
             return res.status(400).json({
                 error: "Cannot delete default role",
@@ -156,7 +156,7 @@ export const deleteRole = async (req, res) => {
 
         // Check if role is in use with separate query
         const userCount = await sequelize.query(
-            'SELECT COUNT(DISTINCT userId) as count FROM UserRoles WHERE roleId = :roleId',
+            "SELECT COUNT(DISTINCT userId) as count FROM UserRoles WHERE roleId = :roleId",
             {
                 replacements: { roleId: id },
                 type: sequelize.QueryTypes.SELECT
@@ -184,7 +184,7 @@ export const deleteRole = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error deleting role:', {
+        console.error("Error deleting role:", {
             error: error.message,
             stack: error.stack,
             roleId: req.params.id
@@ -215,11 +215,11 @@ export const assignRole = async (req, res) => {
             User.findByPk(userId, {
                 include: [{
                     model: Roles,
-                    attributes: ['id', 'name']
+                    attributes: ["id", "name"]
                 }]
             }),
             Roles.findByPk(roleId, {
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             })
         ]);
 
@@ -257,9 +257,9 @@ export const assignRole = async (req, res) => {
         const updatedUser = await User.findByPk(userId, {
             include: [{
                 model: Roles,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }],
-            attributes: ['id', 'firstName', 'lastName_father']
+            attributes: ["id", "firstName", "lastName_father"]
         });
 
         return res.status(200).json({
@@ -277,7 +277,7 @@ export const assignRole = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error assigning role:', {
+        console.error("Error assigning role:", {
             error: error.message,
             stack: error.stack,
             userId: req.body.userId,
@@ -307,7 +307,7 @@ export const removeRole = async (req, res) => {
         const user = await User.findByPk(userId, {
             include: [{
                 model: Roles,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }]
         });
 
@@ -321,7 +321,7 @@ export const removeRole = async (req, res) => {
 
         // Validate role exists
         const roleToRemove = await Roles.findByPk(roleId, {
-            attributes: ['id', 'name']
+            attributes: ["id", "name"]
         });
 
         if (!roleToRemove) {
@@ -357,9 +357,9 @@ export const removeRole = async (req, res) => {
         const updatedUser = await User.findByPk(userId, {
             include: [{
                 model: Roles,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }],
-            attributes: ['id', 'firstName', 'lastName_father']
+            attributes: ["id", "firstName", "lastName_father"]
         });
 
         return res.status(200).json({
@@ -381,7 +381,7 @@ export const removeRole = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error removing role:', {
+        console.error("Error removing role:", {
             error: error.message,
             stack: error.stack,
             userId: req.body.userId,

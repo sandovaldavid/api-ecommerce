@@ -15,7 +15,7 @@ import cartItemRoutes from "./routes/cartItemRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
-import {errorHandler} from "./middlewares/errorHandler.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
 /*import "./models/user.js";
 import "./models/product.js";
 import "./models/category.js";
