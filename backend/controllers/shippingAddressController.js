@@ -612,7 +612,7 @@ export const setDefaultAddress = async (req, res) => {
 
         if (!address) {
             return res.status(404).json({
-                error: "Shipping address not found or not authorized",
+                error: "Shipping address not found",
                 addressId: IdShippingAddress
             });
         }
