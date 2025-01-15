@@ -15,7 +15,7 @@ export const createReview = async (req, res) => {
         if (!usuarioId || !productoId || !rating) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["userId", "producto_id", "rating"]
+                required: ["userId", "productId", "rating"]
             });
         }
 
@@ -30,7 +30,7 @@ export const createReview = async (req, res) => {
         const existingReview = await Review.findOne({
             where: {
                 userId: usuarioId,
-                producto_id: productoId
+                productId: productoId
             }
         });
 
@@ -43,7 +43,7 @@ export const createReview = async (req, res) => {
         // Create review
         const review = await Review.create({
             userId: usuarioId,
-            producto_id: productoId,
+            productId: productoId,
             rating,
             review_text: reviewText?.trim() || null
         });
@@ -53,11 +53,11 @@ export const createReview = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ['id', 'firstName', 'lastName_father']
+                    attributes: ["id", "firstName", "lastName_father"]
                 },
                 {
                     model: Product,
-                    attributes: ['id', 'name', 'descripcion']
+                    attributes: ["id", "name", "descripcion"]
                 }
             ]
         });
@@ -68,7 +68,7 @@ export const createReview = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error creating review:', error);
+        console.error("Error creating review:", error);
         return res.status(500).json({
             error: "Error creating review",
             details: error.message
@@ -88,7 +88,7 @@ export const getReviews = async (req, res) => {
 
         // Build where clause
         const whereClause = {};
-        if (producto_id) whereClause.producto_id = producto_id;
+        if (producto_id) whereClause.productId = producto_id;
         if (rating) whereClause.rating = rating;
         if (usuario_id) whereClause.userId = usuario_id;
 
@@ -106,23 +106,23 @@ export const getReviews = async (req, res) => {
             where: whereClause,
             limit,
             offset,
-            order: [['created_at', 'DESC']],
+            order: [["created_at", "DESC"]],
             include: [
                 {
                     model: User,
-                    attributes: ['id', 'firstName', 'lastName_father']
+                    attributes: ["id", "firstName", "lastName_father"]
                 },
                 {
                     model: Product,
-                    attributes: ['id', 'name', 'description']
+                    attributes: ["id", "name", "description"]
                 }
             ],
             attributes: [
-                'id',
-                'rating',
-                'review_text',
-                'created_at',
-                'updated_at'
+                "id",
+                "rating",
+                "review_text",
+                "created_at",
+                "updated_at"
             ]
         });
 
@@ -143,7 +143,7 @@ export const getReviews = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error getting reviews:', error);
+        console.error("Error getting reviews:", error);
         return res.status(500).json({
             error: "Error retrieving reviews",
             details: error.message
@@ -167,7 +167,7 @@ export const deleteReview = async (req, res) => {
             where: { id },
             include: [{
                 model: User,
-                attributes: ['id', 'firstName']
+                attributes: ["id", "firstName"]
             }]
         });
 
@@ -204,7 +204,7 @@ export const deleteReview = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error deleting review:', error);
+        console.error("Error deleting review:", error);
         return res.status(500).json({
             error: "Error deleting review",
             details: error.message
@@ -235,7 +235,7 @@ export const updateReview = async (req, res) => {
         const review = await Review.findByPk(id, {
             include: [{
                 model: User,
-                attributes: ['id', 'firstName']
+                attributes: ["id", "firstName"]
             }]
         });
 
@@ -270,11 +270,11 @@ export const updateReview = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ['id', 'firstName', 'lastName_father']
+                    attributes: ["id", "firstName", "lastName_father"]
                 },
                 {
                     model: Product,
-                    attributes: ['id', 'name', 'descripcion']
+                    attributes: ["id", "name", "descripcion"]
                 }
             ]
         });
@@ -285,7 +285,7 @@ export const updateReview = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error updating review:', error);
+        console.error("Error updating review:", error);
         return res.status(500).json({
             error: "Error updating review",
             details: error.message

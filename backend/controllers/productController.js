@@ -15,20 +15,20 @@ export const getAllProducts = async (req, res) => {
         const offset = (page - 1) * limit;
 
         // Get filters from query params
-        const { nombre, categoria_id, precio_min, precio_max } = req.query;
+        const { name, categoryId,  minPrice, maxPrice } = req.query;
 
         // Build where clause
         const whereClause = {};
-        if (nombre) {
+        if (name) {
             whereClause.name = {
-                [Op.like]: `%${nombre}%`
+                [Op.like]: `%${name}%`
             };
         }
-        if (categoria_id) whereClause.categoria_id = categoria_id;
-        if (precio_min || precio_max) {
+        if (categoryId) whereClause.categoryId = categoryId;
+        if (minPrice || maxPrice) {
             whereClause.price = {};
-            if (precio_min) whereClause.price[Op.gte] = precio_min;
-            if (precio_max) whereClause.price[Op.lte] = precio_max;
+            if (minPrice) whereClause.price[Op.gte] = minPrice;
+            if (maxPrice) whereClause.price[Op.lte] = maxPrice;
         }
 
         // Get total count for pagination
@@ -45,20 +45,20 @@ export const getAllProducts = async (req, res) => {
             where: whereClause,
             limit,
             offset,
-            order: [['created_at', 'DESC']],
+            order: [["created_at", "DESC"]],
             include: [{
                 model: Category,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }],
             attributes: [
-                'id',
-                'name',
-                'url_img',
-                'description',
-                'price',
-                'stock',
-                'created_at',
-                'updated_at'
+                "id",
+                "name",
+                "url_img",
+                "description",
+                "price",
+                "stock",
+                "created_at",
+                "updated_at"
             ]
         });
 
@@ -79,7 +79,7 @@ export const getAllProducts = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error getting products:', error);
+        console.error("Error getting products:", error);
         return res.status(500).json({
             error: "Error retrieving products",
             details: error.message
@@ -90,24 +90,24 @@ export const getAllProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
     try {
         const {
-            nombre,
+            name,
             description,
-            precio,
+            price,
             stock,
-            categoria_id: categoriaId,
+            categoryId,
             url_img: urlImg
         } = req.body;
 
         // Input validation
-        if (!nombre || !precio || !categoriaId) {
+        if (!name || !price || !categoryId) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["name", "price", "categoria_id"]
+                required: ["name", "price", "categoryId"]
             });
         }
 
         // Validate price and stock
-        if (precio <= 0) {
+        if (price <= 0) {
             return res.status(400).json({
                 error: "Price must be greater than 0"
             });
@@ -120,7 +120,7 @@ export const createProduct = async (req, res) => {
         }
 
         // Check if category exists
-        const categoryExists = await Category.findByPk(categoriaId);
+        const categoryExists = await Category.findByPk(categoryId);
         if (!categoryExists) {
             return res.status(404).json({
                 error: "Category not found"
@@ -129,7 +129,7 @@ export const createProduct = async (req, res) => {
 
         // Check if product name already exists
         const existingProduct = await Product.findOne({
-            where: { name: nombre.trim() }
+            where: { name: name.trim() }
         });
 
         if (existingProduct) {
@@ -140,11 +140,11 @@ export const createProduct = async (req, res) => {
 
         // Create product with cleaned data
         const product = await Product.create({
-            name: nombre.trim(),
+            name: name.trim(),
             description: description?.trim(),
-            price: parseFloat(precio),
+            price: parseFloat(price),
             stock: parseInt(stock) || 0,
-            categoria_id: categoriaId,
+            categoryId,
             url_img: urlImg?.trim() || "https://placehold.co/400x300"
         });
 
@@ -152,7 +152,7 @@ export const createProduct = async (req, res) => {
         const productWithCategory = await Product.findByPk(product.id, {
             include: [{
                 model: Category,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }]
         });
 
@@ -162,7 +162,7 @@ export const createProduct = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error creating product:', error);
+        console.error("Error creating product:", error);
         return res.status(500).json({
             error: "Error creating product",
             details: error.message
@@ -185,18 +185,18 @@ export const getProductById = async (req, res) => {
         const product = await Product.findByPk(id, {
             include: [{
                 model: Category,
-                attributes: ['id', 'name', 'description']
+                attributes: ["id", "name", "description"]
             }],
             attributes: [
-                'id',
-                'name',
-                'url_img',
-                'description',
-                'price',
-                'stock',
-                'categoria_id',
-                'created_at',
-                'updated_at'
+                "id",
+                "name",
+                "url_img",
+                "description",
+                "price",
+                "stock",
+                "categoryId",
+                "created_at",
+                "updated_at"
             ]
         });
 
@@ -220,7 +220,7 @@ export const getProductById = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error getting product:', {
+        console.error("Error getting product:", {
             error: error.message,
             stack: error.stack
         });
@@ -236,11 +236,11 @@ export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
         const {
-            nombre,
+            name,
             description,
-            precio,
+            price,
             stock,
-            categoria_id: categoriaId,
+            categoryId,
             url_img: urlImg
         } = req.body;
 
@@ -255,7 +255,7 @@ export const updateProduct = async (req, res) => {
         const product = await Product.findByPk(id, {
             include: [{
                 model: Category,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }]
         });
 
@@ -268,7 +268,7 @@ export const updateProduct = async (req, res) => {
         }
 
         // Validate price if provided
-        if (precio !== undefined && precio <= 0) {
+        if (price !== undefined && price <= 0) {
             return res.status(400).json({
                 error: "Price must be greater than 0"
             });
@@ -282,8 +282,8 @@ export const updateProduct = async (req, res) => {
         }
 
         // Check if new category exists if provided
-        if (categoriaId && categoriaId !== product.categoria_id) {
-            const categoryExists = await Category.findByPk(categoriaId);
+        if (categoryId && categoryId !== product.categoryId) {
+            const categoryExists = await Category.findByPk(categoryId);
             if (!categoryExists) {
                 return res.status(404).json({
                     error: "Category not found"
@@ -292,9 +292,9 @@ export const updateProduct = async (req, res) => {
         }
 
         // Check if new name is unique if provided
-        if (nombre && nombre !== product.name) {
+        if (name && name !== product.name) {
             const existingProduct = await Product.findOne({
-                where: { name: nombre.trim() }
+                where: { name: name.trim() }
             });
             if (existingProduct) {
                 return res.status(400).json({
@@ -308,11 +308,11 @@ export const updateProduct = async (req, res) => {
             updated_at: new Date()
         };
 
-        if (nombre) updates.name = nombre.trim();
+        if (name) updates.name = name.trim();
         if (description !== undefined) updates.description = description?.trim();
-        if (precio !== undefined) updates.price = parseFloat(precio);
+        if (price !== undefined) updates.price = parseFloat(price);
         if (stock !== undefined) updates.stock = parseInt(stock);
-        if (categoriaId) updates.categoria_id = categoriaId;
+        if (categoryId) updates.categoria_id = categoryId;
         if (urlImg !== undefined) updates.url_img = urlImg?.trim() || "https://placehold.co/400x300";
 
         // Update product
@@ -322,18 +322,18 @@ export const updateProduct = async (req, res) => {
         const updatedProduct = await Product.findByPk(id, {
             include: [{
                 model: Category,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }],
             attributes: [
-                'id',
-                'name',
-                'url_img',
-                'description',
-                'price',
-                'stock',
-                'categoria_id',
-                'created_at',
-                'updated_at'
+                "id",
+                "name",
+                "url_img",
+                "description",
+                "price",
+                "stock",
+                "categoryId",
+                "created_at",
+                "updated_at"
             ]
         });
 
@@ -346,7 +346,7 @@ export const updateProduct = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error updating product:', error);
+        console.error("Error updating product:", error);
         return res.status(500).json({
             error: "Error updating product",
             details: error.message
@@ -369,9 +369,9 @@ export const deleteProduct = async (req, res) => {
         const product = await Product.findByPk(id, {
             include: [{
                 model: Category,
-                attributes: ['id', 'name']
+                attributes: ["id", "name"]
             }],
-            attributes: ['id', 'name', 'stock']
+            attributes: ["id", "name", "stock"]
         });
 
         // Handle not found
@@ -384,7 +384,7 @@ export const deleteProduct = async (req, res) => {
 
         // Check if product can be deleted (optional business rules)
         const hasActiveOrders = await OrderDetails.findOne({
-            where: { producto_id: id }
+            where: { productId: id }
         });
 
         if (hasActiveOrders) {
@@ -395,11 +395,11 @@ export const deleteProduct = async (req, res) => {
 
         // Delete related records first
         await Review.destroy({
-            where: { producto_id: id }
+            where: { productId: id }
         });
 
         await CartItems.destroy({
-            where: { product_id: id }
+            where: { productId: id }
         });
 
         // Delete product
@@ -415,7 +415,7 @@ export const deleteProduct = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error deleting product:', {
+        console.error("Error deleting product:", {
             error: error.message,
             stack: error.stack
         });
@@ -432,22 +432,22 @@ export const searchProducts = async (req, res) => {
         // Validate and parse parameters
         const {
             query,
-            categoria_id,
-            in_stock,
-            sort_by = 'created_at',
-            order = 'DESC'
+            categoryId,
+            inStock,
+            sortBy = "created_at",
+            order = "DESC"
         } = req.query;
 
-        const min_price = parseFloat(req.query.min_price);
-        const max_price = parseFloat(req.query.max_price);
+        const minPrice = parseFloat(req.query.minPrice);
+        const maxPrice = parseFloat(req.query.maxPrice);
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
         const offset = (page - 1) * limit;
 
         // Validate price range
-        if (!isNaN(min_price) && !isNaN(max_price) && min_price > max_price) {
+        if (!isNaN(minPrice) && !isNaN(maxPrice) && minPrice > maxPrice) {
             return res.status(400).json({
-                error: "min_price cannot be greater than max_price"
+                error: "minPrice cannot be greater than maxPrice"
             });
         }
 
@@ -455,21 +455,21 @@ export const searchProducts = async (req, res) => {
 
         // Improved text search
         if (query) {
-            const searchTerms = query.trim().split(' ').filter(term => term.length > 0);
+            const searchTerms = query.trim().split(" ").filter(term => term.length > 0);
             if (searchTerms.length > 0) {
                 whereClause[Op.and] = searchTerms.map(term => ({
                     [Op.or]: [
                         {
                             name: sequelize.where(
-                                sequelize.fn('LOWER', sequelize.col('Product.name')),
-                                'LIKE',
+                                sequelize.fn("LOWER", sequelize.col("Product.name")),
+                                "LIKE",
                                 `%${term.toLowerCase()}%`
                             )
                         },
                         {
                             description: sequelize.where(
-                                sequelize.fn('LOWER', sequelize.col('Product.description')),
-                                'LIKE',
+                                sequelize.fn("LOWER", sequelize.col("Product.description")),
+                                "LIKE",
                                 `%${term.toLowerCase()}%`
                             )
                         }
@@ -479,38 +479,38 @@ export const searchProducts = async (req, res) => {
         }
 
         // Price filter
-        if (!isNaN(min_price) || !isNaN(max_price)) {
+        if (!isNaN(minPrice) || !isNaN(maxPrice)) {
             whereClause.price = {};
-            if (!isNaN(min_price)) whereClause.price[Op.gte] = min_price;
-            if (!isNaN(max_price)) whereClause.price[Op.lte] = max_price;
+            if (!isNaN(minPrice)) whereClause.price[Op.gte] = minPrice;
+            if (!isNaN(maxPrice)) whereClause.price[Op.lte] = maxPrice;
         }
 
         // Category and stock filters
-        if (categoria_id) whereClause.categoria_id = categoria_id;
-        if (in_stock === 'true') whereClause.stock = { [Op.gt]: 0 };
+        if (categoryId) whereClause.categoria_id = categoryId;
+        if (inStock === "true") whereClause.stock = { [Op.gt]: 0 };
 
         // Validate sort field
-        const validSortFields = ['name', 'price', 'created_at', 'stock'];
-        const sortField = validSortFields.includes(sort_by) ? sort_by : 'created_at';
-        const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+        const validSortFields = ["name", "price", "created_at", "stock"];
+        const sortField = validSortFields.includes(sortBy) ? sortBy : "created_at";
+        const sortOrder = order.toUpperCase() === "ASC" ? "ASC" : "DESC";
 
         // Execute optimized query
         const { count, rows: products } = await Product.findAndCountAll({
             where: whereClause,
             include: [{
                 model: Category,
-                attributes: ['id', 'name'],
+                attributes: ["id", "name"],
                 required: true
             }],
             attributes: [
-                'id',
-                'name',
-                'url_img',
-                'description',
-                'price',
-                'stock',
-                'created_at',
-                'updated_at'
+                "id",
+                "name",
+                "url_img",
+                "description",
+                "price",
+                "stock",
+                "created_at",
+                "updated_at"
             ],
             order: [[sortField, sortOrder]],
             limit,
@@ -525,7 +525,7 @@ export const searchProducts = async (req, res) => {
         }));
 
         // Set cache headers
-        res.set('Cache-Control', 'public, max-age=300');
+        res.set("Cache-Control", "public, max-age=300");
 
         return res.status(200).json({
             message: "Products found successfully",
@@ -539,10 +539,10 @@ export const searchProducts = async (req, res) => {
                 },
                 filters: {
                     query,
-                    min_price,
-                    max_price,
-                    categoria_id,
-                    in_stock
+                    minPrice,
+                    maxPrice,
+                    categoryId,
+                    inStock
                 },
                 sorting: {
                     field: sortField,
@@ -552,7 +552,7 @@ export const searchProducts = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error searching products:', error);
+        console.error("Error searching products:", error);
         return res.status(500).json({
             error: "Error searching products",
             details: error.message
@@ -573,7 +573,7 @@ export const getProductReviews = async (req, res) => {
 
         // Validate product exists
         const product = await Product.findByPk(id, {
-            attributes: ['id', 'name']
+            attributes: ["id", "name"]
         });
 
         if (!product) {
@@ -590,19 +590,19 @@ export const getProductReviews = async (req, res) => {
 
         // Get reviews with pagination and related data
         const reviews = await Review.findAndCountAll({
-            where: { producto_id: id },
+            where: { productId: id },
             include: [{
                 model: User,
-                attributes: ['id', 'firstName', 'lastName_father', 'lastName_mother']
+                attributes: ["id", "firstName", "lastName_father", "lastName_mother"]
             }],
             attributes: [
-                'id',
-                'rating',
-                'review_text',
-                'created_at',
-                'updated_at'
+                "id",
+                "rating",
+                "review_text",
+                "created_at",
+                "updated_at"
             ],
-            order: [['created_at', 'DESC']],
+            order: [["created_at", "DESC"]],
             limit,
             offset
         });
@@ -621,10 +621,10 @@ export const getProductReviews = async (req, res) => {
 
         // Calculate average rating
         const averageRating = await Review.findOne({
-            where: { producto_id: id },
+            where: { productId: id },
             attributes: [
-                [sequelize.fn('ROUND', sequelize.fn('AVG', sequelize.col('rating')), 1), 'avgRating'],
-                [sequelize.fn('COUNT', sequelize.col('rating')), 'totalRatings']
+                [sequelize.fn("ROUND", sequelize.fn("AVG", sequelize.col("rating")), 1), "avgRating"],
+                [sequelize.fn("COUNT", sequelize.col("rating")), "totalRatings"]
             ],
             raw: true
         });
@@ -649,7 +649,7 @@ export const getProductReviews = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error getting product reviews:', {
+        console.error("Error getting product reviews:", {
             error: error.message,
             stack: error.stack
         });
@@ -689,7 +689,7 @@ export const updateProductStock = async (req, res) => {
 
         // Get product with minimal data
         const product = await Product.findByPk(id, {
-            attributes: ['id', 'name', 'stock']
+            attributes: ["id", "name", "stock"]
         });
 
         if (!product) {
@@ -724,13 +724,13 @@ export const updateProductStock = async (req, res) => {
                 productName: product.name,
                 previousStock: product.stock,
                 change: quantityToAdd,
-                newStock: newStock,
+                newStock,
                 updatedAt: new Date()
             }
         });
 
     } catch (error) {
-        console.error('Error updating stock:', {
+        console.error("Error updating stock:", {
             error: error.message,
             stack: error.stack
         });
@@ -753,20 +753,20 @@ export const getFeaturedProducts = async (req, res) => {
             },
             include: [{
                 model: Category,
-                attributes: ['id', 'name', 'description']
+                attributes: ["id", "name", "description"]
             }],
             attributes: [
-                'id',
-                'name',
-                'url_img',
-                'description',
-                'price',
-                'stock',
-                'created_at'
+                "id",
+                "name",
+                "url_img",
+                "description",
+                "price",
+                "stock",
+                "created_at"
             ],
             order: [
-                ['created_at', 'DESC'],
-                ['price', 'DESC']
+                ["created_at", "DESC"],
+                ["price", "DESC"]
             ],
             limit: 6
         });
@@ -793,7 +793,7 @@ export const getFeaturedProducts = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error getting featured products:', {
+        console.error("Error getting featured products:", {
             error: error.message,
             stack: error.stack
         });

@@ -4,7 +4,7 @@ export const createOrderDetails = async (req, res) => {
     try {
         const { orden_id: ordenId, producto_id: productoId, cantidad, precio_unitario: precioUnitario } = req.body;
         const subtotal = cantidad * precioUnitario;
-        const orderDetails = await OrderDetails.create({ orden_id: ordenId, producto_id: productoId, cantidad: quantity, unitPrice: precioUnitario, subtotal });
+        const orderDetails = await OrderDetails.create({ orden_id: ordenId, productId: productoId, cantidad: quantity, unitPrice: precioUnitario, subtotal });
         res.status(201).json(orderDetails);
     } catch (error) {
         res.status(500).json({ error: error.message });
