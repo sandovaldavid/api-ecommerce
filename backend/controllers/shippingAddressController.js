@@ -689,8 +689,10 @@ export const setDefaultAddress = async (req, res) => {
 export const bulkDeleteAddresses = async (req, res) => {
     try {
         const { addressIds } = req.body;
+        console.log('addressIds', addressIds);
+        const MAX_ADDRESSES = 10;
 
-        // Validate input
+        // Input validation
         if (!addressIds || !Array.isArray(addressIds) || addressIds.length === 0) {
             return res.status(400).json({
                 error: "Valid address IDs array is required",
@@ -698,22 +700,35 @@ export const bulkDeleteAddresses = async (req, res) => {
             });
         }
 
-        // Validate maximum number of addresses to delete at once
-        if (addressIds.length > 10) {
+        // Validate maximum number of addresses
+        if (addressIds.length > MAX_ADDRESSES) {
             return res.status(400).json({
                 error: "Too many addresses",
-                details: "Can only delete up to 10 addresses at once"
+                details: `Can only delete up to ${MAX_ADDRESSES} addresses at once`
             });
         }
 
-        // Verify addresses exist and belong to user
+        // Verify addresses exist and belong to user with single query
         const addresses = await ShippingAddress.findAll({
             where: {
                 id: addressIds,
-                userId: req.userId
             },
-            attributes: ["id", "userId"]
+            include: [{
+                model: User,
+                attributes: ['id', 'firstName'],
+                required: true
+            }],
+            attributes: ['id', 'userId', 'is_default']
         });
+
+        // Check if default addresses are being deleted
+        const defaultAddresses = addresses.filter(addr => addr.is_default);
+        if (defaultAddresses.length > 0) {
+            return res.status(400).json({
+                error: "Cannot delete default addresses",
+                defaultAddressIds: defaultAddresses.map(addr => addr.id)
+            });
+        }
 
         // Check if all addresses were found
         if (addresses.length !== addressIds.length) {
@@ -734,7 +749,7 @@ export const bulkDeleteAddresses = async (req, res) => {
             const result = await ShippingAddress.destroy({
                 where: {
                     id: addressIds,
-                    userId: req.userId
+                    is_default: false
                 },
                 transaction: t
             });
@@ -742,7 +757,9 @@ export const bulkDeleteAddresses = async (req, res) => {
             return result;
         });
 
-        // Return success response
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+
         return res.status(200).json({
             message: "Addresses deleted successfully",
             data: {
@@ -750,13 +767,14 @@ export const bulkDeleteAddresses = async (req, res) => {
                 deletedIds: addressIds,
                 deletedBy: {
                     userId: req.userId,
-                    isAdmin: req.isAdmin
+                    isAdmin: req.isAdmin,
+                    timestamp: new Date()
                 }
             }
         });
 
     } catch (error) {
-        console.error("Error bulk deleting addresses:", {
+        console.error('Error bulk deleting addresses:', {
             error: error.message,
             stack: error.stack,
             addressIds: req.body.addressIds,
