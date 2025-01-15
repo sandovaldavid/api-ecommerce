@@ -18,14 +18,14 @@ const router = express.Router();
 router.use(authJwt.verifyToken);
 
 // User routes
-router.post("/", authJwt.isOwnerOrAdmin("userId"), createShippingAddress);
-router.delete("/bulk", authJwt.isOwnerOrAdmin("userId"), bulkDeleteAddresses);
+router.post("/", createShippingAddress);
+router.delete("/bulk", bulkDeleteAddresses);
 router.post("/validate", validateShippingAddress);
-router.get("/user/:userId", authJwt.isOwnerOrAdmin("userId"), getShippingAddressesByUserId);
-router.put("/:IdShippingAddress", authJwt.isOwnerOrAdmin("userId"), updateShippingAddress);
-router.delete("/:IdShippingAddress", authJwt.isOwnerOrAdmin("userId"), deleteShippingAddress);
-router.get("/:IdShippingAddress", authJwt.isOwnerOrAdmin("userId"), getShippingAddressById);
-router.patch("/:IdShippingAddress/default", authJwt.isOwnerOrAdmin("userId"), setDefaultAddress);
+router.get("/user/:userId", getShippingAddressesByUserId);
+router.put("/:IdShippingAddress", updateShippingAddress);
+router.delete("/:IdShippingAddress", deleteShippingAddress);
+router.get("/:IdShippingAddress", getShippingAddressById);
+router.patch("/:IdShippingAddress/default", setDefaultAddress);
 
 // Admin routes
 router.get("/", authJwt.hasRoles("admin"), getAllShippingAddresses);
