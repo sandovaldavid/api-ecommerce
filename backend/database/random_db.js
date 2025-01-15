@@ -112,7 +112,7 @@ async function generateRandomData () {
         reviewsData.push({
             id: faker.string.uuid(),
             rating: faker.number.int({ min: 1, max: 5 }),
-            review_text: faker.lorem.sentence(),
+            reviewText: faker.lorem.sentence(),
             userId: allUsers[faker.number.int({ min: 0, max: 24 })].id,
             productId: productsData[faker.number.int({ min: 0, max: 99 })].id,
         });
