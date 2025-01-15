@@ -67,7 +67,7 @@ export const isOwnerOrAdmin = (paramId) => {
             );
 
             // Verificar si es el propietario
-            const isOwner = req.userId === req.params[paramId];
+            const isOwner = (req.userId === req.params[paramId]) || (req.body.userId === req.userId);
 
             if (!isOwner && !isAdminOrMod) {
                 return res.status(403).json({
