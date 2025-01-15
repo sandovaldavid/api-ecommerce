@@ -82,6 +82,7 @@ async function generateRandomData () {
             lastName_mother: faker.person.lastName(),
             email: faker.internet.email(),
             hashed_password: password,
+            isValid: true,
         });
     
         const roles = await Roles.findAll();
