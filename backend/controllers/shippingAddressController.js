@@ -52,7 +52,7 @@ export const createShippingAddress = async (req, res) => {
 
         // Create shipping address with cleaned data
         const shippingAddress = await ShippingAddress.create({
-            userId: userId,
+            userId,
             address: address.trim(),
             city: city.trim(),
             stateProvince: stateProvince.trim(),
@@ -66,7 +66,7 @@ export const createShippingAddress = async (req, res) => {
         const addressWithUser = await ShippingAddress.findByPk(shippingAddress.id, {
             include: [{
                 model: User,
-                attributes: ['id', 'firstName', 'lastName_father']
+                attributes: ["id", "firstName", "lastName_father"]
             }]
         });
 
@@ -76,7 +76,7 @@ export const createShippingAddress = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error creating shipping address:', {
+        console.error("Error creating shipping address:", {
             error: error.message,
             stack: error.stack
         });
@@ -101,13 +101,13 @@ export const getShippingAddressesByUserId = async (req, res) => {
 
         // Check if user exists
         const user = await User.findByPk(userId, {
-            attributes: ['id', 'firstName', 'lastName_father']
+            attributes: ["id", "firstName", "lastName_father"]
         });
 
         if (!user) {
             return res.status(404).json({
                 error: "User not found",
-                userId: userId
+                userId
             });
         }
 
@@ -121,20 +121,20 @@ export const getShippingAddressesByUserId = async (req, res) => {
             where: { userId },
             limit,
             offset,
-            order: [['created_at', 'DESC']],
+            order: [["created_at", "DESC"]],
             attributes: [
-                'id',
-                'address',
-                'city',
-                'stateProvince',
-                'zipCode',
-                'country',
-                'created_at',
-                'updated_at'
+                "id",
+                "address",
+                "city",
+                "stateProvince",
+                "zipCode",
+                "country",
+                "created_at",
+                "updated_at"
             ],
             include: [{
                 model: User,
-                attributes: ['id', 'firstName', 'lastName_father'],
+                attributes: ["id", "firstName", "lastName_father"],
                 required: true
             }],
             distinct: true
@@ -144,7 +144,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
         if (shippingAddresses.count === 0) {
             return res.status(404).json({
                 message: "No shipping addresses found for this user",
-                userId: userId,
+                userId,
                 userName: user.firstName
             });
         }
@@ -153,7 +153,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
         const totalPages = Math.ceil(shippingAddresses.count / limit);
 
         // Set cache headers for better performance
-        res.set('Cache-Control', 'private, max-age=300');
+        res.set("Cache-Control", "private, max-age=300");
 
         return res.status(200).json({
             message: "Shipping addresses retrieved successfully",
@@ -173,7 +173,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching shipping addresses:', {
+        console.error("Error fetching shipping addresses:", {
             error: error.message,
             stack: error.stack
         });
@@ -217,21 +217,21 @@ export const getAllShippingAddresses = async (req, res) => {
             where: whereClause,
             limit,
             offset,
-            order: [['created_at', 'DESC']],
+            order: [["created_at", "DESC"]],
             attributes: [
-                'id',
-                'address',
-                'city',
-                'stateProvince',
-                'zipCode',
-                'country',
-                'userId',
-                'created_at',
-                'updated_at'
+                "id",
+                "address",
+                "city",
+                "stateProvince",
+                "zipCode",
+                "country",
+                "userId",
+                "created_at",
+                "updated_at"
             ],
             include: [{
                 model: User,
-                attributes: ['id', 'firstName', 'lastName_father', 'lastName_mother'],
+                attributes: ["id", "firstName", "lastName_father", "lastName_mother"],
                 required: true
             }],
             distinct: true
@@ -241,7 +241,7 @@ export const getAllShippingAddresses = async (req, res) => {
         const totalPages = Math.ceil(totalCount / limit);
 
         // Set cache headers
-        res.set('Cache-Control', 'private, max-age=300');
+        res.set("Cache-Control", "private, max-age=300");
 
         return res.status(200).json({
             message: "Shipping addresses retrieved successfully",
@@ -262,7 +262,7 @@ export const getAllShippingAddresses = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching all shipping addresses:', {
+        console.error("Error fetching all shipping addresses:", {
             error: error.message,
             stack: error.stack
         });
@@ -289,10 +289,10 @@ export const deleteShippingAddress = async (req, res) => {
         const address = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
-                attributes: ['id', 'firstName'],
+                attributes: ["id", "firstName"],
                 required: true
             }],
-            attributes: ['id', 'userId']
+            attributes: ["id", "userId"]
         });
 
         // Handle not found
@@ -329,7 +329,7 @@ export const deleteShippingAddress = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error deleting shipping address:', {
+        console.error("Error deleting shipping address:", {
             error: error.message,
             stack: error.stack,
             addressId: req.params.id_ShippingAddress
@@ -364,7 +364,7 @@ export const updateShippingAddress = async (req, res) => {
         const verifyAddress = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
-                attributes: ['id', 'firstName'],
+                attributes: ["id", "firstName"],
                 required: true
             }]
         });
@@ -410,7 +410,7 @@ export const updateShippingAddress = async (req, res) => {
             return verifyAddress.reload({
                 include: [{
                     model: User,
-                    attributes: ['id', 'firstName', 'lastName_father']
+                    attributes: ["id", "firstName", "lastName_father"]
                 }],
                 transaction: t
             });
@@ -422,7 +422,7 @@ export const updateShippingAddress = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error updating shipping address:', {
+        console.error("Error updating shipping address:", {
             error: error.message,
             stack: error.stack,
             addressId: req.params.id_ShippingAddress
@@ -449,19 +449,19 @@ export const getShippingAddressById = async (req, res) => {
         // Get address with user info and selected attributes
         const address = await ShippingAddress.findByPk(IdShippingAddress, {
             attributes: [
-                'id',
-                'address',
-                'city',
-                'stateProvince',
-                'zipCode',
-                'country',
-                'userId',
-                'created_at',
-                'updated_at'
+                "id",
+                "address",
+                "city",
+                "stateProvince",
+                "zipCode",
+                "country",
+                "userId",
+                "created_at",
+                "updated_at"
             ],
             include: [{
                 model: User,
-                attributes: ['id', 'firstName', 'lastName_father'],
+                attributes: ["id", "firstName", "lastName_father"],
                 required: true
             }]
         });
@@ -482,7 +482,7 @@ export const getShippingAddressById = async (req, res) => {
         }
 
         // Set cache headers for better performance
-        res.set('Cache-Control', 'private, max-age=300');
+        res.set("Cache-Control", "private, max-age=300");
 
         // Format response
         const formattedAddress = {
@@ -500,7 +500,7 @@ export const getShippingAddressById = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error getting shipping address:', {
+        console.error("Error getting shipping address:", {
             error: error.message,
             stack: error.stack,
             addressId: req.params.id_ShippingAddress
@@ -558,7 +558,7 @@ export const validateShippingAddress = async (req, res) => {
         }
 
         // Set cache headers for better performance
-        res.set('Cache-Control', 'private, max-age=300');
+        res.set("Cache-Control", "private, max-age=300");
 
         // Return validation result
         return res.status(200).json({
@@ -575,7 +575,7 @@ export const validateShippingAddress = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error validating address:', {
+        console.error("Error validating address:", {
             error: error.message,
             stack: error.stack,
             requestBody: req.body
@@ -605,9 +605,9 @@ export const setDefaultAddress = async (req, res) => {
         const address = await ShippingAddress.findOne({
             where: {
                 id: IdShippingAddress,
-                userId: userId
+                userId
             },
-            attributes: ['id', 'userId']
+            attributes: ["id", "userId"]
         });
 
         if (!address) {
@@ -633,7 +633,7 @@ export const setDefaultAddress = async (req, res) => {
                     updated_at: new Date()
                 },
                 {
-                    where: { userId: userId },
+                    where: { userId },
                     transaction: t
                 }
             );
@@ -652,17 +652,17 @@ export const setDefaultAddress = async (req, res) => {
         const updatedAddress = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
-                attributes: ['id', 'firstName', 'lastName_father']
+                attributes: ["id", "firstName", "lastName_father"]
             }],
             attributes: [
-                'id',
-                'address',
-                'city',
-                'stateProvince',
-                'zipCode',
-                'country',
-                'is_default',
-                'updated_at'
+                "id",
+                "address",
+                "city",
+                "stateProvince",
+                "zipCode",
+                "country",
+                "is_default",
+                "updated_at"
             ]
         });
 
@@ -672,7 +672,7 @@ export const setDefaultAddress = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error setting default address:', {
+        console.error("Error setting default address:", {
             error: error.message,
             stack: error.stack,
             addressId: req.params.id_ShippingAddress,
@@ -712,7 +712,7 @@ export const bulkDeleteAddresses = async (req, res) => {
                 id: addressIds,
                 userId: req.userId
             },
-            attributes: ['id', 'userId']
+            attributes: ["id", "userId"]
         });
 
         // Check if all addresses were found
@@ -756,7 +756,7 @@ export const bulkDeleteAddresses = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error bulk deleting addresses:', {
+        console.error("Error bulk deleting addresses:", {
             error: error.message,
             stack: error.stack,
             addressIds: req.body.addressIds,
