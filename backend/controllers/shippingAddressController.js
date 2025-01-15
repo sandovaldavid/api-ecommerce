@@ -712,6 +712,7 @@ export const bulkDeleteAddresses = async (req, res) => {
         const addresses = await ShippingAddress.findAll({
             where: {
                 id: addressIds,
+                userId: req.userId
             },
             include: [{
                 model: User,
@@ -749,6 +750,7 @@ export const bulkDeleteAddresses = async (req, res) => {
             const result = await ShippingAddress.destroy({
                 where: {
                     id: addressIds,
+                    userId: req.userId,
                     is_default: false
                 },
                 transaction: t
