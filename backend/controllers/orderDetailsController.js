@@ -2,9 +2,9 @@ import OrderDetails from "../models/orderDetails.js";
 
 export const createOrderDetails = async (req, res) => {
     try {
-        const { orden_id: ordenId, producto_id: productoId, cantidad, precio_unitario: precioUnitario } = req.body;
-        const subtotal = cantidad * precioUnitario;
-        const orderDetails = await OrderDetails.create({ orden_id: ordenId, productId: productoId, cantidad: quantity, unitPrice: precioUnitario, subtotal });
+        const { orderId, productId, quantity, unitPrice } = req.body;
+        const subtotal = quantity * unitPrice;
+        const orderDetails = await OrderDetails.create({ orderId, productId, quantity, unitPrice, subtotal });
         res.status(201).json(orderDetails);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -13,8 +13,8 @@ export const createOrderDetails = async (req, res) => {
 
 export const getOrderDetailsByOrderId = async (req, res) => {
     try {
-        const { orden_id: ordenId } = req.params;
-        const orderDetails = await OrderDetails.findAll({ where: { orden_id: ordenId } });
+        const { orderId } = req.params;
+        const orderDetails = await OrderDetails.findAll({ where: { orderId } });
         res.status(200).json(orderDetails);
     } catch (error) {
         res.status(500).json({ error: error.message });
