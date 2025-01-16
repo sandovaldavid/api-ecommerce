@@ -1,34 +1,26 @@
 import { User } from "../models/userRoles.js";
 import { TokenService } from "../services/tokenService.js";
 import { UserService } from "../services/userService.js";
+import { Errors } from "./errorHandler.js";
 
 export const verifyToken = async (req, res, next) => {
     try {
         // Use TokenService to extract and validate token
         const tokenResult = TokenService.extractFromHeaders(req);
         if (!tokenResult.success) {
-            return res.status(401).json({
-                error: "No token provided",
-                details: tokenResult.error
-            });
+            throw new Errors.AuthenticationError("Token not found in headers");
         }
 
         // Validate token
         const validationResult = TokenService.validate(tokenResult.token);
         if (!validationResult.isValid) {
-            return res.status(401).json({
-                error: "Invalid token",
-                details: validationResult.error
-            });
+            throw new Errors.AuthenticationError("Invalid token");
         }
 
         // Get user ID from decoded token
         const userId = validationResult.decoded.id;
         if (!userId) {
-            return res.status(401).json({
-                error: "Invalid token payload",
-                details: "User ID not found in token"
-            });
+            throw new Errors.AuthenticationError("Invalid token payload");
         }
 
         // Use UserService to validate user
@@ -36,10 +28,9 @@ export const verifyToken = async (req, res, next) => {
         const validation = UserService.validateUser(user);
 
         if (!validation.isValid) {
-            return res.status(401).json({
-                error: "User validation failed",
-                details: validation.error
-            });
+            throw new Errors.AuthenticationError(validation.error
+                ? `User validation failed: ${validation.error}`
+                : "User not found");
         }
 
         // Attach user and role info to request
@@ -54,16 +45,7 @@ export const verifyToken = async (req, res, next) => {
 
         next();
     } catch (error) {
-        console.error("Token verification error:", {
-            error: error.message,
-            stack: error.stack,
-            path: req.path
-        });
-
-        return res.status(401).json({
-            error: "Authentication failed",
-            details: error.message
-        });
+        next(error);
     }
 };
 
