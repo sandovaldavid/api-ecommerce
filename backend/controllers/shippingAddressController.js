@@ -1,8 +1,9 @@
 import { sequelize } from "../models/index.js";
 import ShippingAddress from "../models/shippingAddress.js";
 import User from "../models/user.js";
+import { Errors } from "../middlewares/errorHandler.js";
 
-export const createShippingAddress = async (req, res) => {
+export const createShippingAddress = async (req, res, next) => {
     try {
         // Destructure and validate required fields
         const {
@@ -16,8 +17,7 @@ export const createShippingAddress = async (req, res) => {
 
         // Input validation
         if (!address || !city || !stateProvince || !zipCode || !country) {
-            return res.status(400).json({
-                error: "All fields are required",
+            throw new Errors.ValidationError("Missing required fields", {
                 required: ["address", "city", "stateProvince", "zipCode", "country"]
             });
         }
@@ -28,17 +28,16 @@ export const createShippingAddress = async (req, res) => {
         });
 
         if (userAddressCount >= 5) {
-            return res.status(400).json({
-                error: "Maximum number of addresses reached (5)",
-                currentCount: userAddressCount
+            throw new Errors.ValidationError("Maximum addresses reached", {
+                maxAddresses: 5
             });
         }
 
         // Validate postal code format (example)
         const postalCodeRegex = /^\d{5}(-\d{4})?$/;
         if (!postalCodeRegex.test(zipCode.trim())) {
-            return res.status(400).json({
-                error: "Invalid postal code format"
+            throw new Errors.ValidationError("Invalid postal code format", {
+                details: "Postal code must be in format: 12345 or 12345-6789"
             });
         }
 
@@ -73,10 +72,7 @@ export const createShippingAddress = async (req, res) => {
             stack: error.stack
         });
 
-        return res.status(500).json({
-            error: "Error creating shipping address",
-            details: error.message
-        });
+        next(error);
     }
 };
 
