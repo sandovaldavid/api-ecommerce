@@ -208,6 +208,7 @@ export const deleteReview = async (req, res) => {
                 reviewId: id,
                 deletedBy: {
                     userId: req.userId,
+                    isOwner: authResult.isOwner,
                     isAdmin: authResult.isAdmin,
                     timestamp: new Date()
                 }
