@@ -538,17 +538,14 @@ export const validateShippingAddress = async (req, res, next) => {
     }
 };
 
-export const setDefaultAddress = async (req, res) => {
+export const setDefaultAddress = async (req, res, next) => {
     try {
         const { IdShippingAddress } = req.params;
         const { userId } = req.body;
 
         // Validate inputs
         if (!IdShippingAddress || !userId) {
-            return res.status(400).json({
-                error: "Missing required fields",
-                required: ["IdShippingAddress", "userId"]
-            });
+            throw new Errors.ValidationError("Address ID and user ID are required");
         }
 
         // Verify address exists and belongs to user
@@ -561,17 +558,15 @@ export const setDefaultAddress = async (req, res) => {
         });
 
         if (!address) {
-            return res.status(404).json({
-                error: "Shipping address not found",
-                addressId: IdShippingAddress
+            throw new Errors.NotFoundError("Address not found or not authorized", {
+                addressId: IdShippingAddress,
+                userId
             });
         }
 
         // Verify ownership
         if (address.userId !== req.userId && !req.isAdmin) {
-            return res.status(403).json({
-                error: "Not authorized to modify this address"
-            });
+            throw new Errors.AuthorizationError("Not authorized to set default address");
         }
 
         // Update addresses with transaction
@@ -629,10 +624,7 @@ export const setDefaultAddress = async (req, res) => {
             userId: req.body.userId
         });
 
-        return res.status(500).json({
-            error: "Error setting default address",
-            details: error.message
-        });
+        next(error);
     }
 };
 
