@@ -116,5 +116,6 @@ export const Errors = {
     AppError,
     ValidationError,
     AuthenticationError,
-    AuthorizationError
+    AuthorizationError,
+    NotFoundError
 };
