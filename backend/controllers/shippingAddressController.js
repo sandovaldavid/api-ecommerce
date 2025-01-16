@@ -76,15 +76,13 @@ export const createShippingAddress = async (req, res, next) => {
     }
 };
 
-export const getShippingAddressesByUserId = async (req, res) => {
+export const getShippingAddressesByUserId = async (req, res, next) => {
     try {
         const { userId } = req.params;
 
         // Validate user ID
         if (!userId) {
-            return res.status(400).json({
-                error: "User ID is required"
-            });
+            throw new Errors.ValidationError("User ID is required");
         }
 
         // Check if user exists
@@ -93,8 +91,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
         });
 
         if (!user) {
-            return res.status(404).json({
-                error: "User not found",
+            throw new Errors.NotFoundError("User not found", {
                 userId
             });
         }
@@ -130,10 +127,8 @@ export const getShippingAddressesByUserId = async (req, res) => {
 
         // Handle no addresses found
         if (shippingAddresses.count === 0) {
-            return res.status(404).json({
-                message: "No shipping addresses found for this user",
-                userId,
-                userName: user.firstName
+            throw new Errors.NotFoundError("No addresses found for user", {
+                userId
             });
         }
 
@@ -166,10 +161,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
             stack: error.stack
         });
 
-        return res.status(500).json({
-            error: "Error retrieving shipping addresses",
-            details: error.message
-        });
+        next(error);
     }
 };
 
