@@ -1,11 +1,107 @@
+class AppError extends Error {
+    constructor(message, statusCode, details = null) {
+        super(message);
+        this.name = this.constructor.name;
+        this.statusCode = statusCode;
+        this.details = details;
+        this.isOperational = true;
+        Error.captureStackTrace(this, this.constructor);
+    }
+}
+
+class ValidationError extends AppError {
+    constructor(details) {
+        super('Validation Error', 400, details);
+    }
+}
+
+class AuthenticationError extends AppError {
+    constructor(message = 'Authentication failed') {
+        super(message, 401);
+    }
+}
+
+class AuthorizationError extends AppError {
+    constructor(message = 'Access denied') {
+        super(message, 403);
+    }
+}
+
 export const errorHandler = (err, req, res, next) => {
-    if (err.name === "UnauthorizedError") {
-        return res.status(401).json({ error: "Invalid token" });
-    }
+    // Log error details
+    console.error('Error occurred:', {
+        name: err.name,
+        message: err.message,
+        statusCode: err.statusCode,
+        path: req.path,
+        method: req.method,
+        userId: req.userId,
+        userRoles: req.user?.Roles,
+        timestamp: new Date().toISOString(),
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
 
-    if (err.name === "ForbiddenError") {
-        return res.status(403).json({ error: "Insufficient permissions" });
-    }
+    // Handle specific error types
+    switch (err.name) {
+        case 'ValidationError':
+            return res.status(400).json({
+                error: 'Validation failed',
+                details: err.details || err.message,
+                path: req.path
+            });
 
-    return res.status(500).json({ error: "Internal server error" });
+        case 'AuthenticationError':
+            return res.status(401).json({
+                error: 'Authentication failed',
+                details: err.message,
+                path: req.path
+            });
+
+        case 'AuthorizationError':
+            return res.status(403).json({
+                error: 'Access denied',
+                details: err.message,
+                path: req.path
+            });
+
+        case 'SequelizeValidationError':
+        case 'SequelizeUniqueConstraintError':
+            return res.status(400).json({
+                error: 'Database validation failed',
+                details: err.errors.map(e => ({
+                    field: e.path,
+                    message: e.message
+                })),
+                path: req.path
+            });
+
+        case 'SequelizeForeignKeyConstraintError':
+            return res.status(409).json({
+                error: 'Database constraint error',
+                details: 'Referenced record does not exist',
+                path: req.path
+            });
+
+        default:
+            // Handle unexpected errors
+            const statusCode = err.statusCode || 500;
+            const message = statusCode === 500 ?
+                'Internal server error' :
+                err.message;
+
+            return res.status(statusCode).json({
+                error: message,
+                details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+                path: req.path,
+                requestId: req.id
+            });
+    }
+};
+
+// Export custom error classes
+export const Errors = {
+    AppError,
+    ValidationError,
+    AuthenticationError,
+    AuthorizationError
 };
