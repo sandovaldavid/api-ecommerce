@@ -39,7 +39,7 @@ export const register = async (req, res) => {
         }
 
         // Generar el token JWT
-        const token = TokenService.generate(newUser.id);
+        const token = TokenService.generate(newUser.id, 3600);
 
         res.status(201).json({ token });
     } catch (error) {
