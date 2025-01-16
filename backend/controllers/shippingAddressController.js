@@ -715,51 +715,66 @@ export const setDefaultAddress = async (req, res, next) => {
 export const bulkDeleteAddresses = async (req, res, next) => {
     try {
         const { addressIds } = req.body;
-        console.log("addressIds", addressIds);
         const MAX_ADDRESSES = 10;
 
         // Input validation
         if (!addressIds || !Array.isArray(addressIds) || addressIds.length === 0) {
-            throw new Errors.ValidationError("Address IDs array is required");
+            throw new Errors.ValidationError("Address IDs array is required", {
+                provided: addressIds
+            });
         }
 
         // Validate maximum number of addresses
         if (addressIds.length > MAX_ADDRESSES) {
             throw new Errors.ValidationError("Maximum addresses for bulk delete exceeded", {
-                maxAddresses: MAX_ADDRESSES
+                maxAllowed: MAX_ADDRESSES,
+                provided: addressIds.length
             });
         }
 
-        // Verify addresses exist and belong to user with single query
-        const addresses = await ShippingAddress.findAll({
-            where: {
-                id: addressIds,
-                userId: req.userId
-            },
-            include: [{
-                model: User,
-                attributes: ["id", "firstName"],
-                required: true
-            }],
-            attributes: ["id", "userId", "is_default"]
-        });
+        // Check authorization for each address
+        const authPromises = addressIds.map(addressId =>
+            AuthorizationService.verifyResourceOwnership(
+                req.userId,
+                "shipping_address",
+                {
+                    resourceId: addressId,
+                    model: ShippingAddress,
+                    attributes: ["id", "userId", "is_default"],
+                    includeUser: true
+                }
+            )
+        );
 
-        // Check if default addresses are being deleted
-        const defaultAddresses = addresses.filter(addr => addr.is_default);
+        const authResults = await Promise.all(authPromises);
+
+        // Check for unauthorized or not found addresses
+        const unauthorizedAddresses = authResults
+            .filter(result => !result.isAuthorized)
+            .map((result, index) => ({
+                id: addressIds[index],
+                reason: result.error
+            }));
+
+        if (unauthorizedAddresses.length > 0) {
+            throw new Errors.AuthorizationError("Unauthorized access to some addresses", {
+                unauthorizedAddresses
+            });
+        }
+
+        // Check for default addresses
+        const defaultAddresses = authResults
+            .filter(result => Boolean(result?.resource?.is_default))
+            .map(result => result.resource.id);
+
         if (defaultAddresses.length > 0) {
-            throw new Errors.ValidationError("Cannot delete default addresses", {
-                defaultAddresses: defaultAddresses.map(addr => addr.id)
-            });
-        }
-
-        // Check if all addresses were found
-        if (addresses.length !== addressIds.length) {
-            const foundIds = addresses.map(addr => addr.id);
-            const notFound = addressIds.filter(id => !foundIds.includes(id));
-
-            throw new Errors.NotFoundError("Some addresses not found or not authorized", {
-                notFound
-            });
+            throw new Errors.ValidationError(
+                `Cannot delete default shipping addresses. Please change default address first.`,
+                {
+                    defaultAddressIds: defaultAddresses,
+                    totalDefaultAddresses: defaultAddresses.length
+                }
+            );
         }
 
         // Delete addresses with transaction
@@ -773,11 +788,22 @@ export const bulkDeleteAddresses = async (req, res, next) => {
                 transaction: t
             });
 
+            // Log deletion for audit
+            await sequelize.models.AuditLog?.create({
+                action: 'BULK_DELETE_ADDRESSES',
+                userId: req.userId,
+                details: JSON.stringify({
+                    deletedIds: addressIds,
+                    isAdmin: authResults[0].isAdmin
+                })
+            }, { transaction: t });
+
             return result;
         });
 
         // Set cache control headers
-        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
 
         return res.status(200).json({
             message: "Addresses deleted successfully",
@@ -786,7 +812,7 @@ export const bulkDeleteAddresses = async (req, res, next) => {
                 deletedIds: addressIds,
                 deletedBy: {
                     userId: req.userId,
-                    isAdmin: req.isAdmin,
+                    isAdmin: authResults[0].isAdmin,
                     timestamp: new Date()
                 }
             }
