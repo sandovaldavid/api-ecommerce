@@ -6,27 +6,19 @@ export const createShippingAddress = async (req, res) => {
     try {
         // Destructure and validate required fields
         const {
-            userId,
             address,
             city,
             stateProvince,
             zipCode,
             country
         } = req.body;
+        const userId = req.userId;
 
         // Input validation
-        if (!userId || !address || !city || !stateProvince || !zipCode || !country) {
+        if (!address || !city || !stateProvince || !zipCode || !country) {
             return res.status(400).json({
                 error: "All fields are required",
-                required: ["userId", "address", "city", "stateProvince", "zipCode", "country"]
-            });
-        }
-
-        // Check if user exists
-        const userExists = await User.findByPk(userId);
-        if (!userExists) {
-            return res.status(404).json({
-                error: "User not found"
+                required: ["address", "city", "stateProvince", "zipCode", "country"]
             });
         }
 
