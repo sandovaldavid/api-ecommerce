@@ -78,10 +78,10 @@ async function generateRandomData () {
             id: faker.string.uuid(),
             firstName: faker.person.firstName(),
             secondName: faker.person.firstName(),
-            lastName_father: faker.person.lastName(),
-            lastName_mother: faker.person.lastName(),
+            lastNameFather: faker.person.lastName(),
+            lastNameMother: faker.person.lastName(),
             email: faker.internet.email(),
-            hashed_password: password,
+            hashedPassword: password,
             isValid: true,
         });
     

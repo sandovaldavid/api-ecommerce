@@ -55,7 +55,7 @@ export const createReview = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["id", "firstName", "lastName_father"]
+                    attributes: ["id", "firstName", "lastNameFather"]
                 },
                 {
                     model: Product,
@@ -112,7 +112,7 @@ export const getReviews = async (req, res) => {
             include: [
                 {
                     model: User,
-                    attributes: ["id", "firstName", "lastName_father"]
+                    attributes: ["id", "firstName", "lastNameFather"]
                 },
                 {
                     model: Product,
@@ -298,7 +298,7 @@ export const updateReview = async (req, res) => {
                 include: [
                     {
                         model: User,
-                        attributes: ["id", "firstName", "lastName_father"],
+                        attributes: ["id", "firstName", "lastNameFather"],
                         required: true
                     },
                     {

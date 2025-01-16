@@ -8,8 +8,8 @@ export const register = async (req, res) => {
         const {
             firstName,
             secondName,
-            lastName_father: lastNameFather,
-            lastName_mother: lastNameMother,
+            lastNameFather,
+            lastNameMother,
             email,
             password,
             roles
@@ -19,10 +19,10 @@ export const register = async (req, res) => {
         const newUser = await User.create({
             firstName,
             secondName,
-            lastName_father: lastNameFather,
-            lastName_mother: lastNameMother,
+            lastNameFather,
+            lastNameMother,
             email,
-            hashed_password: password
+            hashedPassword: password
         });
 
         // Buscar los roles por name y obtener sus IDs
@@ -56,7 +56,7 @@ export const login = async (req, res) => {
         // Buscar el usuario con sus roles, excluyendo la contraseña
         const user = await User.findByPk(userId, {
             attributes: {
-                exclude: ["hashed_password"]
+                exclude: ["hashedPassword"]
             },
             include: [{
                 model: Roles,
@@ -81,8 +81,8 @@ export const login = async (req, res) => {
                 id: user.id,
                 firstName: user.firstName,
                 secondName: user.secondName,
-                lastName_father: user.lastName_father,
-                lastName_mother: user.lastName_mother,
+                lastNameFather: user.lastNameFather,
+                lastNameMother: user.lastNameMother,
                 email: user.email,
                 roles: user.Roles.map(role => role.name)
             },

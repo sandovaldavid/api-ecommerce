@@ -259,7 +259,7 @@ export const assignRole = async (req, res) => {
                 model: Roles,
                 attributes: ["id", "name"]
             }],
-            attributes: ["id", "firstName", "lastName_father"]
+            attributes: ["id", "firstName", "lastNameFather"]
         });
 
         return res.status(200).json({
@@ -267,7 +267,7 @@ export const assignRole = async (req, res) => {
             data: {
                 user: {
                     id: updatedUser.id,
-                    name: `${updatedUser.firstName} ${updatedUser.lastName_father}`
+                    name: `${updatedUser.firstName} ${updatedUser.lastNameFather}`
                 },
                 roles: updatedUser.Roles.map(role => ({
                     id: role.id,
@@ -359,7 +359,7 @@ export const removeRole = async (req, res) => {
                 model: Roles,
                 attributes: ["id", "name"]
             }],
-            attributes: ["id", "firstName", "lastName_father"]
+            attributes: ["id", "firstName", "lastNameFather"]
         });
 
         return res.status(200).json({
@@ -367,7 +367,7 @@ export const removeRole = async (req, res) => {
             data: {
                 user: {
                     id: updatedUser.id,
-                    name: `${updatedUser.firstName} ${updatedUser.lastName_father}`
+                    name: `${updatedUser.firstName} ${updatedUser.lastNameFather}`
                 },
                 removedRole: {
                     id: roleToRemove.id,

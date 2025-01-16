@@ -6,7 +6,7 @@ export class UserService {
         try {
             return await User.findByPk(userId, {
                 attributes: {
-                    exclude: ["hashed_password", "created_at", "updated_at"]
+                    exclude: ["hashedPassword", "created_at", "updated_at"]
                 },
                 include: [{
                     model: Roles,
@@ -46,7 +46,7 @@ export class UserService {
                 user: {
                     id: user.id,
                     firstName: user.firstName,
-                    lastName_father: user.lastName_father,
+                    lastNameFather: user.lastNameFather,
                     email: user.email,
                     roles: user.Roles?.map(role => role.name) || []
                 }

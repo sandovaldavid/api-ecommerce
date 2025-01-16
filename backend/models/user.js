@@ -16,11 +16,11 @@ const User = sequelize.define("User", {
         type: DataTypes.STRING,
         allowNull: true,
     },
-    lastName_father: {
+    lastNameFather: {
         type: DataTypes.STRING,
         allowNull: false,
     },
-    lastName_mother: {
+    lastNameMother: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -29,7 +29,7 @@ const User = sequelize.define("User", {
         unique: true,
         allowNull: false,
     },
-    hashed_password: {
+    hashedPassword: {
         type: DataTypes.STRING,
         allowNull: false,
     },
@@ -56,7 +56,7 @@ const User = sequelize.define("User", {
         beforeCreate: async (user) => {
             user.id = uid2(32);
             const salt = await bcrypt.genSalt(10);
-            user.hashed_password = await bcrypt.hash(user.hashed_password, salt);
+            user.hashedPassword = await bcrypt.hash(user.hashedPassword, salt);
         }
     }
 });

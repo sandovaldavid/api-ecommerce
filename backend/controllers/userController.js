@@ -6,7 +6,7 @@ export const getUserProfile = async (req, res) => {
         const { id } = req.params;
         const user = await User.findByPk(id, {
             attributes: {
-                exclude: ["hashed_password", "updated_at", "last_login_at"],
+                exclude: ["hashedPassword", "updated_at", "last_login_at"],
             },
             include: [{
                 model: Roles,
@@ -22,8 +22,8 @@ export const getUserProfile = async (req, res) => {
                 id: user.id,
                 firstName: user.firstName,
                 secondName: user.secondName,
-                lastName_father: user.lastName_father,
-                lastName_mother: user.lastName_mother,
+                lastNameFather: user.lastNameFather,
+                lastNameMother: user.lastNameMother,
                 email: user.email,
                 roles: user.Roles.map(role => role.name)
             },
@@ -40,7 +40,7 @@ export const updateUserProfile = async (req, res) => {
     
         const user = await User.findByPk(id, {
             attributes: {
-                exclude: ["hashed_password", "updated_at", "last_login_at"],
+                exclude: ["hashedPassword", "updated_at", "last_login_at"],
             },
         });
         if (!user) {
@@ -52,7 +52,7 @@ export const updateUserProfile = async (req, res) => {
     
         if (password) {
             const salt = await bcrypt.genSalt(10);
-            user.hashed_password = await bcrypt.hash(password, salt);
+            user.hashedPassword = await bcrypt.hash(password, salt);
         }
     
         await user.save();
@@ -67,7 +67,7 @@ export const deleteUser = async (req, res) => {
         const { id } = req.params;
         const user = await User.findByPk(id, {
             attributes: {
-                exclude: ["hashed_password", "updated_at", "last_login_at"],
+                exclude: ["hashedPassword", "updated_at", "last_login_at"],
             },
         });
         if (!user) {
@@ -83,7 +83,7 @@ export const deleteUser = async (req, res) => {
 export const getAllUsers = async (req, res) => {
     try {
         const users = await User.findAll({
-            attributes: { exclude: ["hashed_password"] },
+            attributes: { exclude: ["hashedPassword"] },
         });
         res.status(200).json(users);
     } catch (error) {

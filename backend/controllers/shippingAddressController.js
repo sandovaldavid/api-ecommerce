@@ -58,7 +58,7 @@ export const createShippingAddress = async (req, res) => {
         const addressWithUser = await ShippingAddress.findByPk(shippingAddress.id, {
             include: [{
                 model: User,
-                attributes: ["id", "firstName", "lastName_father"]
+                attributes: ["id", "firstName", "lastNameFather"]
             }]
         });
 
@@ -93,7 +93,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
 
         // Check if user exists
         const user = await User.findByPk(userId, {
-            attributes: ["id", "firstName", "lastName_father"]
+            attributes: ["id", "firstName", "lastNameFather"]
         });
 
         if (!user) {
@@ -126,7 +126,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
             ],
             include: [{
                 model: User,
-                attributes: ["id", "firstName", "lastName_father"],
+                attributes: ["id", "firstName", "lastNameFather"],
                 required: true
             }],
             distinct: true
@@ -152,7 +152,7 @@ export const getShippingAddressesByUserId = async (req, res) => {
             data: {
                 user: {
                     id: user.id,
-                    name: `${user.firstName} ${user.lastName_father}`
+                    name: `${user.firstName} ${user.lastNameFather}`
                 },
                 addresses: shippingAddresses.rows,
                 pagination: {
@@ -223,7 +223,7 @@ export const getAllShippingAddresses = async (req, res) => {
             ],
             include: [{
                 model: User,
-                attributes: ["id", "firstName", "lastName_father", "lastName_mother"],
+                attributes: ["id", "firstName", "lastNameFather", "lastNameMother"],
                 required: true
             }],
             distinct: true
@@ -402,7 +402,7 @@ export const updateShippingAddress = async (req, res) => {
             return verifyAddress.reload({
                 include: [{
                     model: User,
-                    attributes: ["id", "firstName", "lastName_father"]
+                    attributes: ["id", "firstName", "lastNameFather"]
                 }],
                 transaction: t
             });
@@ -453,7 +453,7 @@ export const getShippingAddressById = async (req, res) => {
             ],
             include: [{
                 model: User,
-                attributes: ["id", "firstName", "lastName_father"],
+                attributes: ["id", "firstName", "lastNameFather"],
                 required: true
             }]
         });
@@ -481,7 +481,7 @@ export const getShippingAddressById = async (req, res) => {
             ...address.toJSON(),
             user: {
                 id: address.User.id,
-                name: `${address.User.firstName} ${address.User.lastName_father}`
+                name: `${address.User.firstName} ${address.User.lastNameFather}`
             }
         };
         delete formattedAddress.User;
@@ -644,7 +644,7 @@ export const setDefaultAddress = async (req, res) => {
         const updatedAddress = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
-                attributes: ["id", "firstName", "lastName_father"]
+                attributes: ["id", "firstName", "lastNameFather"]
             }],
             attributes: [
                 "id",

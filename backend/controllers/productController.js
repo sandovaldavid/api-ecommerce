@@ -593,7 +593,7 @@ export const getProductReviews = async (req, res) => {
             where: { productId: id },
             include: [{
                 model: User,
-                attributes: ["id", "firstName", "lastName_father", "lastName_mother"]
+                attributes: ["id", "firstName", "lastNameFather", "lastNameMother"]
             }],
             attributes: [
                 "id",
