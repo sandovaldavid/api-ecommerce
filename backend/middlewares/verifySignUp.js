@@ -34,3 +34,16 @@ export const checkRolesExisted = async (req, res, next) => {
     }
     next();
 };
+
+export const checkNullFields = async (req, res, next) => {
+    const { firstName, lastNameFather, lastNameMother, email, password } = req.body;
+
+    if (!firstName || !lastNameFather || !lastNameMother || !email || !password) {
+        throw new Errors.ValidationError({
+            message: "Missing required fields",
+            missing: ["firstName", "lastNameFather", "lastNameFather", "email", "password"]
+                .filter(field => !req.body[field])
+        });
+    }
+    next();
+}
