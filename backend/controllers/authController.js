@@ -1,6 +1,5 @@
 import { User, Roles } from "../models/userRoles.js";
 import { TokenService } from "../services/tokenService.js";
-import { Errors } from "../middlewares/errorHandler.js";
 
 // En authController.js
 export const register = async (req, res, next) => {
