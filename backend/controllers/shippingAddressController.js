@@ -283,42 +283,67 @@ export const deleteShippingAddress = async (req, res, next) => {
             throw new Errors.ValidationError("Shipping address ID is required");
         }
 
-        // Check if address exists and get minimal data
-        const address = await ShippingAddress.findByPk(IdShippingAddress, {
-            include: [{
-                model: User,
-                attributes: ["id", "firstName"],
-                required: true
-            }],
-            attributes: ["id", "userId"]
-        });
+        // Check authorization using AuthorizationService
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "shipping_address",
+            {
+                resourceId: IdShippingAddress,
+                model: ShippingAddress,
+                attributes: ["id", "userId", "is_default"],
+                includeUser: true
+            }
+        );
 
-        // Handle not found
-        if (!address) {
-            throw new Errors.NotFoundError("Shipping address not found", {
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error, {
+                addressId: IdShippingAddress,
+                userId: req.userId
+            });
+        }
+
+        // Check if address is default
+        if (authResult.resource.is_default) {
+            throw new Errors.ValidationError("Cannot delete default address", {
                 addressId: IdShippingAddress
             });
         }
 
-        // Verify ownership (additional security)
-        if (address.userId !== req.userId && !req.isAdmin) {
-            throw new Errors.AuthorizationError("Not authorized to delete this address");
-        }
-
-        // Delete with transaction to ensure data consistency
+        // Delete address with transaction
         await sequelize.transaction(async (t) => {
-            await address.destroy({ transaction: t });
+            await authResult.resource.destroy({ transaction: t });
+
+            // Log deletion for audit
+            await sequelize.models.AuditLog?.create({
+                action: 'DELETE_ADDRESS',
+                userId: req.userId,
+                resourceId: IdShippingAddress,
+                resourceType: 'shipping_address',
+                details: JSON.stringify({
+                    deletedBy: {
+                        userId: req.userId,
+                        isAdmin: authResult.isAdmin
+                    }
+                })
+            }, { transaction: t });
         });
 
-        // Return success response
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+
         return res.status(200).json({
             message: "Shipping address deleted successfully",
             data: {
                 id: IdShippingAddress,
-                userId: address.userId,
+                user: {
+                    id: authResult.resource.User.id,
+                    name: `${authResult.resource.User.firstName} ${authResult.resource.User.lastNameFather}`
+                },
                 deletedBy: {
                     userId: req.userId,
-                    isAdmin: req.isAdmin
+                    isAdmin: authResult.isAdmin,
+                    timestamp: new Date()
                 }
             }
         });
@@ -327,13 +352,14 @@ export const deleteShippingAddress = async (req, res, next) => {
         console.error("Error deleting shipping address:", {
             error: error.message,
             stack: error.stack,
-            addressId: req.params.id_ShippingAddress
+            addressId: req.params.IdShippingAddress,
+            userId: req.userId
         });
 
+        // Pass error to error handler middleware
         next(error);
     }
 };
-
 export const updateShippingAddress = async (req, res, next) => {
     try {
         const { IdShippingAddress } = req.params;
