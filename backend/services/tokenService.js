@@ -82,7 +82,7 @@ export class TokenService {
             const token = jwt.sign(
                 { id: userId },
                 config.development.secret,
-                { expiresIn: `${expiresIn}s` }
+                { expiresIn: expiresIn }
             );
 
             return {
