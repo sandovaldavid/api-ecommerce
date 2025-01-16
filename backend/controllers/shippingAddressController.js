@@ -90,6 +90,7 @@ export const createShippingAddress = async (req, res, next) => {
         next(error);
     }
 };
+
 export const getShippingAddressesByUserId = async (req, res, next) => {
     try {
         const { userId } = req.params;
