@@ -168,10 +168,10 @@ export const deleteReview = async (req, res) => {
         const authResult = await AuthorizationService.verifyResourceOwnership(
             req.userId,
             id,
-            'review',
+            "review",
             {
                 model: Review,
-                attributes: ['id', 'userId', 'rating', 'reviewText', 'created_at'],
+                attributes: ["id", "userId", "rating", "reviewText", "created_at"],
                 includeUser: true
             }
         );
@@ -216,7 +216,7 @@ export const deleteReview = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error deleting review:', {
+        console.error("Error deleting review:", {
             error: error.message,
             stack: error.stack,
             reviewId: req.params.id,
@@ -267,10 +267,10 @@ export const updateReview = async (req, res) => {
         const authResult = await AuthorizationService.verifyResourceOwnership(
             userId,
             id,
-            'review',
+            "review",
             {
                 model: Review,
-                attributes: ['id', 'userId', 'rating', 'reviewText', 'created_at'],
+                attributes: ["id", "userId", "rating", "reviewText", "created_at"],
                 includeUser: true
             }
         );
@@ -298,12 +298,12 @@ export const updateReview = async (req, res) => {
                 include: [
                     {
                         model: User,
-                        attributes: ['id', 'firstName', 'lastName_father'],
+                        attributes: ["id", "firstName", "lastName_father"],
                         required: true
                     },
                     {
                         model: Product,
-                        attributes: ['id', 'name', 'description'],
+                        attributes: ["id", "name", "description"],
                         required: true
                     }
                 ],
@@ -325,7 +325,7 @@ export const updateReview = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error updating review:', {
+        console.error("Error updating review:", {
             error: error.message,
             stack: error.stack,
             reviewId: req.params.id,

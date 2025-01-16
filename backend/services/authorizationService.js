@@ -1,18 +1,18 @@
-import User from '../models/user.js';
-import { UserService } from './userService.js';
+import User from "../models/user.js";
+import { UserService } from "./userService.js";
 
 export class AuthorizationService {
-    static async verifyResourceOwnership(userId, resourceId, resourceType, options = {}) {
+    static async verifyResourceOwnership (userId, resourceId, resourceType, options = {}) {
         try {
             const {
                 model,
                 includeUser = true,
-                attributes = ['id', 'userId'],
-                userAttributes = ['id', 'firstName']
+                attributes = ["id", "userId"],
+                userAttributes = ["id", "firstName"]
             } = options;
 
             if (!model) {
-                throw new Error('Model is required for ownership verification');
+                throw new Error("Model is required for ownership verification");
             }
 
             // Get resource with user info
@@ -63,7 +63,7 @@ export class AuthorizationService {
 
             return {
                 isAuthorized: false,
-                error: `Error checking authorization`,
+                error: "Error checking authorization",
                 statusCode: 500,
                 details: error.message
             };
