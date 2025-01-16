@@ -36,7 +36,7 @@ export const errorHandler = (err, req, res, next) => {
         path: req.path,
         method: req.method,
         userId: req.userId,
-        userRoles: req.user?.Roles,
+        userRoles: req.user?.roles,
         timestamp: new Date().toISOString(),
         stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
