@@ -79,16 +79,11 @@ export const login = async (req, res) => {
         // Generar el token JWT
         const token = TokenService.generate(user.id, 3600);
 
-        //Date expiration
-        const expiresIn = token.expiresIn; // 1 hour in seconds
-        const expiresInMs = expiresIn * 1000; // Convert to milliseconds
-        const expirationDate = new Date(Date.now() + expiresInMs);
-
         // Devolver el token y la información del usuario
         res.status(200).json({
             token: {
-                value: token.token,
-                expires: expirationDate.toISOString(),
+                value: token.value,
+                expires: token.expirationDate
             },
             user: {
                 id: user.id,
