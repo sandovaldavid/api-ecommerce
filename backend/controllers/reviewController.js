@@ -7,17 +7,17 @@ import { sequelize } from "../models/index.js";
 export const createReview = async (req, res) => {
     try {
         const {
-            userId,
             productId,
             rating,
             reviewText
         } = req.body;
+        const userId = req.userId;
 
         // Input validation
-        if (!userId || !productId || !rating) {
+        if (!productId || !rating) {
             return res.status(400).json({
                 error: "Missing required fields",
-                required: ["userId", "productId", "rating"]
+                required: ["productId", "rating"]
             });
         }
 
