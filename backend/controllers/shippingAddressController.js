@@ -628,7 +628,7 @@ export const setDefaultAddress = async (req, res, next) => {
     }
 };
 
-export const bulkDeleteAddresses = async (req, res) => {
+export const bulkDeleteAddresses = async (req, res, next) => {
     try {
         const { addressIds } = req.body;
         console.log("addressIds", addressIds);
@@ -636,17 +636,13 @@ export const bulkDeleteAddresses = async (req, res) => {
 
         // Input validation
         if (!addressIds || !Array.isArray(addressIds) || addressIds.length === 0) {
-            return res.status(400).json({
-                error: "Valid address IDs array is required",
-                details: "Must provide an array of address IDs"
-            });
+            throw new Errors.ValidationError("Address IDs array is required");
         }
 
         // Validate maximum number of addresses
         if (addressIds.length > MAX_ADDRESSES) {
-            return res.status(400).json({
-                error: "Too many addresses",
-                details: `Can only delete up to ${MAX_ADDRESSES} addresses at once`
+            throw new Errors.ValidationError("Maximum addresses for bulk delete exceeded", {
+                maxAddresses: MAX_ADDRESSES
             });
         }
 
@@ -667,9 +663,8 @@ export const bulkDeleteAddresses = async (req, res) => {
         // Check if default addresses are being deleted
         const defaultAddresses = addresses.filter(addr => addr.is_default);
         if (defaultAddresses.length > 0) {
-            return res.status(400).json({
-                error: "Cannot delete default addresses",
-                defaultAddressIds: defaultAddresses.map(addr => addr.id)
+            throw new Errors.ValidationError("Cannot delete default addresses", {
+                defaultAddresses: defaultAddresses.map(addr => addr.id)
             });
         }
 
@@ -678,12 +673,8 @@ export const bulkDeleteAddresses = async (req, res) => {
             const foundIds = addresses.map(addr => addr.id);
             const notFound = addressIds.filter(id => !foundIds.includes(id));
 
-            return res.status(404).json({
-                error: "Some addresses not found or not authorized",
-                details: {
-                    requestedIds: addressIds,
-                    notFoundIds: notFound
-                }
+            throw new Errors.NotFoundError("Some addresses not found or not authorized", {
+                notFound
             });
         }
 
@@ -725,9 +716,6 @@ export const bulkDeleteAddresses = async (req, res) => {
             userId: req.userId
         });
 
-        return res.status(500).json({
-            error: "Error deleting addresses",
-            details: error.message
-        });
+        next(error);
     }
 };
