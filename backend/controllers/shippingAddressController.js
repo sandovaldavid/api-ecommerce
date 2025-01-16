@@ -2,6 +2,7 @@ import { sequelize } from "../models/index.js";
 import ShippingAddress from "../models/shippingAddress.js";
 import User from "../models/user.js";
 import { Errors } from "../middlewares/errorHandler.js";
+import { AuthorizationService } from "../services/authorizationService.js";
 
 export const createShippingAddress = async (req, res, next) => {
     try {
@@ -98,14 +99,22 @@ export const getShippingAddressesByUserId = async (req, res, next) => {
             throw new Errors.ValidationError("User ID is required");
         }
 
-        // Check if user exists
-        const user = await User.findByPk(userId, {
-            attributes: ["id", "firstName", "lastNameFather"]
-        });
+        // Check authorization
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "Shipping Addresses",
+            {
+                userIdResource: userId,
+                model: ShippingAddress,
+                attributes: ["id", "userId"],
+                includeUser: true
+            }
+        );
 
-        if (!user) {
-            throw new Errors.NotFoundError("User not found", {
-                userId
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error, {
+                userId,
+                requestedBy: req.userId
             });
         }
 
@@ -154,9 +163,11 @@ export const getShippingAddressesByUserId = async (req, res, next) => {
         return res.status(200).json({
             message: "Shipping addresses retrieved successfully",
             data: {
-                user: {
-                    id: user.id,
-                    name: `${user.firstName} ${user.lastNameFather}`
+                userInfo: {
+                    id: userId,
+                    name: shippingAddresses.rows[0]?.User
+                        ? `${shippingAddresses.rows[0].User.firstName} ${shippingAddresses.rows[0].User.lastNameFather}`
+                        : "Unknown"
                 },
                 addresses: shippingAddresses.rows,
                 pagination: {
@@ -171,7 +182,8 @@ export const getShippingAddressesByUserId = async (req, res, next) => {
     } catch (error) {
         console.error("Error fetching shipping addresses:", {
             error: error.message,
-            stack: error.stack
+            stack: error.stack,
+            userId: req.params.userId
         });
 
         next(error);
