@@ -1,6 +1,5 @@
-import jwt from "jsonwebtoken";
 import { User, Roles } from "../models/userRoles.js";
-import config from "../config/config.js";
+import { TokenService } from "../services/tokenService.js";
 
 // En authController.js
 export const register = async (req, res) => {
@@ -40,11 +39,11 @@ export const register = async (req, res) => {
         }
 
         // Generar el token JWT
-        const token = jwt.sign({ id: newUser.id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+        const token = TokenService.generate(newUser.id);
 
         res.status(201).json({ token });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -72,11 +71,19 @@ export const login = async (req, res) => {
         user.save();
         
         // Generar el token JWT
-        const token = jwt.sign({ id: userId }, config.development.secret, { expiresIn: "1h" });
+        const token = TokenService.generate(user.id, 3600);
+
+        //Date expiration
+        const expiresIn = token.expiresIn; // 1 hour in seconds
+        const expiresInMs = expiresIn * 1000; // Convert to milliseconds
+        const expirationDate = new Date(Date.now() + expiresInMs);
 
         // Devolver el token y la información del usuario
         res.status(200).json({
-            token,
+            token: {
+                value: token.token,
+                expires: expirationDate.toISOString(),
+            },
             user: {
                 id: user.id,
                 firstName: user.firstName,
@@ -86,9 +93,8 @@ export const login = async (req, res) => {
                 email: user.email,
                 roles: user.Roles.map(role => role.name)
             },
-            expiresIn: 3600 // 1 hora en segundos
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
