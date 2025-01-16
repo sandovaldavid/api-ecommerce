@@ -186,9 +186,12 @@ export const getAllShippingAddresses = async (req, res) => {
         });
 
         if (totalCount === 0) {
-            return res.status(404).json({
-                message: "No shipping addresses found",
-                filters: { city, stateProvince, country }
+            throw new Errors.NotFoundError("No addresses found with provided filters", {
+                filters: {
+                    city,
+                    stateProvince,
+                    country
+                }
             });
         }
 
@@ -247,10 +250,7 @@ export const getAllShippingAddresses = async (req, res) => {
             stack: error.stack
         });
 
-        return res.status(500).json({
-            error: "Error retrieving shipping addresses",
-            details: error.message
-        });
+        next(error);
     }
 };
 
