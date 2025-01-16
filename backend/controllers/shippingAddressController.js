@@ -399,15 +399,13 @@ export const updateShippingAddress = async (req, res, next) => {
     }
 };
 
-export const getShippingAddressById = async (req, res) => {
+export const getShippingAddressById = async (req, res, next) => {
     try {
         const { IdShippingAddress } = req.params;
 
         // Validate ID
         if (!IdShippingAddress) {
-            return res.status(400).json({
-                error: "Shipping address ID is required"
-            });
+            throw new Errors.ValidationError("Shipping address ID is required");
         }
 
         // Get address with user info and selected attributes
@@ -432,17 +430,14 @@ export const getShippingAddressById = async (req, res) => {
 
         // Handle not found
         if (!address) {
-            return res.status(404).json({
-                error: "Shipping address not found",
+            throw new Errors.NotFoundError("Shipping address not found", {
                 addressId: IdShippingAddress
             });
         }
 
         // Verify ownership (additional security)
         if (address.userId !== req.userId && !req.isAdmin) {
-            return res.status(403).json({
-                error: "Not authorized to view this address"
-            });
+            throw new Errors.AuthorizationError("Not authorized to view this address");
         }
 
         // Set cache headers for better performance
@@ -470,10 +465,7 @@ export const getShippingAddressById = async (req, res) => {
             addressId: req.params.id_ShippingAddress
         });
 
-        return res.status(500).json({
-            error: "Error retrieving shipping address",
-            details: error.message
-        });
+        next(error);
     }
 };
 
