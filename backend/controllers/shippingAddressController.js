@@ -7,7 +7,7 @@ export const createShippingAddress = async (req, res, next) => {
     try {
         // Destructure and validate required fields
         const {
-            userId,
+            userId: requestedUserId,
             address,
             city,
             stateProvince,
@@ -16,34 +16,40 @@ export const createShippingAddress = async (req, res, next) => {
         } = req.body;
 
         // Input validation
-        if (!userId || !address || !city || !stateProvince || !zipCode || !country) {
+        if (!address || !city || !stateProvince || !zipCode || !country) {
             throw new Errors.ValidationError("Missing required fields", {
-                required: ["userId", "address", "city", "stateProvince", "zipCode", "country"]
+                required: ["address", "city", "stateProvince", "zipCode", "country"]
             });
+        }
+
+        // Determine the effective userId based on role
+        const effectiveUserId = req.isAdmin ? requestedUserId : req.userId;
+
+        // If admin is creating for another user, verify that user exists
+        if (req.isAdmin && requestedUserId !== req.userId) {
+            const targetUser = await User.findByPk(requestedUserId);
+            if (!targetUser) {
+                throw new Errors.NotFoundError("Target user not found", {
+                    userId: requestedUserId
+                });
+            }
         }
 
         // Check maximum addresses per user
         const userAddressCount = await ShippingAddress.count({
-            where: { userId }
+            where: { userId: effectiveUserId }
         });
 
         if (userAddressCount >= 5) {
             throw new Errors.ValidationError("Maximum addresses reached", {
-                maxAddresses: 5
-            });
-        }
-
-        // Validate postal code format (example)
-        const postalCodeRegex = /^\d{5}(-\d{4})?$/;
-        if (!postalCodeRegex.test(zipCode.trim())) {
-            throw new Errors.ValidationError("Invalid postal code format", {
-                details: "Postal code must be in format: 12345 or 12345-6789"
+                maxAddresses: 5,
+                currentCount: userAddressCount
             });
         }
 
         // Create shipping address with cleaned data
         const shippingAddress = await ShippingAddress.create({
-            userId,
+            userId: effectiveUserId,
             address: address.trim(),
             city: city.trim(),
             stateProvince: stateProvince.trim(),
@@ -63,19 +69,26 @@ export const createShippingAddress = async (req, res, next) => {
 
         return res.status(201).json({
             message: "Shipping address created successfully",
-            data: addressWithUser
+            data: {
+                address: addressWithUser,
+                createdBy: {
+                    userId: req.userId,
+                    isAdmin: req.isAdmin
+                }
+            }
         });
 
     } catch (error) {
         console.error("Error creating shipping address:", {
             error: error.message,
-            stack: error.stack
+            stack: error.stack,
+            requestedUserId: req.body.userId,
+            actualUserId: req.userId
         });
 
         next(error);
     }
 };
-
 export const getShippingAddressesByUserId = async (req, res, next) => {
     try {
         const { userId } = req.params;
