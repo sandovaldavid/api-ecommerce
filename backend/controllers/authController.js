@@ -1,8 +1,9 @@
 import { User, Roles } from "../models/userRoles.js";
 import { TokenService } from "../services/tokenService.js";
+import { Errors } from "../middlewares/errorHandler.js";
 
 // En authController.js
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
     try {
         const {
             firstName,
@@ -41,7 +42,12 @@ export const register = async (req, res) => {
         // Generar el token JWT
         const token = TokenService.generate(newUser.id, 3600);
 
-        res.status(201).json({ token });
+        res.status(201).json({
+            token: {
+                value: token.value,
+                expirationDate: token.expirationDate
+            },
+        });
     } catch (error) {
         next(error);
     }
