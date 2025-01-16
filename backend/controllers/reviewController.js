@@ -234,6 +234,9 @@ export const updateReview = async (req, res) => {
     try {
         const { id } = req.params;
         const { rating, reviewText } = req.body;
+        const userId = req.userId;
+        console.log("rating", rating);
+        console.log("reviewText", reviewText);
 
         // Input validation
         if (!id) {
@@ -242,30 +245,27 @@ export const updateReview = async (req, res) => {
             });
         }
 
-        // Validate rating if provided
-        if (rating && (rating < 1 || rating > 5)) {
+        // Validate update data
+        if (!rating && reviewText === undefined) {
             return res.status(400).json({
-                error: "Rating must be between 1 and 5"
+                error: "At least one field to update is required",
+                updateableFields: ["rating", "reviewText"]
             });
         }
 
-        // Check if review exists with minimal data loading
-        const review = await Review.findByPk(id, {
-            include: [{
-                model: User,
-                attributes: ["id", "firstName"]
-            }]
-        });
-
-        if (!review) {
-            return res.status(404).json({
-                error: "Review not found"
-            });
+        // Validate rating if provided
+        if (rating !== undefined) {
+            if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+                return res.status(400).json({
+                    error: "Invalid rating value",
+                    details: "Rating must be an integer between 1 and 5"
+                });
+            }
         }
 
-        // Check authorization
+        // Check authorization using AuthorizationService
         const authResult = await AuthorizationService.verifyResourceOwnership(
-            req.userId,
+            userId,
             id,
             'review',
             {
@@ -282,35 +282,56 @@ export const updateReview = async (req, res) => {
             });
         }
 
-        // Update review with validation
-        const updates = {};
-        if (rating) updates.rating = rating;
+        // Prepare update data
+        const updates = {
+            updated_at: new Date()
+        };
+
+        if (rating !== undefined) updates.rating = rating;
         if (reviewText !== undefined) updates.reviewText = reviewText.trim();
-        updates.updated_at = new Date();
 
-        await review.update(updates);
+        // Update review with transaction
+        const updatedReview = await sequelize.transaction(async (t) => {
+            await authResult.resource.update(updates, { transaction: t });
 
-        // Get updated review with related data
-        const updatedReview = await Review.findByPk(id, {
-            include: [
-                {
-                    model: User,
-                    attributes: ["id", "firstName", "lastName_father"]
-                },
-                {
-                    model: Product,
-                    attributes: ["id", "name", "description"]
-                }
-            ]
+            return Review.findByPk(id, {
+                include: [
+                    {
+                        model: User,
+                        attributes: ['id', 'firstName', 'lastName_father'],
+                        required: true
+                    },
+                    {
+                        model: Product,
+                        attributes: ['id', 'name', 'description'],
+                        required: true
+                    }
+                ],
+                transaction: t
+            });
         });
 
         return res.status(200).json({
             message: "Review updated successfully",
-            data: updatedReview
+            data: {
+                review: updatedReview,
+                updatedBy: {
+                    userId: req.userId,
+                    isOwner: authResult.isOwner,
+                    isAdmin: authResult.isAdmin,
+                    timestamp: new Date()
+                }
+            }
         });
 
     } catch (error) {
-        console.error("Error updating review:", error);
+        console.error('Error updating review:', {
+            error: error.message,
+            stack: error.stack,
+            reviewId: req.params.id,
+            userId: req.userId
+        });
+
         return res.status(500).json({
             error: "Error updating review",
             details: error.message
