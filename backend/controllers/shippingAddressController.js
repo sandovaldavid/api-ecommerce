@@ -360,6 +360,7 @@ export const deleteShippingAddress = async (req, res, next) => {
         next(error);
     }
 };
+s
 export const updateShippingAddress = async (req, res, next) => {
     try {
         const { IdShippingAddress } = req.params;
@@ -376,24 +377,30 @@ export const updateShippingAddress = async (req, res, next) => {
             throw new Errors.ValidationError("Shipping address ID is required");
         }
 
-        // Check if address exists with user info
-        const verifyAddress = await ShippingAddress.findByPk(IdShippingAddress, {
-            include: [{
-                model: User,
-                attributes: ["id", "firstName"],
-                required: true
-            }]
-        });
+        // Check authorization using AuthorizationService
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "shipping_address",
+            {
+                resourceId: IdShippingAddress,
+                model: ShippingAddress,
+                attributes: ["id", "userId"],
+                includeUser: true
+            }
+        );
 
-        if (!verifyAddress) {
-            throw new Errors.NotFoundError("Shipping address not found", {
-                addressId: IdShippingAddress
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error, {
+                addressId: IdShippingAddress,
+                userId: req.userId
             });
         }
 
-        // Verify ownership
-        if (verifyAddress.userId !== req.userId && !req.isAdmin) {
-            throw new Errors.AuthorizationError("Not authorized to update this address");
+        // Validate updates
+        if (!address && !city && !stateProvince && !zipCode && !country) {
+            throw new Errors.ValidationError("At least one field to update is required", {
+                updateableFields: ["address", "city", "stateProvince", "zipCode", "country"]
+            });
         }
 
         // Validate postal code if provided
@@ -419,26 +426,41 @@ export const updateShippingAddress = async (req, res, next) => {
 
         // Update with transaction
         const updatedAddress = await sequelize.transaction(async (t) => {
-            await verifyAddress.update(updates, { transaction: t });
-            return verifyAddress.reload({
+            await authResult.resource.update(updates, { transaction: t });
+
+            // Get updated address with user info
+            return ShippingAddress.findByPk(IdShippingAddress, {
                 include: [{
                     model: User,
-                    attributes: ["id", "firstName", "lastNameFather"]
+                    attributes: ["id", "firstName", "lastNameFather"],
+                    required: true
                 }],
                 transaction: t
             });
         });
 
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+
         return res.status(200).json({
             message: "Shipping address updated successfully",
-            data: updatedAddress
+            data: {
+                address: updatedAddress,
+                updatedBy: {
+                    userId: req.userId,
+                    isAdmin: authResult.isAdmin,
+                    timestamp: new Date()
+                }
+            }
         });
 
     } catch (error) {
         console.error("Error updating shipping address:", {
             error: error.message,
             stack: error.stack,
-            addressId: req.params.id_ShippingAddress
+            addressId: req.params.IdShippingAddress,
+            userId: req.userId
         });
 
         next(error);
