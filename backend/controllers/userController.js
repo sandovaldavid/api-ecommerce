@@ -2,7 +2,7 @@ import { User, Roles } from "../models/userRoles.js";
 import bcrypt from "bcryptjs";
 import { Errors } from "../middlewares/errorHandler.js";
 
-export const getUserProfile = async (req, res) => {
+export const getUserProfile = async (req, res, next) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id, {
@@ -34,7 +34,7 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
-export const updateUserProfile = async (req, res) => {
+export const updateUserProfile = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { nombre, email, password } = req.body;
@@ -63,7 +63,7 @@ export const updateUserProfile = async (req, res) => {
     }
 };
 
-export const deleteUser = async (req, res) => {
+export const deleteUser = async (req, res, next) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id, {
@@ -81,7 +81,7 @@ export const deleteUser = async (req, res) => {
     }
 };
 
-export const getAllUsers = async (req, res) => {
+export const getAllUsers = async (req, res, next) => {
     try {
         const users = await User.findAll({
             attributes: { exclude: ["hashedPassword"] },
