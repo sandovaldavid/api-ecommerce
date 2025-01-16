@@ -139,11 +139,6 @@ export const getShippingAddressesByUserId = async (req, res, next) => {
                 "created_at",
                 "updated_at"
             ],
-            include: [{
-                model: User,
-                attributes: ["id", "firstName", "lastNameFather"],
-                required: true
-            }],
             distinct: true
         });
 
@@ -165,9 +160,8 @@ export const getShippingAddressesByUserId = async (req, res, next) => {
             data: {
                 userInfo: {
                     id: userId,
-                    name: shippingAddresses.rows[0]?.User
-                        ? `${shippingAddresses.rows[0].User.firstName} ${shippingAddresses.rows[0].User.lastNameFather}`
-                        : "Unknown"
+                    firstName: authResult.resource.User.firstName,
+                    lastName: authResult.resource.User.lastNameFather
                 },
                 addresses: shippingAddresses.rows,
                 pagination: {
