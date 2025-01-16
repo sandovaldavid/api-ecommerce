@@ -476,61 +476,68 @@ export const getShippingAddressById = async (req, res, next) => {
             throw new Errors.ValidationError("Shipping address ID is required");
         }
 
-        // Get address with user info and selected attributes
-        const address = await ShippingAddress.findByPk(IdShippingAddress, {
-            attributes: [
-                "id",
-                "address",
-                "city",
-                "stateProvince",
-                "zipCode",
-                "country",
-                "userId",
-                "created_at",
-                "updated_at"
-            ],
-            include: [{
-                model: User,
-                attributes: ["id", "firstName", "lastNameFather"],
-                required: true
-            }]
-        });
+        // Check authorization using AuthorizationService
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "shipping_address",
+            {
+                resourceId: IdShippingAddress,
+                model: ShippingAddress,
+                attributes: [
+                    "id",
+                    "address",
+                    "city",
+                    "stateProvince",
+                    "zipCode",
+                    "country",
+                    "userId",
+                    "is_default",
+                    "created_at",
+                    "updated_at"
+                ],
+                includeUser: true,
+                userAttributes: ["id", "firstName", "lastNameFather"]
+            }
+        );
 
-        // Handle not found
-        if (!address) {
-            throw new Errors.NotFoundError("Shipping address not found", {
-                addressId: IdShippingAddress
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error, {
+                addressId: IdShippingAddress,
+                userId: req.userId
             });
         }
 
-        // Verify ownership (additional security)
-        if (address.userId !== req.userId && !req.isAdmin) {
-            throw new Errors.AuthorizationError("Not authorized to view this address");
-        }
-
-        // Set cache headers for better performance
-        res.set("Cache-Control", "private, max-age=300");
-
-        // Format response
+        // Format response data
         const formattedAddress = {
-            ...address.toJSON(),
+            ...authResult.resource.toJSON(),
             user: {
-                id: address.User.id,
-                name: `${address.User.firstName} ${address.User.lastNameFather}`
+                id: authResult.resource.User.id,
+                name: `${authResult.resource.User.firstName} ${authResult.resource.User.lastNameFather}`
             }
         };
         delete formattedAddress.User;
 
+        // Set cache headers for better performance
+        res.set('Cache-Control', 'private, max-age=300');
+        res.set('Vary', 'Authorization');
+
         return res.status(200).json({
             message: "Shipping address retrieved successfully",
-            data: formattedAddress
+            data: {
+                address: formattedAddress,
+                accessInfo: {
+                    isOwner: authResult.isOwner,
+                    isAdmin: authResult.isAdmin
+                }
+            }
         });
 
     } catch (error) {
         console.error("Error getting shipping address:", {
             error: error.message,
             stack: error.stack,
-            addressId: req.params.id_ShippingAddress
+            addressId: req.params.IdShippingAddress,
+            userId: req.userId
         });
 
         next(error);
