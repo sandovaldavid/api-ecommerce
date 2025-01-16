@@ -616,32 +616,29 @@ export const validateShippingAddress = async (req, res, next) => {
 export const setDefaultAddress = async (req, res, next) => {
     try {
         const { IdShippingAddress } = req.params;
-        const { userId } = req.body;
 
-        // Validate inputs
-        if (!IdShippingAddress || !userId) {
-            throw new Errors.ValidationError("Address ID and user ID are required");
+        // Validate ID
+        if (!IdShippingAddress) {
+            throw new Errors.ValidationError("Shipping address ID is required");
         }
 
-        // Verify address exists and belongs to user
-        const address = await ShippingAddress.findOne({
-            where: {
-                id: IdShippingAddress,
-                userId
-            },
-            attributes: ["id", "userId"]
-        });
+        // Check authorization using AuthorizationService
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "shipping_address",
+            {
+                resourceId: IdShippingAddress,
+                model: ShippingAddress,
+                attributes: ["id", "userId", "is_default"],
+                includeUser: true
+            }
+        );
 
-        if (!address) {
-            throw new Errors.NotFoundError("Address not found or not authorized", {
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error, {
                 addressId: IdShippingAddress,
-                userId
+                userId: req.userId
             });
-        }
-
-        // Verify ownership
-        if (address.userId !== req.userId && !req.isAdmin) {
-            throw new Errors.AuthorizationError("Not authorized to set default address");
         }
 
         // Update addresses with transaction
@@ -653,13 +650,13 @@ export const setDefaultAddress = async (req, res, next) => {
                     updated_at: new Date()
                 },
                 {
-                    where: { userId },
+                    where: { userId: authResult.resource.userId },
                     transaction: t
                 }
             );
 
             // Set new default address
-            await address.update(
+            await authResult.resource.update(
                 {
                     is_default: true,
                     updated_at: new Date()
@@ -672,7 +669,8 @@ export const setDefaultAddress = async (req, res, next) => {
         const updatedAddress = await ShippingAddress.findByPk(IdShippingAddress, {
             include: [{
                 model: User,
-                attributes: ["id", "firstName", "lastNameFather"]
+                attributes: ["id", "firstName", "lastNameFather"],
+                required: true
             }],
             attributes: [
                 "id",
@@ -686,17 +684,28 @@ export const setDefaultAddress = async (req, res, next) => {
             ]
         });
 
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
+
         return res.status(200).json({
             message: "Default address updated successfully",
-            data: updatedAddress
+            data: {
+                address: updatedAddress,
+                updatedBy: {
+                    userId: req.userId,
+                    isAdmin: authResult.isAdmin,
+                    timestamp: new Date()
+                }
+            }
         });
 
     } catch (error) {
         console.error("Error setting default address:", {
             error: error.message,
             stack: error.stack,
-            addressId: req.params.id_ShippingAddress,
-            userId: req.body.userId
+            addressId: req.params.IdShippingAddress,
+            userId: req.userId
         });
 
         next(error);
