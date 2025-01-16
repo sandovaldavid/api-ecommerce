@@ -2,6 +2,7 @@ import Review from "../models/review.js";
 import User from "../models/user.js";
 import Product from "../models/product.js";
 import { AuthorizationService } from "../services/authorizationService.js";
+import { sequelize } from "../models/index.js";
 
 export const createReview = async (req, res) => {
     try {
@@ -186,19 +187,19 @@ export const deleteReview = async (req, res) => {
         await sequelize.transaction(async (t) => {
             await authResult.resource.destroy({ transaction: t });
 
-            // Log deletion for audit
-            await sequelize.models.AuditLog.create({
-                action: 'DELETE_REVIEW',
-                userId: req.userId,
-                resourceId: id,
-                resourceType: 'review',
-                details: JSON.stringify({
-                    deletedBy: {
-                        userId: req.userId,
-                        isAdmin: authResult.isAdmin
-                    }
-                })
-            }, { transaction: t });
+            // Log deletion for audit - Uncomment if needed
+            // await sequelize.models.AuditLog.create({
+            //     action: 'DELETE_REVIEW',
+            //     userId: req.userId,
+            //     resourceId: id,
+            //     resourceType: 'review',
+            //     details: JSON.stringify({
+            //         deletedBy: {
+            //             userId: req.userId,
+            //             isAdmin: authResult.isAdmin
+            //         }
+            //     })
+            // }, { transaction: t });
         });
 
         return res.status(200).json({
