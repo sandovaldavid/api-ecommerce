@@ -233,7 +233,7 @@ export const deleteReview = async (req, res) => {
 export const updateReview = async (req, res) => {
     try {
         const { id } = req.params;
-        const { rating, review_text: reviewText } = req.body;
+        const { rating, reviewText } = req.body;
 
         // Input validation
         if (!id) {
@@ -263,22 +263,29 @@ export const updateReview = async (req, res) => {
             });
         }
 
-        // Authorization check
-        const userRoles = await req.user.getRoles();
-        const isAdminOrMod = userRoles.some(role =>
-            ["admin", "moderator"].includes(role.name)
+        // Check authorization
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            id,
+            'review',
+            {
+                model: Review,
+                attributes: ['id', 'userId', 'rating', 'reviewText', 'created_at'],
+                includeUser: true
+            }
         );
 
-        if (!isAdminOrMod && req.userId !== review.userId) {
-            return res.status(403).json({
-                error: "Not authorized to update this review"
+        if (!authResult.isAuthorized) {
+            return res.status(authResult.statusCode).json({
+                error: authResult.error,
+                details: authResult.details
             });
         }
 
         // Update review with validation
         const updates = {};
         if (rating) updates.rating = rating;
-        if (reviewText !== undefined) updates.review_text = reviewText.trim();
+        if (reviewText !== undefined) updates.reviewText = reviewText.trim();
         updates.updated_at = new Date();
 
         await review.update(updates);
@@ -292,7 +299,7 @@ export const updateReview = async (req, res) => {
                 },
                 {
                     model: Product,
-                    attributes: ["id", "name", "descripcion"]
+                    attributes: ["id", "name", "description"]
                 }
             ]
         });
