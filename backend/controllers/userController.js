@@ -1,5 +1,6 @@
 import { User, Roles } from "../models/userRoles.js";
 import bcrypt from "bcryptjs";
+import { Errors } from "../middlewares/errorHandler.js";
 
 export const getUserProfile = async (req, res) => {
     try {
@@ -15,7 +16,7 @@ export const getUserProfile = async (req, res) => {
             }]
         });
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            throw new Errors.NotFoundError("User not found");
         }
         res.status(200).json({
             user: {
@@ -29,7 +30,7 @@ export const getUserProfile = async (req, res) => {
             },
         });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -44,7 +45,7 @@ export const updateUserProfile = async (req, res) => {
             },
         });
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            throw new Errors.NotFoundError("User not found");
         }
     
         if (nombre) user.name = nombre;
@@ -58,7 +59,7 @@ export const updateUserProfile = async (req, res) => {
         await user.save();
         res.status(200).json(user);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -71,12 +72,12 @@ export const deleteUser = async (req, res) => {
             },
         });
         if (!user) {
-            return res.status(404).json({ error: "User not found" });
+            throw new Errors.NotFoundError("User not found");
         }
         await user.destroy();
         res.status(204).send();
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
 
@@ -87,6 +88,6 @@ export const getAllUsers = async (req, res) => {
         });
         res.status(200).json(users);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        next(error);
     }
 };
