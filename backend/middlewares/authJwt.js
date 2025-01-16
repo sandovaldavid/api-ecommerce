@@ -50,11 +50,15 @@ export const verifyToken = async (req, res, next) => {
 };
 
 export const isModerator = async (req, res, next) => {
-    const user = await User.findByPk(req.userId);
-    const roles = await user.getRoles();
-    const hasModeratorRole = roles.some(role => role.name === "moderator");
-    if (!hasModeratorRole) return res.status(403).json({ message: "Require Moderator Role" });
-    next();
+    try {
+        const user = await User.findByPk(req.userId);
+        const roles = await user.getRoles();
+        const hasModeratorRole = roles.some(role => role.name === "moderator");
+        if (!hasModeratorRole) throw new Errors.AuthorizationError("Require moderator Role");
+        next();
+    }catch (e){
+        next(e);
+    }
 };
 
 export const isAdmin = async (req, res, next) => {
@@ -62,10 +66,10 @@ export const isAdmin = async (req, res, next) => {
         const user = await User.findByPk(req.userId);
         const roles = await user.getRoles();
         const hasModeratorRole = roles.some(role => role.name === "admin");
-        if (!hasModeratorRole) return res.status(403).json({ message: "Require admin Role" });
+        if (!hasModeratorRole) throw new Errors.AuthorizationError("Require admin Role");
         next();
     } catch (e){
-        return res.status(500).json({ error: e.message });
+        next(e);
     }
 };
 
@@ -77,13 +81,11 @@ export const hasRoles = (...roles) => {
             const hasRequiredRole = userRoles.some(role => roles.includes(role.name));
 
             if (!hasRequiredRole) {
-                return res.status(403).json({
-                    message: `Require one of these roles: ${roles.join(", ")}`
-                });
+                throw new Errors.AuthorizationError("Require roles: " + roles.join(", "));
             }
             next();
         } catch (error) {
-            return res.status(500).json({ error: error.message });
+            next(error);
         }
     };
 };
