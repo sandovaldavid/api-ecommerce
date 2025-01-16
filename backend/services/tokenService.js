@@ -77,12 +77,12 @@ export class TokenService {
         }
     }
 
-    static generate (userId, expiresIn = "1h") {
+    static generate (userId, expiresIn) {
         try {
             const token = jwt.sign(
                 { id: userId },
                 config.development.secret,
-                { expiresIn }
+                { expiresIn: `${expiresIn}s` }
             );
 
             return {
