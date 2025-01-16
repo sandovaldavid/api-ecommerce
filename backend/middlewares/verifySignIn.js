@@ -22,7 +22,7 @@ export const checkEmailAndPassword = async (req, res, next) => {
 
         const isPasswordValid = await user.comparePassword(password, user.hashedPassword);
         if (!isPasswordValid) {
-            return res.status(401).json({ error: "Invalid email or password" });
+            throw new Errors.AuthenticationError("Invalid credentials");
         }
 
         req.body.userId = user.id;
