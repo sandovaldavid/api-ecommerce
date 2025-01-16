@@ -2,8 +2,6 @@ import jwt from "jsonwebtoken";
 import { User, Roles } from "../models/userRoles.js";
 import config from "../config/config.js";
 
-//TODO: Implementar el método de registro de comentarios
-// Método de registro de Comentarios
 // En authController.js
 export const register = async (req, res) => {
     try {
