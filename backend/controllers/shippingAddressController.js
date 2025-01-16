@@ -165,7 +165,7 @@ export const getShippingAddressesByUserId = async (req, res, next) => {
     }
 };
 
-export const getAllShippingAddresses = async (req, res) => {
+export const getAllShippingAddresses = async (req, res, next) => {
     try {
         // Validate and parse pagination parameters
         const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -254,7 +254,7 @@ export const getAllShippingAddresses = async (req, res) => {
     }
 };
 
-export const deleteShippingAddress = async (req, res) => {
+export const deleteShippingAddress = async (req, res, next) => {
     try {
         const { IdShippingAddress } = req.params;
 
@@ -314,7 +314,7 @@ export const deleteShippingAddress = async (req, res) => {
     }
 };
 
-export const updateShippingAddress = async (req, res) => {
+export const updateShippingAddress = async (req, res, next) => {
     try {
         const { IdShippingAddress } = req.params;
         const {
@@ -327,9 +327,7 @@ export const updateShippingAddress = async (req, res) => {
 
         // Validate ID
         if (!IdShippingAddress) {
-            return res.status(400).json({
-                error: "Shipping address ID is required"
-            });
+            throw new Errors.ValidationError("Shipping address ID is required");
         }
 
         // Check if address exists with user info
@@ -342,25 +340,22 @@ export const updateShippingAddress = async (req, res) => {
         });
 
         if (!verifyAddress) {
-            return res.status(404).json({
-                error: "Shipping address not found",
+            throw new Errors.NotFoundError("Shipping address not found", {
                 addressId: IdShippingAddress
             });
         }
 
         // Verify ownership
         if (verifyAddress.userId !== req.userId && !req.isAdmin) {
-            return res.status(403).json({
-                error: "Not authorized to update this address"
-            });
+            throw new Errors.AuthorizationError("Not authorized to update this address");
         }
 
         // Validate postal code if provided
         if (zipCode) {
             const postalCodeRegex = /^\d{5}(-\d{4})?$/;
             if (!postalCodeRegex.test(zipCode.trim())) {
-                return res.status(400).json({
-                    error: "Invalid postal code format"
+                throw new Errors.ValidationError("Invalid postal code format", {
+                    details: "Postal code must be in format: 12345 or 12345-6789"
                 });
             }
         }
@@ -400,10 +395,7 @@ export const updateShippingAddress = async (req, res) => {
             addressId: req.params.id_ShippingAddress
         });
 
-        return res.status(500).json({
-            error: "Error updating shipping address",
-            details: error.message
-        });
+        next(error);
     }
 };
 
