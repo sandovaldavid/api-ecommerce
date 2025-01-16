@@ -260,9 +260,7 @@ export const deleteShippingAddress = async (req, res) => {
 
         // Validate ID
         if (!IdShippingAddress) {
-            return res.status(400).json({
-                error: "Shipping address ID is required"
-            });
+            throw new Errors.ValidationError("Shipping address ID is required");
         }
 
         // Check if address exists and get minimal data
@@ -277,17 +275,14 @@ export const deleteShippingAddress = async (req, res) => {
 
         // Handle not found
         if (!address) {
-            return res.status(404).json({
-                error: "Shipping address not found",
+            throw new Errors.NotFoundError("Shipping address not found", {
                 addressId: IdShippingAddress
             });
         }
 
         // Verify ownership (additional security)
         if (address.userId !== req.userId && !req.isAdmin) {
-            return res.status(403).json({
-                error: "Not authorized to delete this address"
-            });
+            throw new Errors.AuthorizationError("Not authorized to delete this address");
         }
 
         // Delete with transaction to ensure data consistency
@@ -315,10 +310,7 @@ export const deleteShippingAddress = async (req, res) => {
             addressId: req.params.id_ShippingAddress
         });
 
-        return res.status(500).json({
-            error: "Error deleting shipping address",
-            details: error.message
-        });
+        next(error);
     }
 };
 
