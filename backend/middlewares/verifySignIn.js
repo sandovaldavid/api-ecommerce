@@ -1,12 +1,23 @@
 import { User } from "../models/userRoles.js";
+import { Errors } from "../middlewares/errorHandler.js";
 
 export const checkEmailAndPassword = async (req, res, next) => {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ where: { email } });
+
+        if (!email || !password) {
+            throw new Errors.ValidationError({
+                missing: ['email', 'password'].filter(field => !req.body[field])
+            });
+        }
+
+        const user = await User.findOne({
+            where: { email },
+            attributes: ['id', 'email', 'hashed_password', 'isActive']
+        });
 
         if (!user) {
-            return res.status(401).json({ error: "Invalid email or password" });
+            throw new Errors.AuthenticationError('Invalid credentials');
         }
 
         const isPasswordValid = await user.comparePassword(password, user.hashed_password);
@@ -17,6 +28,6 @@ export const checkEmailAndPassword = async (req, res, next) => {
         req.body.userId = user.id;
         next();
     } catch (error) {
-        return res.status(500).json({ error: error.message });
+        next(error);
     }
 };
