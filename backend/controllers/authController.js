@@ -53,7 +53,7 @@ export const register = async (req, res) => {
 // Metodo de inicio de sesión
 export const login = async (req, res) => {
     const userId = req.body.userId;
-    console.log(userId);
+    
     try {
         // Buscar el usuario con sus roles, excluyendo la contraseña
         const user = await User.findByPk(userId, {
