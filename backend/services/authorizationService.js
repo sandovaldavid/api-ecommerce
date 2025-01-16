@@ -1,3 +1,6 @@
+import User from '../models/user.js';
+import { UserService } from './userService.js';
+
 export class AuthorizationService {
     static async verifyResourceOwnership(userId, resourceId, resourceType, options = {}) {
         try {
