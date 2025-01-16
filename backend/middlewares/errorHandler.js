@@ -27,6 +27,12 @@ class AuthorizationError extends AppError {
     }
 }
 
+class NotFoundError extends AppError {
+    constructor(message = 'Resource not found') {
+        super(message, 404);
+    }
+}
+
 export const errorHandler = (err, req, res, next) => {
     // Log error details
     console.error('Error occurred:', {
@@ -79,6 +85,13 @@ export const errorHandler = (err, req, res, next) => {
             return res.status(409).json({
                 error: 'Database constraint error',
                 details: 'Referenced record does not exist',
+                path: req.path
+            });
+        
+        case 'NotFoundError':
+            return res.status(404).json({
+                error: 'Resource not found',
+                details: err.message,
                 path: req.path
             });
 
