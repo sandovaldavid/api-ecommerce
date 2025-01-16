@@ -79,16 +79,21 @@ export class TokenService {
 
     static generate (userId, expiresIn) {
         try {
+            const validExpiresIn = Number(expiresIn) || 3600;
             const token = jwt.sign(
                 { id: userId },
                 config.development.secret,
-                { expiresIn: expiresIn }
+                { expiresIn: validExpiresIn }
             );
+
+            const expiresInMs = validExpiresIn * 1000; // Convert to milliseconds
+            const expirationDate = new Date(Date.now() + expiresInMs);
 
             return {
                 success: true,
-                token,
-                expiresIn
+                value: token,
+                expiresIn,
+                expirationDate: expirationDate.toISOString()
             };
         } catch (error) {
             console.error("Token generation error:", {
