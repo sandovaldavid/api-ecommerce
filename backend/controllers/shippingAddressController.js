@@ -469,7 +469,7 @@ export const getShippingAddressById = async (req, res, next) => {
     }
 };
 
-export const validateShippingAddress = async (req, res) => {
+export const validateShippingAddress = async (req, res, next) => {
     try {
         // Destructure and validate required fields
         const {
@@ -481,8 +481,7 @@ export const validateShippingAddress = async (req, res) => {
 
         // Input validation
         if (!zipCode || !city || !country) {
-            return res.status(400).json({
-                error: "Missing required fields",
+            throw new Errors.ValidationError("Missing required fields", {
                 required: ["zipCode", "city", "country"]
             });
         }
@@ -498,8 +497,7 @@ export const validateShippingAddress = async (req, res) => {
         // Validate postal code format
         const postalCodeRegex = /^\d{5}(-\d{4})?$/;
         if (!postalCodeRegex.test(cleanedData.zipCode)) {
-            return res.status(400).json({
-                error: "Invalid postal code format",
+            throw new Errors.ValidationError("Invalid postal code format", {
                 details: "Postal code must be in format: 12345 or 12345-6789"
             });
         }
@@ -507,9 +505,8 @@ export const validateShippingAddress = async (req, res) => {
         // Validate city name (alphanumeric with spaces)
         const cityRegex = /^[a-zA-Z\s]{2,50}$/;
         if (!cityRegex.test(cleanedData.city)) {
-            return res.status(400).json({
-                error: "Invalid city format",
-                details: "City must contain only letters and spaces, length between 2-50 characters"
+            throw new Errors.ValidationError("Invalid city name format", {
+                details: "City name must be 2-50 characters long"
             });
         }
 
@@ -537,10 +534,7 @@ export const validateShippingAddress = async (req, res) => {
             requestBody: req.body
         });
 
-        return res.status(500).json({
-            error: "Error validating address",
-            details: error.message
-        });
+        next(error);
     }
 };
 
