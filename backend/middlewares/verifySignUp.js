@@ -1,49 +1,69 @@
 import { User, Roles } from "../models/userRoles.js";
+import { Errors } from "../middlewares/errorHandler.js";
 
 export const checkDuplicateEmail = async (req, res, next) => {
-    const email = req.body.email;
-    const existingUser = await User.findOne({
-        where: {
-            email
+    try {
+        const email = req.body.email;
+        const existingUser = await User.findOne({
+            where: {
+                email
+            }
+        });
+        if (existingUser) {
+            throw new Errors.ValidationError({
+                message: "Email already in use",
+                email
+            });
         }
-    });
-    if (existingUser) {
-        return res.status(400).json({ error: "User already exists" });
+        next();
+    } catch (error) {
+        next(error);
     }
-    next();
 };
 
 export const checkRolesExisted = async (req, res, next) => {
-    const roles = req.body.roles;
-    if (roles) {
-        const foundRoles = await Roles.findAll({
-            where: {
-                name: roles
+    try {
+        const { roles } = req.body;
+
+        if (roles && Array.isArray(roles)) {
+            const rolePromises = roles.map(roleName =>
+                Roles.findOne({
+                    where: { name: roleName },
+                    attributes: ['id', 'name']
+                })
+            );
+
+            const foundRoles = await Promise.all(rolePromises);
+
+            const missingRoles = roles.filter((roleName, index) => !foundRoles[index]);
+
+            if (missingRoles.length > 0) {
+                throw new Errors.ValidationError({
+                    message: "Some roles do not exist",
+                    invalidRoles: missingRoles
+                });
             }
-        });
-        if (!foundRoles) {
-            return res.status(400).json({ error: "Role does not exist" });
         }
-    } else {
-        const defaultRole = await Roles.findOne({
-            where: {
-                name: "user"
-            }
-        });
-        req.body.roles = [defaultRole.id];
+
+        next();
+    } catch (error) {
+        next(error);
     }
-    next();
 };
 
 export const checkNullFields = async (req, res, next) => {
-    const { firstName, lastNameFather, lastNameMother, email, password } = req.body;
+    try {
+        const { firstName, lastNameFather, lastNameMother, email, password } = req.body;
 
-    if (!firstName || !lastNameFather || !lastNameMother || !email || !password) {
-        throw new Errors.ValidationError({
-            message: "Missing required fields",
-            missing: ["firstName", "lastNameFather", "lastNameFather", "email", "password"]
-                .filter(field => !req.body[field])
-        });
+        if (!firstName || !lastNameFather || !lastNameMother || !email || !password) {
+            throw new Errors.ValidationError({
+                message: "Missing required fields",
+                missing: ["firstName", "lastNameFather", "lastNameFather", "email", "password"]
+                    .filter(field => !req.body[field])
+            });
+        }
+        next();
+    }catch(error){
+        next(error);
     }
-    next();
 }
