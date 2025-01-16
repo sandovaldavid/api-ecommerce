@@ -7,18 +7,18 @@ export const createShippingAddress = async (req, res, next) => {
     try {
         // Destructure and validate required fields
         const {
+            userId,
             address,
             city,
             stateProvince,
             zipCode,
             country
         } = req.body;
-        const userId = req.userId;
 
         // Input validation
-        if (!address || !city || !stateProvince || !zipCode || !country) {
+        if (!userId || !address || !city || !stateProvince || !zipCode || !country) {
             throw new Errors.ValidationError("Missing required fields", {
-                required: ["address", "city", "stateProvince", "zipCode", "country"]
+                required: ["userId", "address", "city", "stateProvince", "zipCode", "country"]
             });
         }
 
