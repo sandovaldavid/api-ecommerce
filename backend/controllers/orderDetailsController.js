@@ -96,3 +96,55 @@ export const getOrderDetailsByOrderId = async (req, res, next) => {
         next(error);
     }
 };
+
+// Update order details
+export const updateOrderDetails = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { quantity, unitPrice } = req.body;
+
+        const orderDetails = await OrderDetails.findByPk(id, {
+            include: [{ model: Order }]
+        });
+
+        // Authorization check
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "order",
+            {
+                resourceId: orderDetails.Order.id,
+                model: Order
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        // Update with transaction
+        const updatedDetails = await sequelize.transaction(async (t) => {
+            const subtotal = quantity * unitPrice;
+            await orderDetails.update({
+                quantity,
+                unitPrice,
+                subtotal
+            }, { transaction: t });
+
+            return OrderDetails.findByPk(id, {
+                include: [{
+                    model: Product,
+                    attributes: ["id", "name", "price"]
+                }],
+                transaction: t
+            });
+        });
+
+        return res.status(200).json({
+            message: "Order details updated successfully",
+            data: updatedDetails
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
