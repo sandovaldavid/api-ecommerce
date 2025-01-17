@@ -265,25 +265,19 @@ export const deleteReview = async (req, res, next) => {
     }
 };
 
-export const updateReview = async (req, res) => {
+export const updateReview = async (req, res, next) => {
     try {
         const { id } = req.params;
         const { rating, reviewText } = req.body;
-        const userId = req.userId;
-        console.log("rating", rating);
-        console.log("reviewText", reviewText);
 
         // Input validation
         if (!id) {
-            return res.status(400).json({
-                error: "Review ID is required"
-            });
+            throw new Errors.ValidationError("Review ID is required");
         }
 
         // Validate update data
         if (!rating && reviewText === undefined) {
-            return res.status(400).json({
-                error: "At least one field to update is required",
+            throw new Errors.ValidationError("At least one field to update is required", {
                 updateableFields: ["rating", "reviewText"]
             });
         }
@@ -291,29 +285,30 @@ export const updateReview = async (req, res) => {
         // Validate rating if provided
         if (rating !== undefined) {
             if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
-                return res.status(400).json({
-                    error: "Invalid rating value",
-                    details: "Rating must be an integer between 1 and 5"
+                throw new Errors.ValidationError("Invalid rating value", {
+                    details: "Rating must be an integer between 1 and 5",
+                    provided: rating
                 });
             }
         }
 
         // Check authorization using AuthorizationService
         const authResult = await AuthorizationService.verifyResourceOwnership(
-            userId,
-            id,
+            req.userId,
             "review",
             {
+                resourceId: id,
                 model: Review,
                 attributes: ["id", "userId", "rating", "reviewText", "created_at"],
-                includeUser: true
+                includeUser: true,
+                userAttributes: ["id", "firstName", "lastNameFather"]
             }
         );
 
         if (!authResult.isAuthorized) {
-            return res.status(authResult.statusCode).json({
-                error: authResult.error,
-                details: authResult.details
+            throw new Errors.AuthorizationError(authResult.error, {
+                reviewId: id,
+                userId: req.userId
             });
         }
 
@@ -329,6 +324,7 @@ export const updateReview = async (req, res) => {
         const updatedReview = await sequelize.transaction(async (t) => {
             await authResult.resource.update(updates, { transaction: t });
 
+            // Get updated review with related data
             return Review.findByPk(id, {
                 include: [
                     {
@@ -345,6 +341,10 @@ export const updateReview = async (req, res) => {
                 transaction: t
             });
         });
+
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
 
         return res.status(200).json({
             message: "Review updated successfully",
@@ -367,9 +367,6 @@ export const updateReview = async (req, res) => {
             userId: req.userId
         });
 
-        return res.status(500).json({
-            error: "Error updating review",
-            details: error.message
-        });
+        next(error);
     }
 };
