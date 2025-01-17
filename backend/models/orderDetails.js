@@ -24,8 +24,8 @@ const OrderDetails = sequelize.define("OrderDetails", {
 }, {
     timestamps: false,
     hooks: {
-        beforeCreate: async (user) => {
-            user.id = uid2(32);
+        beforeCreate: async (orderDetail) => {
+            orderDetail.id = uid2(32);
         }
     }
 });
