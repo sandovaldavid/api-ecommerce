@@ -1,4 +1,5 @@
 import Order from "../models/order.js";
+import User from "../models/user.js";
 import { Errors } from "../middlewares/errorHandler.js";
 import { AuthorizationService } from "../services/authorizationService.js";
 import { sequelize } from "../models/index.js";
@@ -133,33 +134,93 @@ export const updateOrderStatus = async (req, res, next) => {
         const { id } = req.params;
         const { state } = req.body;
 
+        // Input validation
+        if (!id) {
+            throw new Errors.ValidationError("Order ID is required");
+        }
+
+        if (!state) {
+            throw new Errors.ValidationError("Order state is required");
+        }
+
+        // Validate state value
+        const validStates = ["pending", "sent", "delivered"];
+        if (!validStates.includes(state)) {
+            throw new Errors.ValidationError("Invalid order state", {
+                provided: state,
+                validStates
+            });
+        }
+
+        // Check authorization using AuthorizationService
         const authResult = await AuthorizationService.verifyResourceOwnership(
             req.userId,
             "order",
             {
                 resourceId: id,
-                model: Order
+                model: Order,
+                attributes: [
+                    "id",
+                    "userId",
+                    "total",
+                    "state",
+                    "created_at"
+                ],
+                includeUser: true
             }
         );
 
         if (!authResult.isAuthorized) {
-            throw new Errors.AuthorizationError(authResult.error);
+            throw new Errors.AuthorizationError(authResult.error, {
+                orderId: id,
+                userId: req.userId
+            });
         }
 
-        await authResult.resource.update({
-            state,
-            updated_at: new Date()
+        // Update order status with transaction
+        const updatedOrder = await sequelize.transaction(async (t) => {
+            await authResult.resource.update({
+                state,
+                updated_at: new Date()
+            }, { transaction: t });
+
+            // Get updated order with user info
+            return Order.findByPk(id, {
+                include: [{
+                    model: User,
+                    attributes: ["id", "firstName", "lastNameFather"]
+                }],
+                transaction: t
+            });
         });
+
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
 
         return res.status(200).json({
             message: "Order status updated successfully",
-            data: authResult.resource
+            data: {
+                order: updatedOrder,
+                updatedBy: {
+                    userId: req.userId,
+                    isAdmin: authResult.isAdmin,
+                    timestamp: new Date()
+                }
+            }
         });
+
     } catch (error) {
+        console.error("Error updating order status:", {
+            error: error.message,
+            stack: error.stack,
+            orderId: req.params.id,
+            userId: req.userId
+        });
+
         next(error);
     }
 };
-
 // Get order statistics (admin only)
 export const getOrderStats = async (req, res, next) => {
     try {
