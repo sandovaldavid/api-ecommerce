@@ -52,3 +52,47 @@ export const createOrderDetails = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get order details by order ID
+export const getOrderDetailsByOrderId = async (req, res, next) => {
+    try {
+        const { orderId } = req.params;
+
+        // Authorization check
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "order",
+            {
+                resourceId: orderId,
+                model: Order
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        // Get order details with product information
+        const orderDetails = await OrderDetails.findAll({
+            where: { orderId },
+            include: [{
+                model: Product,
+                attributes: ["id", "name", "price"]
+            }],
+            attributes: [
+                "id",
+                "quantity",
+                "unitPrice",
+                "subtotal"
+            ]
+        });
+
+        return res.status(200).json({
+            message: "Order details retrieved successfully",
+            data: orderDetails
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
