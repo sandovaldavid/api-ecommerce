@@ -180,3 +180,33 @@ export const getOrderStats = async (req, res, next) => {
         next(error);
     }
 };
+
+//Get All Orders (admin only)
+export const getAllOrders = async (req, res, next) => {
+    try {
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const orders = await Order.findAndCountAll({
+            limit,
+            offset,
+            order: [["created_at", "DESC"]]
+        });
+
+        return res.status(200).json({
+            message: "Orders retrieved successfully",
+            data: {
+                orders: orders.rows,
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(orders.count / limit),
+                    totalItems: orders.count,
+                    itemsPerPage: limit
+                }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
