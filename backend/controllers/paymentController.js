@@ -38,3 +38,32 @@ export const createPayment = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get payment by ID
+export const getPaymentById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        // Authorization check
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "payment",
+            {
+                resourceId: id,
+                model: Payment,
+                attributes: ["id", "orderId", "payment_method", "payment_status", "amount", "created_at"]
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        return res.status(200).json({
+            message: "Payment retrieved successfully",
+            data: authResult.resource
+        });
+    } catch (error) {
+        next(error);
+    }
+};
