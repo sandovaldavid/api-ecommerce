@@ -53,3 +53,31 @@ export const createOrder = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get order by ID
+export const getOrderById = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "order",
+            {
+                resourceId: id,
+                model: Order,
+                includeUser: true
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        return res.status(200).json({
+            message: "Order retrieved successfully",
+            data: authResult.resource
+        });
+    } catch (error) {
+        next(error);
+    }
+};
