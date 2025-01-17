@@ -4,77 +4,108 @@ import Product from "../models/product.js";
 import { AuthorizationService } from "../services/authorizationService.js";
 import { sequelize } from "../models/index.js";
 
-export const createReview = async (req, res) => {
+export const createReview = async (req, res, next) => {
     try {
         const {
+            userId: requestedUserId,
             productId,
             rating,
             reviewText
         } = req.body;
-        const userId = req.userId;
 
         // Input validation
         if (!productId || !rating) {
-            return res.status(400).json({
-                error: "Missing required fields",
-                required: ["productId", "rating"]
+            throw new Errors.ValidationError("Missing required fields", {
+                required: ["productId", "rating"],
+                provided: { productId, rating }
             });
         }
 
         // Validate rating range
-        if (rating < 1 || rating > 5) {
-            return res.status(400).json({
-                error: "Rating must be between 1 and 5"
+        if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+            throw new Errors.ValidationError("Invalid rating value", {
+                details: "Rating must be an integer between 1 and 5",
+                provided: rating
             });
         }
+
+        // Validate and get effective user
+        const { effectiveUserId } = await AuthorizationService.validateEffectiveUser(
+            req,
+            requestedUserId
+        );
 
         // Check if user already reviewed this product
         const existingReview = await Review.findOne({
             where: {
-                userId,
+                userId: effectiveUserId,
                 productId
-            }
+            },
+            attributes: ['id', 'created_at']
         });
 
         if (existingReview) {
-            return res.status(400).json({
-                error: "User already reviewed this product"
+            throw new Errors.ValidationError("User already reviewed this product", {
+                reviewId: existingReview.id,
+                userId: effectiveUserId,
+                productId,
+                createdAt: existingReview.created_at
             });
         }
 
-        // Create review
-        const review = await Review.create({
-            userId,
-            productId,
-            rating,
-            reviewText: reviewText?.trim() || null
+        // Create review with transaction
+        const reviewWithDetails = await sequelize.transaction(async (t) => {
+            // Create the review
+            const review = await Review.create({
+                userId: effectiveUserId,
+                productId,
+                rating,
+                reviewText: reviewText?.trim() || null,
+                created_at: new Date(),
+                updated_at: new Date()
+            }, { transaction: t });
+
+            // Get review with related data
+            return Review.findByPk(review.id, {
+                include: [
+                    {
+                        model: User,
+                        attributes: ["id", "firstName", "lastNameFather"]
+                    },
+                    {
+                        model: Product,
+                        attributes: ["id", "name", "description"]
+                    }
+                ],
+                transaction: t
+            });
         });
 
-        // Get review with user and product data
-        const reviewWithDetails = await Review.findByPk(review.id, {
-            include: [
-                {
-                    model: User,
-                    attributes: ["id", "firstName", "lastNameFather"]
-                },
-                {
-                    model: Product,
-                    attributes: ["id", "name", "description"]
-                }
-            ]
-        });
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
 
         return res.status(201).json({
             message: "Review created successfully",
-            data: reviewWithDetails
+            data: {
+                review: reviewWithDetails,
+                createdBy: {
+                    userId: req.userId,
+                    isAdmin: req.isAdmin,
+                    timestamp: new Date()
+                }
+            }
         });
 
     } catch (error) {
-        console.error("Error creating review:", error);
-        return res.status(500).json({
-            error: "Error creating review",
-            details: error.message
+        console.error("Error creating review:", {
+            error: error.message,
+            stack: error.stack,
+            userId: req.userId,
+            productId: req.body.productId
         });
+
+        next(error);
     }
 };
 
