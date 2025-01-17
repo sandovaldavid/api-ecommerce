@@ -3,9 +3,41 @@ import bcrypt from "bcryptjs";
 import { Errors } from "../middlewares/errorHandler.js";
 import { sequelize } from "../models/index.js";
 
-export const getUserProfile = async (req, res, next) => {
+export const getUserProfileAdmin = async (req, res, next) => {
     try {
         const { id } = req.params;
+        const user = await User.findByPk(id, {
+            attributes: {
+                exclude: ["hashedPassword", "updated_at", "last_login_at"],
+            },
+            include: [{
+                model: Roles,
+                attributes: ["name"],
+                through: { attributes: [] }
+            }]
+        });
+        if (!user) {
+            throw new Errors.NotFoundError("User not found");
+        }
+        res.status(200).json({
+            user: {
+                id: user.id,
+                firstName: user.firstName,
+                secondName: user.secondName,
+                lastNameFather: user.lastNameFather,
+                lastNameMother: user.lastNameMother,
+                email: user.email,
+                roles: user.Roles.map(role => role.name)
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getUserProfile = async (req, res, next) => {
+    try {
+        const id = req.userId;
         const user = await User.findByPk(id, {
             attributes: {
                 exclude: ["hashedPassword", "updated_at", "last_login_at"],
