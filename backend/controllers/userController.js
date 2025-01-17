@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { Errors } from "../middlewares/errorHandler.js";
 import { sequelize } from "../models/index.js";
 
-export const getUserProfileAdmin = async (req, res, next) => {
+export const getUserProfile = async (req, res, next) => {
     try {
         const { id } = req.params;
         const user = await User.findByPk(id, {
@@ -35,7 +35,7 @@ export const getUserProfileAdmin = async (req, res, next) => {
     }
 };
 
-export const getUserProfile = async (req, res, next) => {
+export const getProfile = async (req, res, next) => {
     try {
         const id = req.userId;
         const user = await User.findByPk(id, {
