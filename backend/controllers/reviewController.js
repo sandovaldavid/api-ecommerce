@@ -184,33 +184,32 @@ export const getReviews = async (req, res) => {
     }
 };
 
-export const deleteReview = async (req, res) => {
+export const deleteReview = async (req, res, next) => {
     try {
         const { id } = req.params;
 
         // Input validation
         if (!id) {
-            return res.status(400).json({
-                error: "Review ID is required"
-            });
+            throw new Errors.ValidationError("Review ID is required");
         }
 
-        // Check authorization
+        // Check authorization using AuthorizationService
         const authResult = await AuthorizationService.verifyResourceOwnership(
             req.userId,
-            id,
             "review",
             {
+                resourceId: id,
                 model: Review,
                 attributes: ["id", "userId", "rating", "reviewText", "created_at"],
-                includeUser: true
+                includeUser: true,
+                userAttributes: ["id", "firstName", "lastNameFather"]
             }
         );
 
         if (!authResult.isAuthorized) {
-            return res.status(authResult.statusCode).json({
-                error: authResult.error,
-                details: authResult.details
+            throw new Errors.AuthorizationError(authResult.error, {
+                reviewId: id,
+                userId: req.userId
             });
         }
 
@@ -218,25 +217,33 @@ export const deleteReview = async (req, res) => {
         await sequelize.transaction(async (t) => {
             await authResult.resource.destroy({ transaction: t });
 
-            // Log deletion for audit - Uncomment if needed
-            // await sequelize.models.AuditLog.create({
-            //     action: 'DELETE_REVIEW',
-            //     userId: req.userId,
-            //     resourceId: id,
-            //     resourceType: 'review',
-            //     details: JSON.stringify({
-            //         deletedBy: {
-            //             userId: req.userId,
-            //             isAdmin: authResult.isAdmin
-            //         }
-            //     })
-            // }, { transaction: t });
+            // Log deletion for audit
+            await sequelize.models.AuditLog?.create({
+                action: 'DELETE_REVIEW',
+                userId: req.userId,
+                resourceId: id,
+                resourceType: 'review',
+                details: JSON.stringify({
+                    deletedBy: {
+                        userId: req.userId,
+                        isAdmin: authResult.isAdmin
+                    }
+                })
+            }, { transaction: t });
         });
+
+        // Set cache control headers
+        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.set('Pragma', 'no-cache');
 
         return res.status(200).json({
             message: "Review deleted successfully",
             data: {
                 reviewId: id,
+                product: {
+                    id: authResult.resource.Product?.id,
+                    name: authResult.resource.Product?.name
+                },
                 deletedBy: {
                     userId: req.userId,
                     isOwner: authResult.isOwner,
@@ -254,10 +261,7 @@ export const deleteReview = async (req, res) => {
             userId: req.userId
         });
 
-        return res.status(500).json({
-            error: "Error deleting review",
-            details: error.message
-        });
+        next(error);
     }
 };
 
