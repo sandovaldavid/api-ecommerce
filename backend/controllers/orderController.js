@@ -81,3 +81,48 @@ export const getOrderById = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get orders by user ID
+export const getOrdersByUserId = async (req, res, next) => {
+    try {
+        const { userId } = req.params;
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "orders",
+            {
+                userIdResource: userId,
+                model: Order
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        const orders = await Order.findAndCountAll({
+            where: { userId },
+            limit,
+            offset,
+            order: [["created_at", "DESC"]]
+        });
+
+        return res.status(200).json({
+            message: "Orders retrieved successfully",
+            data: {
+                orders: orders.rows,
+                pagination: {
+                    currentPage: page,
+                    totalPages: Math.ceil(orders.count / limit),
+                    totalItems: orders.count,
+                    itemsPerPage: limit
+                }
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
