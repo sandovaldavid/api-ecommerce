@@ -16,6 +16,7 @@ import cartRoutes from "./routes/cartRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import { setupAssociations } from "./models/modelAssociations.js";
 /*import "./models/user.js";
 import "./models/product.js";
 import "./models/category.js";
@@ -32,6 +33,7 @@ import "./models/userRoles.js";*/
 dotenv.config();
 
 const app = express();
+setupAssociations();
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
