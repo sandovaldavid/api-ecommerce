@@ -1,5 +1,7 @@
 import Order from "../models/order.js";
 import User from "../models/user.js";
+import OrderDetails from "../models/orderDetails.js";
+import Product from "../models/product.js";
 import { Errors } from "../middlewares/errorHandler.js";
 import { AuthorizationService } from "../services/authorizationService.js";
 import { sequelize } from "../models/index.js";
@@ -60,25 +62,111 @@ export const getOrderById = async (req, res, next) => {
     try {
         const { id } = req.params;
 
+        // Input validation
+        if (!id) {
+            throw new Errors.ValidationError("Order ID is required");
+        }
+
+        // Check authorization using AuthorizationService
         const authResult = await AuthorizationService.verifyResourceOwnership(
             req.userId,
             "order",
             {
                 resourceId: id,
                 model: Order,
+                attributes: [
+                    "id",
+                    "userId",
+                    "total",
+                    "state",
+                    "created_at",
+                    "updated_at"
+                ],
                 includeUser: true
             }
         );
 
         if (!authResult.isAuthorized) {
-            throw new Errors.AuthorizationError(authResult.error);
+            throw new Errors.AuthorizationError(authResult.error, {
+                orderId: id,
+                userId: req.userId
+            });
         }
+
+        // Get order with details using a single query
+        const order = await Order.findByPk(id, {
+            include: [
+                {
+                    model: User,
+                    attributes: ["id", "firstName", "lastNameFather", "email"]
+                },
+                {
+                    model: OrderDetails,
+                    attributes: ["id", "quantity", "unitPrice", "subtotal"],
+                    include: [{
+                        model: Product,
+                        attributes: ["id", "name", "price", "url_img"]
+                    }]
+                }
+            ],
+            attributes: [
+                "id",
+                "total",
+                "state",
+                "created_at",
+                "updated_at"
+            ]
+        });
+
+        // Format order details for response
+        const formattedOrder = {
+            id: order.id,
+            total: parseFloat(order.total),
+            state: order.state,
+            created_at: order.created_at,
+            updated_at: order.updated_at,
+            user: {
+                id: order.User.id,
+                name: `${order.User.firstName} ${order.User.lastNameFather}`,
+                email: order.User.email
+            },
+            items: order.OrderDetails.map(detail => ({
+                id: detail.id,
+                product: {
+                    id: detail.Product.id,
+                    name: detail.Product.name,
+                    price: parseFloat(detail.Product.price),
+                    url_img: detail.Product.url_img
+                },
+                quantity: detail.quantity,
+                unitPrice: parseFloat(detail.unitPrice),
+                subtotal: parseFloat(detail.subtotal)
+            }))
+        };
+
+        // Set cache headers
+        res.set('Cache-Control', 'private, max-age=300');
+        res.set('Vary', 'Authorization');
 
         return res.status(200).json({
             message: "Order retrieved successfully",
-            data: authResult.resource
+            data: {
+                order: formattedOrder,
+                accessInfo: {
+                    isOwner: authResult.isOwner,
+                    isAdmin: authResult.isAdmin
+                }
+            }
         });
+
     } catch (error) {
+        console.error("Error getting order:", {
+            error: error.message,
+            stack: error.stack,
+            orderId: req.params.id,
+            userId: req.userId
+        });
+
         next(error);
     }
 };
