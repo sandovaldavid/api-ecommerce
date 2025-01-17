@@ -23,23 +23,11 @@ export const createShippingAddress = async (req, res, next) => {
             });
         }
 
-        // Determine the effective userId based on role
-        const effectiveUserId = req.isAdmin ? requestedUserId : req.userId;
-
-        // If admin is creating for another user, verify that user exists
-        if (req.isAdmin && requestedUserId !== req.userId) {
-            const targetUser = await User.findByPk(requestedUserId);
-            if (!targetUser) {
-                throw new Errors.NotFoundError("Target user not found", {
-                    userId: requestedUserId
-                });
-            }
-        }
-
-        // Check maximum addresses per user
-        const userAddressCount = await ShippingAddress.count({
-            where: { userId: effectiveUserId }
-        });
+        // Validate and get effective user
+        const { effectiveUserId } = await AuthorizationService.validateEffectiveUser(
+            req,
+            requestedUserId
+        );
 
         if (userAddressCount >= 5) {
             throw new Errors.ValidationError("Maximum addresses reached", {
