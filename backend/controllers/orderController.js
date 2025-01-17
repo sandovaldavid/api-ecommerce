@@ -126,3 +126,36 @@ export const getOrdersByUserId = async (req, res, next) => {
         next(error);
     }
 };
+
+// Update order status
+export const updateOrderStatus = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { state } = req.body;
+
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "order",
+            {
+                resourceId: id,
+                model: Order
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        await authResult.resource.update({
+            state,
+            updated_at: new Date()
+        });
+
+        return res.status(200).json({
+            message: "Order status updated successfully",
+            data: authResult.resource
+        });
+    } catch (error) {
+        next(error);
+    }
+};
