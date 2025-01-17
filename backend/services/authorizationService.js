@@ -110,4 +110,38 @@ export class AuthorizationService {
             };
         }
     }
+    
+    static async validateEffectiveUser(req, requestedUserId) {
+        try {
+            // Determine effective userId based on role
+            const effectiveUserId = req.isAdmin ? requestedUserId : req.userId;
+
+            // If admin is creating for another user, verify that user exists
+            if (req.isAdmin && requestedUserId !== req.userId) {
+                const targetUser = await User.findByPk(requestedUserId);
+                if (!targetUser) {
+                    throw new Errors.NotFoundError("Target user not found", {
+                        userId: requestedUserId
+                    });
+                }
+            }
+
+            return {
+                success: true,
+                effectiveUserId,
+                isAdminAction: req.isAdmin && requestedUserId !== req.userId
+            };
+
+        } catch (error) {
+            console.error("Error validating effective user:", {
+                error: error.message,
+                stack: error.stack,
+                requestedUserId,
+                userId: req.userId,
+                isAdmin: req.isAdmin
+            });
+
+            throw error;
+        }
+    }
 }
