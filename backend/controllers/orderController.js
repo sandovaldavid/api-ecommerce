@@ -159,3 +159,24 @@ export const updateOrderStatus = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get order statistics (admin only)
+export const getOrderStats = async (req, res, next) => {
+    try {
+        const stats = await Order.findAll({
+            attributes: [
+                'state',
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
+                [sequelize.fn('SUM', sequelize.col('total')), 'total']
+            ],
+            group: ['state']
+        });
+
+        return res.status(200).json({
+            message: "Order statistics retrieved successfully",
+            data: stats
+        });
+    } catch (error) {
+        next(error);
+    }
+};
