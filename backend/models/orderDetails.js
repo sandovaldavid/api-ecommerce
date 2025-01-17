@@ -1,7 +1,5 @@
 import { DataTypes } from "sequelize";
 import { sequelize } from "./index.js";
-import Order from "./order.js";
-import Product from "./product.js";
 import uid2 from "uid2";
 
 const OrderDetails = sequelize.define("OrderDetails", {
@@ -29,8 +27,5 @@ const OrderDetails = sequelize.define("OrderDetails", {
         }
     }
 });
-
-OrderDetails.belongsTo(Order, { foreignKey: "orderId" });
-OrderDetails.belongsTo(Product, { foreignKey: "productId" });
 
 export default OrderDetails;
