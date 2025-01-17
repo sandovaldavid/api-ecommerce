@@ -148,3 +148,38 @@ export const updateOrderDetails = async (req, res, next) => {
         next(error);
     }
 };
+
+// Delete order details
+export const deleteOrderDetails = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const orderDetails = await OrderDetails.findByPk(id, {
+            include: [{ model: Order }]
+        });
+
+        // Authorization check
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "order",
+            {
+                resourceId: orderDetails.Order.id,
+                model: Order
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        await orderDetails.destroy();
+
+        return res.status(200).json({
+            message: "Order details deleted successfully",
+            data: { id }
+        });
+
+    } catch (error) {
+        next(error);
+    }
+};
