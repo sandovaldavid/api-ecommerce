@@ -67,3 +67,21 @@ export const getPaymentById = async (req, res, next) => {
         next(error);
     }
 };
+
+// Get payments by order ID
+export const getPaymentsByOrderId = async (req, res, next) => {
+    try {
+        const { orderId } = req.params;
+        const payments = await Payment.findAll({
+            where: { orderId },
+            order: [["created_at", "DESC"]]
+        });
+
+        return res.status(200).json({
+            message: "Payments retrieved successfully",
+            data: payments
+        });
+    } catch (error) {
+        next(error);
+    }
+};
