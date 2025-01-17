@@ -107,3 +107,35 @@ export const getPaymentStats = async (req, res, next) => {
     }
 };
 
+// Update payment status
+export const updatePaymentStatus = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { payment_status } = req.body;
+
+        const authResult = await AuthorizationService.verifyResourceOwnership(
+            req.userId,
+            "payment",
+            {
+                resourceId: id,
+                model: Payment
+            }
+        );
+
+        if (!authResult.isAuthorized) {
+            throw new Errors.AuthorizationError(authResult.error);
+        }
+
+        await authResult.resource.update({
+            payment_status,
+            updated_at: new Date()
+        });
+
+        return res.status(200).json({
+            message: "Payment status updated successfully",
+            data: authResult.resource
+        });
+    } catch (error) {
+        next(error);
+    }
+};
