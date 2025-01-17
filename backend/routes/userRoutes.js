@@ -12,7 +12,7 @@ router.get("/profile", getUserProfile);         // Obtener el perfil de un usuar
 router.use(authJwt.hasRoles("admin"));          // Middleware para verificar el rol de administrador
 router.get("/", getAllUsers);                   // Obtener todos los usuarios
 router.delete("/:id", deleteUser);              // Eliminar un usuario por ID
-router.put("/profile/:id", authJwt.isAdmin, updateUserProfile);      // Actualizar el perfil de un usuario
-router.put("/profile/:id", authJwt.isAdmin, getUserProfileAdmin);
+router.put("/profile/:id", updateUserProfile);      // Actualizar el perfil de un usuario
+router.put("/profile/:id", getUserProfileAdmin);
 
 export default router;
