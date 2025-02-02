@@ -24,6 +24,14 @@ const Order = sequelize.define("Order", {
         type: DataTypes.DATE,
         defaultValue: DataTypes.NOW,
     },
+    paymentIntentId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    paymentStatus: {
+        type: DataTypes.ENUM("pending", "completed", "failed"),
+        defaultValue: "pending"
+    },
 }, {
     timestamps: false,
     hooks: {
