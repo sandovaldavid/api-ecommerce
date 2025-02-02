@@ -40,5 +40,5 @@ next-env.d.ts
 # Editor-based HTTP Client requests
 /httpRequests/
 #backend
-backend/database/users_db.json
+database/users_db.json
 node_modules
