@@ -155,6 +155,6 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ---
 
-📱 **Contact:** [David Sandoval](mailto:)  
-🌐 **Demo:** [API Documentation](#)  
+📱 **Contact:** [David Sandoval](mailto:contact@devsandoval.me)  
+🌐 **Demo:** [API Documentation](https://documenter.getpostman.com/view/38078864/2sAYX3r3mh)  
 🔗 **GitHub:** [Repository](https://github.com/sandovaldavid/api-ecommerce.git)
