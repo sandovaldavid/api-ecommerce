@@ -1,5 +1,5 @@
 class AppError extends Error {
-    constructor(message, statusCode, details = null) {
+    constructor (message, statusCode, details = null) {
         super(message);
         this.name = this.constructor.name;
         this.statusCode = statusCode;
@@ -10,32 +10,32 @@ class AppError extends Error {
 }
 
 class ValidationError extends AppError {
-    constructor(details) {
-        super('Validation Error', 400, details);
+    constructor (details) {
+        super("Validation Error", 400, details);
     }
 }
 
 class AuthenticationError extends AppError {
-    constructor(message = 'Authentication failed') {
+    constructor (message = "Authentication failed") {
         super(message, 401);
     }
 }
 
 class AuthorizationError extends AppError {
-    constructor(message = 'Access denied') {
+    constructor (message = "Access denied") {
         super(message, 403);
     }
 }
 
 class NotFoundError extends AppError {
-    constructor(message = 'Resource not found') {
+    constructor (message = "Resource not found") {
         super(message, 404);
     }
 }
 
-export const errorHandler = (err, req, res, next) => {
+export const errorHandler = (err, req, res) => {
     // Log error details
-    console.error('Error occurred:', {
+    console.error("Error occurred:", {
         name: err.name,
         message: err.message,
         statusCode: err.statusCode,
@@ -44,70 +44,69 @@ export const errorHandler = (err, req, res, next) => {
         userId: req.userId,
         userRoles: req.user?.roles,
         timestamp: new Date().toISOString(),
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        stack: process.env.NODE_ENV === "development" ? err.stack : undefined
     });
 
     // Handle specific error types
     switch (err.name) {
-        case 'ValidationError':
-            return res.status(400).json({
-                error: 'Validation failed',
-                details: err.details || err.message,
-                path: req.path
-            });
+    case "ValidationError":
+        return res.status(400).json({
+            error: "Validation failed",
+            details: err.details || err.message,
+            path: req.path
+        });
 
-        case 'AuthenticationError':
-            return res.status(401).json({
-                error: 'Authentication failed',
-                details: err.message,
-                path: req.path
-            });
+    case "AuthenticationError":
+        return res.status(401).json({
+            error: "Authentication failed",
+            details: err.message,
+            path: req.path
+        });
 
-        case 'AuthorizationError':
-            return res.status(403).json({
-                error: 'Access denied',
-                details: err.message,
-                path: req.path
-            });
+    case "AuthorizationError":
+        return res.status(403).json({
+            error: "Access denied",
+            details: err.message,
+            path: req.path
+        });
 
-        case 'SequelizeValidationError':
-        case 'SequelizeUniqueConstraintError':
-            return res.status(400).json({
-                error: 'Database validation failed',
-                details: err.errors.map(e => ({
-                    field: e.path,
-                    message: e.message
-                })),
-                path: req.path
-            });
+    case "SequelizeValidationError":
+    case "SequelizeUniqueConstraintError":
+        return res.status(400).json({
+            error: "Database validation failed",
+            details: err.errors.map(e => ({
+                field: e.path,
+                message: e.message
+            })),
+            path: req.path
+        });
 
-        case 'SequelizeForeignKeyConstraintError':
-            return res.status(409).json({
-                error: 'Database constraint error',
-                details: 'Referenced record does not exist',
-                path: req.path
-            });
+    case "SequelizeForeignKeyConstraintError":
+        return res.status(409).json({
+            error: "Database constraint error",
+            details: "Referenced record does not exist",
+            path: req.path
+        });
         
-        case 'NotFoundError':
-            return res.status(404).json({
-                error: 'Resource not found',
-                details: err.message,
-                path: req.path
-            });
+    case "NotFoundError":
+        return res.status(404).json({
+            error: "Resource not found",
+            details: err.message,
+            path: req.path
+        });
 
-        default:
-            // Handle unexpected errors
-            const statusCode = err.statusCode || 500;
-            const message = statusCode === 500 ?
-                'Internal server error' :
-                err.message;
+    default: {
+        // Handle unexpected errors
+        const statusCode = err.statusCode || 500;
+        const message = statusCode === 500 ? "Internal server error" : err.message;
 
-            return res.status(statusCode).json({
-                error: message,
-                details: process.env.NODE_ENV === 'development' ? err.stack : undefined,
-                path: req.path,
-                requestId: req.id
-            });
+        return res.status(statusCode).json({
+            error: message,
+            details: process.env.NODE_ENV === "development" ? err.stack : undefined,
+            path: req.path,
+            requestId: req.id
+        });
+    }
     }
 };
 

@@ -2,7 +2,7 @@ import User from "../models/user.js";
 import { UserService } from "./userService.js";
 
 export class AuthorizationService {
-    static async verifyResourceOwnership(userId, resourceType, options = {}) {
+    static async verifyResourceOwnership (userId, resourceType, options = {}) {
         try {
             const {
                 resourceId,
@@ -111,7 +111,7 @@ export class AuthorizationService {
         }
     }
     
-    static async validateEffectiveUser(req, requestedUserId) {
+    static async validateEffectiveUser (req, requestedUserId) {
         try {
             // Determine effective userId based on role
             const effectiveUserId = req.isAdmin ? requestedUserId : req.userId;

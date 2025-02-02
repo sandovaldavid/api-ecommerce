@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import Product from "../models/product.js";
 import { AuthorizationService } from "../services/authorizationService.js";
 import { sequelize } from "../models/index.js";
+import { Errors } from "../middlewares/errorHandler.js";
 
 export const createReview = async (req, res, next) => {
     try {
@@ -41,7 +42,7 @@ export const createReview = async (req, res, next) => {
                 userId: effectiveUserId,
                 productId
             },
-            attributes: ['id', 'created_at']
+            attributes: ["id", "created_at"]
         });
 
         if (existingReview) {
@@ -82,8 +83,8 @@ export const createReview = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(201).json({
             message: "Review created successfully",
@@ -219,10 +220,10 @@ export const deleteReview = async (req, res, next) => {
 
             // Log deletion for audit
             await sequelize.models.AuditLog?.create({
-                action: 'DELETE_REVIEW',
+                action: "DELETE_REVIEW",
                 userId: req.userId,
                 resourceId: id,
-                resourceType: 'review',
+                resourceType: "review",
                 details: JSON.stringify({
                     deletedBy: {
                         userId: req.userId,
@@ -233,8 +234,8 @@ export const deleteReview = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "Review deleted successfully",
@@ -343,8 +344,8 @@ export const updateReview = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "Review updated successfully",

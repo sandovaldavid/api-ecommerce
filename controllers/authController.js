@@ -53,7 +53,7 @@ export const register = async (req, res, next) => {
 };
 
 // Metodo de inicio de sesión
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
     const userId = req.body.userId;
     
     try {

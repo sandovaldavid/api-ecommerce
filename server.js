@@ -17,6 +17,7 @@ import authRoutes from "./routes/authRoutes.js";
 import roleRoutes from "./routes/roleRoutes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { setupAssociations } from "./models/modelAssociations.js";
+import stripeRoutes from "./routes/stripeRoutes.js";
 /*import "./models/user.js";
 import "./models/product.js";
 import "./models/category.js";
@@ -50,6 +51,7 @@ app.use("/api/cart-items", cartItemRoutes);
 app.use("/api/carts", cartRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/roles", roleRoutes);
+app.use("/api/stripe", stripeRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;

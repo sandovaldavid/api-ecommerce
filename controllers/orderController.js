@@ -145,8 +145,8 @@ export const getOrderById = async (req, res, next) => {
         };
 
         // Set cache headers
-        res.set('Cache-Control', 'private, max-age=300');
-        res.set('Vary', 'Authorization');
+        res.set("Cache-Control", "private, max-age=300");
+        res.set("Vary", "Authorization");
 
         return res.status(200).json({
             message: "Order retrieved successfully",
@@ -283,8 +283,8 @@ export const updateOrderStatus = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "Order status updated successfully",
@@ -314,11 +314,11 @@ export const getOrderStats = async (req, res, next) => {
     try {
         const stats = await Order.findAll({
             attributes: [
-                'state',
-                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
-                [sequelize.fn('SUM', sequelize.col('total')), 'total']
+                "state",
+                [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+                [sequelize.fn("SUM", sequelize.col("total")), "total"]
             ],
-            group: ['state']
+            group: ["state"]
         });
 
         return res.status(200).json({

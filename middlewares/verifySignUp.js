@@ -29,7 +29,7 @@ export const checkRolesExisted = async (req, res, next) => {
             const rolePromises = roles.map(roleName =>
                 Roles.findOne({
                     where: { name: roleName },
-                    attributes: ['id', 'name']
+                    attributes: ["id", "name"]
                 })
             );
 
@@ -63,7 +63,7 @@ export const checkNullFields = async (req, res, next) => {
             });
         }
         next();
-    }catch(error){
+    } catch (error){
         next(error);
     }
-}
+};

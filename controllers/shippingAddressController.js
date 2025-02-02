@@ -29,6 +29,9 @@ export const createShippingAddress = async (req, res, next) => {
             requestedUserId
         );
 
+        // Get the count of user's addresses
+        const userAddressCount = await ShippingAddress.count({ where: { userId: effectiveUserId } });
+
         if (userAddressCount >= 5) {
             throw new Errors.ValidationError("Maximum addresses reached", {
                 maxAddresses: 5,
@@ -303,10 +306,10 @@ export const deleteShippingAddress = async (req, res, next) => {
 
             // Log deletion for audit
             await sequelize.models.AuditLog?.create({
-                action: 'DELETE_ADDRESS',
+                action: "DELETE_ADDRESS",
                 userId: req.userId,
                 resourceId: IdShippingAddress,
-                resourceType: 'shipping_address',
+                resourceType: "shipping_address",
                 details: JSON.stringify({
                     deletedBy: {
                         userId: req.userId,
@@ -317,8 +320,8 @@ export const deleteShippingAddress = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "Shipping address deleted successfully",
@@ -428,8 +431,8 @@ export const updateShippingAddress = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "Shipping address updated successfully",
@@ -506,8 +509,8 @@ export const getShippingAddressById = async (req, res, next) => {
         delete formattedAddress.User;
 
         // Set cache headers for better performance
-        res.set('Cache-Control', 'private, max-age=300');
-        res.set('Vary', 'Authorization');
+        res.set("Cache-Control", "private, max-age=300");
+        res.set("Vary", "Authorization");
 
         return res.status(200).json({
             message: "Shipping address retrieved successfully",
@@ -673,8 +676,8 @@ export const setDefaultAddress = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "Default address updated successfully",
@@ -757,7 +760,7 @@ export const bulkDeleteAddresses = async (req, res, next) => {
 
         if (defaultAddresses.length > 0) {
             throw new Errors.ValidationError(
-                `Cannot delete default shipping addresses. Please change default address first.`,
+                "Cannot delete default shipping addresses. Please change default address first.",
                 {
                     defaultAddressIds: defaultAddresses,
                     totalDefaultAddresses: defaultAddresses.length
@@ -778,7 +781,7 @@ export const bulkDeleteAddresses = async (req, res, next) => {
 
             // Log deletion for audit
             await sequelize.models.AuditLog?.create({
-                action: 'BULK_DELETE_ADDRESSES',
+                action: "BULK_DELETE_ADDRESSES",
                 userId: req.userId,
                 details: JSON.stringify({
                     deletedIds: addressIds,
@@ -790,8 +793,8 @@ export const bulkDeleteAddresses = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "Addresses deleted successfully",

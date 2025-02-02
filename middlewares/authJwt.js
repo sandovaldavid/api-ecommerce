@@ -56,7 +56,7 @@ export const isModerator = async (req, res, next) => {
         const hasModeratorRole = roles.some(role => role.name === "moderator");
         if (!hasModeratorRole) throw new Errors.AuthorizationError("Require moderator Role");
         next();
-    }catch (e){
+    } catch (e){
         next(e);
     }
 };

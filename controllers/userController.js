@@ -146,13 +146,13 @@ export const updateUserProfile = async (req, res, next) => {
 
             return User.findByPk(id, {
                 attributes: [
-                    'id',
-                    'firstName',
-                    'secondName',
-                    'lastNameFather',
-                    'lastNameMother',
-                    'email',
-                    'isActive'
+                    "id",
+                    "firstName",
+                    "secondName",
+                    "lastNameFather",
+                    "lastNameMother",
+                    "email",
+                    "isActive"
                 ],
                 include: [{
                     model: Roles,
@@ -164,8 +164,8 @@ export const updateUserProfile = async (req, res, next) => {
         });
 
         // Set cache control headers
-        res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
-        res.set('Pragma', 'no-cache');
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+        res.set("Pragma", "no-cache");
 
         return res.status(200).json({
             message: "User profile updated successfully",

@@ -91,11 +91,11 @@ export const getPaymentStats = async (req, res, next) => {
     try {
         const stats = await Payment.findAll({
             attributes: [
-                'payment_status',
-                [sequelize.fn('COUNT', sequelize.col('id')), 'count'],
-                [sequelize.fn('SUM', sequelize.col('amount')), 'total']
+                "payment_status",
+                [sequelize.fn("COUNT", sequelize.col("id")), "count"],
+                [sequelize.fn("SUM", sequelize.col("amount")), "total"]
             ],
-            group: ['payment_status']
+            group: ["payment_status"]
         });
 
         return res.status(200).json({
