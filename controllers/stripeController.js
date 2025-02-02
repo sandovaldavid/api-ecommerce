@@ -1,5 +1,5 @@
 import { createPaymentIntent, confirmPayment } from "../services/stripeService.js";
-import { Order } from "../models/order.js";
+import Order from "../models/order.js";
 
 export const createStripePaymentIntent = async (req, res) => {
     try {
